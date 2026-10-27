@@ -95,3 +95,17 @@ A decision is added here in the same commit that makes it. Each entry says what 
 **Why:** store review rejects listings that describe features the build does not have. The draft keeps the wording in one place while the build catches up.
 
 **Revisit when:** the first store-ready build exists. Then replace every placeholder and check each claim against the build.
+
+## D-011: The checks workflow waits for the workflow scope
+
+**Decided:** the GitHub Actions workflow stays out of the repository until this Mac's GitHub login can write it. The file exists locally at `.github/workflows/ci.yml`, and `.git/info/exclude` keeps it out of accidental commits. Local checks are the source of truth until CI has actually run.
+
+**Why:** GitHub refuses an OAuth app from creating a workflow without the `workflow` scope, and `gh auth refresh -s workflow` failed with "failed to move active token in keyring" from the tool sandbox. Pushing without the workflow is the only clean option. Claiming CI is green before it has run would break the rule of never calling untested work done.
+
+**Revisit when:** `gh auth refresh -s workflow` succeeds in a normal Terminal. Then remove the path from `.git/info/exclude`, commit the workflow, push it and watch its first run.
+
+## D-012: Links for Ali are always clickable
+
+**Decided:** any link Ali is meant to open is a Markdown link he can click, never a bare URL pasted as text.
+
+**Why:** Ali asked on 27 October 2026, "make the link clickable so I can click and get it done." He is not technical and acts from clicks, not copied addresses.
