@@ -10,6 +10,8 @@ The repository was empty on 27 October 2026. It now has a working scaffold, a te
 
 The Chrome Web Store developer account is open. The Edge Partner Center account is not. Ali opens accounts and presses Submit. Nobody else handles his credentials or payment.
 
+An independent review brief for this commit is in [`docs/REVIEW-REQUEST.md`](REVIEW-REQUEST.md). It lists the commands, the screenshots, the open design questions and the gaps that are already known. Give it to a reviewer before asking for a verdict.
+
 ## What works, with evidence
 
 | Area | State | Evidence |
