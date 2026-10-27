@@ -5,6 +5,7 @@ import {
   distanceKm,
   nearestCity,
   parseCityData,
+  preferredCityName,
   roundCoordinate,
   searchCities,
   type City,
@@ -17,7 +18,7 @@ const city = (
   longitude: number,
   population: number,
   timeZone = 'Europe/London',
-): City => ({ name, countryCode, latitude, longitude, population, timeZone });
+): City => ({ name, countryCode, latitude, longitude, population, timeZone, section: false });
 
 const cities = [
   city('London', 'GB', 51.5074, -0.1278, 8_961_989),
@@ -56,6 +57,7 @@ describe('city search', () => {
       longitude: 37.6173,
       population: 10_381_222,
       timeZone: 'Europe/Moscow',
+      section: false,
     };
     expect(searchCities([moscow], 'moscow').map((item) => item.name)).toEqual(['Москва']);
   });
@@ -74,7 +76,7 @@ describe('city file', () => {
     const parsed = parseCityData({
       timeZones: ['Europe/London'],
       countries: ['GB'],
-      cities: [['London', 0, 0, 51.5074, -0.1278, 0, 8_961_989]],
+      cities: [['London', 0, 0, 51.5074, -0.1278, 0, 8_961_989, 0]],
     });
     expect(parsed).toEqual([
       {
@@ -84,8 +86,18 @@ describe('city file', () => {
         longitude: -0.13,
         timeZone: 'Europe/London',
         population: 8_961_989,
+        section: false,
       },
     ]);
+  });
+
+  it('reads a section flag from the tuple', () => {
+    const parsed = parseCityData({
+      timeZones: ['America/New_York'],
+      countries: ['US'],
+      cities: [['Bushwick', 0, 0, 40.6943, -73.9188, 0, 112_620, 1]],
+    });
+    expect(parsed[0]?.section).toBe(true);
   });
 
   it('rejects a row that points at a missing table entry', () => {
@@ -93,7 +105,7 @@ describe('city file', () => {
       parseCityData({
         timeZones: [],
         countries: ['GB'],
-        cities: [['London', 0, 0, 51.5, -0.13, 0, 1]],
+        cities: [['London', 0, 0, 51.5, -0.13, 0, 1, 0]],
       }),
     ).toThrow(/missing table row/i);
   });
@@ -139,8 +151,49 @@ describe('nearest city', () => {
     expect(nearestCity(51.51, -0.12, [far, near])?.name).toBe('Nearby');
   });
 
+  it('skips a section of a city to name the city itself', () => {
+    const paris = city('Paris', 'FR', 48.8534, 2.3488, 2_138_551, 'Europe/Paris');
+    const arrondissement = {
+      ...city('Paris 04 Hôtel-de-Ville', 'FR', 48.8601, 2.3507, 27_332, 'Europe/Paris'),
+      section: true,
+    };
+    expect(nearestCity(48.8566, 2.3522, [arrondissement, paris])?.name).toBe('Paris');
+  });
+
   it('returns nothing for an empty list', () => {
     expect(nearestCity(51.5, -0.13, [])).toBeNull();
+  });
+});
+
+describe('preferred city name', () => {
+  it('promotes a district to the larger city whose name is a whole word inside it', () => {
+    const burDubai = city('Bur Dubai', 'AE', 25.2604, 55.2989, 18_698, 'Asia/Dubai');
+    const dubai = city('Dubai', 'AE', 25.0773, 55.3093, 1_137_347, 'Asia/Dubai');
+    expect(preferredCityName(burDubai, 25.2048, 55.2708, [burDubai, dubai])).toBe('Dubai');
+  });
+
+  it('keeps the district when the larger name is only a substring, not a word', () => {
+    const dubailand = city('Dubailand', 'AE', 25.2, 55.3, 5_000, 'Asia/Dubai');
+    const dubai = city('Dubai', 'AE', 25.0773, 55.3093, 1_137_347, 'Asia/Dubai');
+    expect(preferredCityName(dubailand, 25.2, 55.3, [dubailand, dubai])).toBe('Dubailand');
+  });
+
+  it('keeps the district when the larger city is in another country', () => {
+    const kehl = city('Kehl', 'DE', 48.5726, 7.8146, 35_000, 'Europe/Berlin');
+    const strasbourg = city('Strasbourg', 'FR', 48.5839, 7.7455, 280_966, 'Europe/Paris');
+    expect(preferredCityName(kehl, 48.5726, 7.8146, [kehl, strasbourg])).toBe('Kehl');
+  });
+
+  it('keeps the district when the larger city is fewer than ten times its size', () => {
+    const northTown = city('North Town', 'GB', 51.5, -0.1, 20_000);
+    const town = city('Town', 'GB', 51.51, -0.12, 150_000);
+    expect(preferredCityName(northTown, 51.5, -0.1, [northTown, town])).toBe('North Town');
+  });
+
+  it('keeps the district when the larger city is more than 20 kilometres away', () => {
+    const eastDistrict = city('East District', 'GB', 51.5, -0.1, 10_000);
+    const district = city('District', 'GB', 51.5, 0.3, 1_000_000);
+    expect(preferredCityName(eastDistrict, 51.5, -0.1, [eastDistrict, district])).toBe('East District');
   });
 });
 

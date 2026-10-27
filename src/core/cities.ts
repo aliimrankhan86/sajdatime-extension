@@ -13,6 +13,8 @@ export interface City {
   longitude: number;
   timeZone: string;
   population: number;
+  /** True for a section of a populated place, such as a borough or district of a city. */
+  section: boolean;
   /** A Latin name from GeoNames, kept for places whose own name uses another script. */
   ascii?: string;
 }
@@ -52,10 +54,10 @@ export function parseCityData(value: unknown): City[] {
   const cities: City[] = [];
 
   for (const row of file.cities) {
-    if (!Array.isArray(row) || row.length !== 7) {
+    if (!Array.isArray(row) || row.length !== 8) {
       throw new Error('The city list has a bad row.');
     }
-    const [name, ascii, countryIndex, latitude, longitude, timeZoneIndex, population] = row;
+    const [name, ascii, countryIndex, latitude, longitude, timeZoneIndex, population, section] = row;
     if (
       typeof name !== 'string' ||
       name.length === 0 ||
@@ -64,6 +66,7 @@ export function parseCityData(value: unknown): City[] {
       !Number.isInteger(timeZoneIndex) ||
       !Number.isInteger(population) ||
       population < 0 ||
+      !(section === 0 || section === 1) ||
       typeof latitude !== 'number' ||
       !Number.isFinite(latitude) ||
       Math.abs(latitude) > 90 ||
@@ -85,6 +88,7 @@ export function parseCityData(value: unknown): City[] {
       longitude: roundCoordinate(longitude),
       timeZone,
       population,
+      section: section === 1,
       ascii: typeof ascii === 'string' && ascii !== name ? ascii : undefined,
     });
   }
@@ -178,7 +182,10 @@ export function distanceKm(
 }
 
 /**
- * The city nearest a point, so a located place can be named without a network.
+ * The city nearest a point, so a located place can be named without a network. Sections of
+ * a populated place (a borough, quarter or district, feature code `PPLX`) are skipped;
+ * districts that GeoNames codes `PPL` rather than `PPLX` are promoted by
+ * {@link preferredCityName} after this pass.
  *
  * One linear pass over seventy thousand rows takes a few milliseconds and needs no
  * index to keep in step with the bundled file, which only changes when it is rebuilt.
@@ -191,6 +198,7 @@ export function nearestCity(
   let nearest: City | null = null;
   let nearestDistance = Infinity;
   for (const city of cities) {
+    if (city.section) continue;
     const distance = distanceKm(latitude, longitude, city.latitude, city.longitude);
     if (distance < nearestDistance) {
       nearestDistance = distance;
@@ -200,28 +208,59 @@ export function nearestCity(
   return nearest;
 }
 
+/** A larger city may be this far from the located point and still replace a district name. */
+export const CITY_PROMOTE_DISTANCE_KM = 20;
+
+/** The larger city needs at least this many times the district's population. */
+const CITY_PROMOTE_POPULATION_RATIO = 10;
+
 /**
- * The most populous city within a radius of a point. Used to name a located place by the
- * whole city rather than by a district or arrondissement of it, which the plain nearest
- * pass would pick because it sits closer to the centre. Returns null when none is within.
+ * Name a located point from its nearest non-section city, promoting the name to a larger
+ * city only when a narrow, name-based rule holds: the larger city's name appears as a
+ * whole word inside the nearest city's name ("Paris" in "Paris 04 Hôtel-de-Ville", "Dubai"
+ * in "Bur Dubai"), it shares the country, it is within 20 kilometres of the point, and it
+ * has at least ten times the population. Anything else keeps the nearest city's own name,
+ * so Bradford stays Bradford and Kehl stays Kehl. The nearest city's coordinates, country
+ * and time zone are untouched.
  */
-export function largestCityWithin(
+export function preferredCityName(
+  nearest: City,
   latitude: number,
   longitude: number,
   cities: readonly City[],
-  radiusKm: number,
-): City | null {
+): string {
   let best: City | null = null;
-  let bestPopulation = -1;
-  for (const city of cities) {
-    if (distanceKm(latitude, longitude, city.latitude, city.longitude) <= radiusKm) {
-      if (city.population > bestPopulation) {
-        bestPopulation = city.population;
-        best = city;
-      }
+  for (const candidate of cities) {
+    if (candidate === nearest || candidate.section) continue;
+    if (candidate.countryCode !== nearest.countryCode) continue;
+    if (candidate.population < nearest.population * CITY_PROMOTE_POPULATION_RATIO) continue;
+    if (distanceKm(latitude, longitude, candidate.latitude, candidate.longitude) > CITY_PROMOTE_DISTANCE_KM) continue;
+    if (!nameIsAWholeWordIn(candidate, nearest)) continue;
+    if (!best || candidate.population > best.population) best = candidate;
+  }
+  return best ? best.name : nearest.name;
+}
+
+function nameIsAWholeWordIn(candidate: City, nearest: City): boolean {
+  const needles = [candidate.name];
+  if (candidate.ascii) needles.push(candidate.ascii);
+  const haystacks = [nearest.name];
+  if (nearest.ascii) haystacks.push(nearest.ascii);
+  for (const needle of needles) {
+    for (const haystack of haystacks) {
+      if (isWholeWordIn(needle, haystack)) return true;
     }
   }
-  return best;
+  return false;
+}
+
+/** True when `needle` is a whole word of `haystack`, so "Dubai" matches "Bur Dubai" but not "Dubailand". */
+function isWholeWordIn(needle: string, haystack: string): boolean {
+  const target = normalise(needle);
+  if (target.length === 0) return false;
+  return normalise(haystack)
+    .split(/[^\p{L}\p{N}]+/u)
+    .includes(target);
 }
 
 /** A readable country name, falling back to the code if the browser cannot name it. */

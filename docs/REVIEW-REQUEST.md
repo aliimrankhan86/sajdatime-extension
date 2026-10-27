@@ -40,7 +40,7 @@ This is Step 1 of [`docs/BUILD-NEXT.md`](BUILD-NEXT.md): "Use my location" names
 
 The READY review of the Step 1 and security commits left three P2s, fixed in one commit:
 
-- **A located point is named by the city, not its district.** `placeFromGeolocation` now takes the most populous bundled city within 15 kilometres (`largestCityWithin`), falling back to `nearestCity` when none is inside the radius. Central Paris was being named "Paris 04 Hôtel-de-Ville" and central Dubai "Dubai International Financial Centre". `tests/unit/place.test.ts` pins Paris, Dubai, London and Leeds from the shipped list, plus the nearest fallback.
+- **A located point is named by the city, not its district.** `placeFromGeolocation` takes the nearest bundled city that is not a section (feature code `PPLX`), then promotes its name to a larger city only when the larger city's name is a whole word inside it ("Paris" in "Paris 04 Hôtel-de-Ville", "Dubai" in "Bur Dubai"), it shares the country, it is within 20 kilometres and it has at least ten times the population. Central Paris is named "Paris" and central Dubai "Dubai" without a radius search, while Bradford, Dewsbury and Kehl keep their own names. The earlier most-populous-within-15-km rule is rejected because it named Bradford and Dewsbury "Leeds" and Kehl "Strasbourg, France"; the rejected options are recorded in D-021. `tests/unit/place.test.ts` pins Paris, Dubai, Bradford, Dewsbury, Kehl, London, Leeds and Ilford from the shipped list.
 - **The dead, inaccurate error branch is gone.** `placeFromGeolocation` never rejects, so the `.catch` that said "We could not read your location" after a position had been read was unreachable and its wording was wrong. It is removed from both `Popup.tsx` and `LocationSheet.tsx`.
 - **Close commits the found place.** On the "Location found" panel, the header's close control and Escape now save the place exactly as Done does, instead of discarding it. `tests/e2e/location-found.test.ts` drives the Settings sheet, presses Close and asserts the stored place is Leeds.
 
@@ -88,8 +88,8 @@ To look by hand, open `chrome://extensions`, enable Developer mode, choose **Loa
 
 ## Evidence in this commit
 
-`npm run check`: 10 unit files, 105 tests passed, strict typecheck passed, production build passed, then the bundle scan passed.
-`npm run test:e2e`: 34 tests passed.
+`npm run check`: 10 unit files, 120 tests passed, strict typecheck passed, production build passed, then the bundle scan passed.
+`npm run test:e2e`: 35 tests passed.
 
 | Test file | What it covers |
 | --- | --- |
@@ -99,8 +99,8 @@ To look by hand, open `chrome://extensions`, enable Developer mode, choose **Loa
 | `tests/unit/settings.test.ts` | Validators: unknown method, coordinates outside the world, unknown time zone, a place name over 200 characters |
 | `tests/unit/manifest.test.ts` | The manifest lock: exact keys, exact permissions, the content security policy, no route from a web page |
 | `tools/check-bundle.mjs` | `docs/SECURITY.md` R3, R6, R7 and R8 over `dist/` and `src/` |
-| `tests/unit/cities.test.ts` | City file parsing, search, country names, the nearest city for Leeds and Karachi, and great circle distance |
-| `tests/unit/place.test.ts` | A place from a browser fix: the city name and country with the browser coordinates, "Near" past 50 kilometres, and the fallback when there is no city |
+| `tests/unit/cities.test.ts` | City file parsing, search, country names, the nearest city for Leeds and Karachi, the section skip, the promotion rule and great circle distance |
+| `tests/unit/place.test.ts` | A place from a browser fix: the promoted city name and country with the browser coordinates, "Near" past 50 kilometres, and the fallback when there is no city |
 | `tests/e2e/popup.test.ts` | Times, 200 percent zoom, countdown tick, 12-hour language, tomorrow Fajr, first run with the location confirmation, a stored name that is markup shown as text, Makkah fallback, Settings, city search, method persistence |
 | `tests/e2e/location-found.test.ts` | The confirmation in the Settings Location sheet with Done, and a city list aborted in the browser, which still saves My location |
 | `tests/e2e/audit.test.ts` | Asr school, method change, place change, dark link contrast, keyboard focus and Escape, focus after a save |

@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { parseCityData, type City } from '../../src/core/cities';
-import { cityForLocation, placeFromBrowser } from '../../src/settings/place';
+import { nearestCity, parseCityData, preferredCityName, type City } from '../../src/core/cities';
+import { placeFromBrowser } from '../../src/settings/place';
 
 const LEEDS: City = {
   name: 'Leeds',
@@ -10,6 +10,7 @@ const LEEDS: City = {
   longitude: -1.55,
   timeZone: 'Europe/London',
   population: 536_280,
+  section: false,
 };
 
 /** On the equator, so one degree of latitude is a plain 111.19 kilometres. */
@@ -20,6 +21,7 @@ const NOWHERE: City = {
   longitude: 0,
   timeZone: 'UTC',
   population: 1,
+  section: false,
 };
 
 describe('a place from the browser', () => {
@@ -65,40 +67,42 @@ function bundledCities(): City[] {
 describe('the city a located point is named after', () => {
   const bundled = bundledCities();
 
-  it('names Paris for its centre, not one of its arrondissements', () => {
-    expect(cityForLocation(48.8566, 2.3522, bundled)?.name).toBe('Paris');
+  /** The name the shipped rule gives a point, after promoting a district to its city. */
+  function nameFor(latitude: number, longitude: number): string | undefined {
+    const nearest = nearestCity(latitude, longitude, bundled);
+    return nearest ? preferredCityName(nearest, latitude, longitude, bundled) : undefined;
+  }
+
+  it('names London', () => {
+    expect(nameFor(51.5074, -0.1278)).toBe('London');
   });
 
-  it('names Dubai for its centre, not a district of it', () => {
-    expect(cityForLocation(25.2048, 55.2708, bundled)?.name).toBe('Dubai');
+  it('names Leeds', () => {
+    expect(nameFor(53.8008, -1.5491)).toBe('Leeds');
   });
 
-  it('still names London', () => {
-    expect(cityForLocation(51.5074, -0.1278, bundled)?.name).toBe('London');
+  it('names Bradford, not the larger nearby Leeds', () => {
+    expect(nameFor(53.7939, -1.7521)).toBe('Bradford');
   });
 
-  it('still names Leeds', () => {
-    expect(cityForLocation(53.8, -1.55, bundled)?.name).toBe('Leeds');
+  it('names Dewsbury', () => {
+    expect(nameFor(53.6908, -1.6291)).toBe('Dewsbury');
   });
 
-  it('keeps the nearest city when nothing is within 15 kilometres', () => {
-    const far: City = {
-      name: 'Far',
-      countryCode: 'GB',
-      latitude: 1,
-      longitude: 0,
-      timeZone: 'UTC',
-      population: 1_000,
-    };
-    const farther: City = {
-      name: 'Farther',
-      countryCode: 'GB',
-      latitude: 2,
-      longitude: 0,
-      timeZone: 'UTC',
-      population: 2_000,
-    };
-    // One degree of latitude is about 111 kilometres, so neither is within the radius.
-    expect(cityForLocation(0, 0, [farther, far])?.name).toBe('Far');
+  it('names Paris, not the arrondissement', () => {
+    expect(nameFor(48.8566, 2.3522)).toBe('Paris');
+  });
+
+  it('names Dubai, not the Bur Dubai district', () => {
+    expect(nameFor(25.2048, 55.2708)).toBe('Dubai');
+  });
+
+  it('names Kehl in Germany, not Strasbourg across the Rhine', () => {
+    expect(nearestCity(48.5726, 7.8146, bundled)?.countryCode).toBe('DE');
+    expect(nameFor(48.5726, 7.8146)).toBe('Kehl');
+  });
+
+  it('names Ilford, not London, because London is not a word inside Ilford', () => {
+    expect(nameFor(51.55765, 0.07278)).toBe('Ilford');
   });
 });

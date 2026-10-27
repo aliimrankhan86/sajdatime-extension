@@ -30,6 +30,9 @@ for (const line of readFileSync(source, 'utf8').split('\n')) {
     longitude: Number(fields[5]),
     timeZone: fields[17],
     population,
+    // GeoNames' feature code marks a section of a populated place, such as a borough,
+    // a quarter or a district of a city. The nearest non-section names a located point.
+    section: fields[7] === 'PPLX',
   });
 }
 rows.sort((a, b) => b.population - a.population);
@@ -50,9 +53,13 @@ const data = {
     Math.round(row.longitude * 100) / 100,
     timeZoneIndex.get(row.timeZone),
     row.population,
+    row.section ? 1 : 0,
   ]),
 };
 
 const target = resolve('public/data/cities.json');
 writeFileSync(target, JSON.stringify(data));
-console.log(`${target}: ${data.cities.length} places, ${timeZones.length} time zones, ${countries.length} countries`);
+const sections = rows.filter((row) => row.section).length;
+console.log(
+  `${target}: ${data.cities.length} places (${sections} sections), ${timeZones.length} time zones, ${countries.length} countries`,
+);
