@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SajdaTime privacy policy</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --paper: #f7f5ef;
+    --surface: #ffffff;
+    --ink: #1b1f1d;
+    --muted: #5f6963;
+    --line: #d9dfd9;
+    --accent: #0b5a43;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #101412;
+      --surface: #171c19;
+      --ink: #e7ece8;
+      --muted: #a9b3ad;
+      --line: #2d3530;
+      --accent: #7fd1b0;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { background: var(--paper); }
+  body {
+    margin: 0 auto;
+    max-width: 720px;
+    padding: 48px 24px 72px;
+    color: var(--ink);
+    background: var(--paper);
+    font: 16px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  h1 { font-size: 32px; line-height: 1.2; margin: 0 0 8px; letter-spacing: -0.01em; }
+  h2 { font-size: 20px; line-height: 1.3; margin: 36px 0 8px; }
+  p, li { margin: 0 0 12px; }
+  ul { padding-left: 22px; }
+  .date { color: var(--muted); margin-bottom: 32px; }
+  .lead { font-size: 18px; }
+  a { color: var(--accent); text-underline-offset: 2px; }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 20px 22px;
+    margin: 24px 0;
+  }
+  code { font-size: 14px; }
+  footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--line); color: var(--muted); font-size: 14px; }
+</style>
+</head>
+<body>
+<h1>SajdaTime privacy policy</h1>
+<p class="date">For the SajdaTime browser extension for Chrome and Edge. Last updated 27 October 2026.</p>
+
+<p class="lead">SajdaTime shows prayer times in your browser. It is made to work without an account, without ads and without sending your information to a server.</p>
+
+<div class="card">
+  <strong>The short version.</strong> Your place and settings are saved on this computer. The extension makes no network requests. It has no analytics and no advertising. When you choose <strong>Use my location</strong>, the browser supplies the coordinates and SajdaTime keeps them in local storage. SajdaTime does not send them anywhere.
+</div>
+
+<h2>What SajdaTime stores</h2>
+<p>The extension uses the browser's local extension storage, <code>chrome.storage.local</code>, for:</p>
+<ul>
+  <li>the place you chose, including its name, latitude, longitude, time zone and country code,</li>
+  <li>your calculation method, Asr school and Hijri date shift,</li>
+  <li>your alert choice and other display settings when those screens are added.</li>
+</ul>
+<p>This information stays in the browser profile on the computer where you installed the extension. It is not synced to your Google account by SajdaTime. Uninstalling the extension removes its local storage, subject to the browser's own behaviour.</p>
+
+<h2>Location</h2>
+<p>Location is optional. You can use the extension without granting it. If you choose <strong>Use my location</strong>, the browser asks for permission and passes SajdaTime a latitude and longitude. SajdaTime stores those coordinates locally so it can work out prayer times for your place.</p>
+<p>Prayer times are calculated on the computer. SajdaTime does not send the coordinates to any server of its own or of anyone else.</p>
+<p>The browser's own location service is separate from SajdaTime. Depending on your browser, operating system and settings, it may use wifi, mobile networks or a network location service to estimate where you are. SajdaTime does not control that service and cannot promise that the coordinates the browser gives it were worked out without a network request.</p>
+
+<h2>What SajdaTime does not do</h2>
+<ul>
+  <li>No accounts, sign in or profile.</li>
+  <li>No analytics, crash reporting or usage counts.</li>
+  <li>No advertising, tracking pixels or advertising identifiers.</li>
+  <li>No selling or sharing of personal information.</li>
+  <li>No remote code. The files that run are the files installed with the extension.</li>
+  <li>No reading of the pages you visit. The extension has no content scripts and no host permissions.</li>
+</ul>
+
+<h2>Permissions</h2>
+<p>The extension asks only for what the visible features need:</p>
+<ul>
+  <li><strong>storage</strong> for the place and settings described above,</li>
+  <li><strong>geolocation</strong> so <strong>Use my location</strong> can work when you choose it,</li>
+  <li><strong>alarms</strong> and <strong>notifications</strong> for prayer alerts, which are not enabled yet,</li>
+  <li><strong>offscreen</strong> for playing the adhan, which is not enabled yet.</li>
+</ul>
+<p>SajdaTime does not ask for access to your tabs, your browsing history, your bookmarks or the content of any web page.</p>
+
+<h2>Third parties</h2>
+<p>The extension bundles the adhan-js prayer time library. It runs locally. SajdaTime uses no third party analytics, advertising or cloud service.</p>
+<p>If you install SajdaTime from the Chrome Web Store or the Microsoft Edge Add-ons store, the store operator processes the install and may collect information under its own privacy policy. That is outside SajdaTime's control.</p>
+
+<h2>Children</h2>
+<p>SajdaTime is a general audience utility. It does not knowingly collect information from anyone, including children.</p>
+
+<h2>Changes</h2>
+<p>If this policy changes, the updated version will appear on this page with a new date at the top. A change that affects what is stored or sent will also be described in the extension's release notes.</p>
+
+<h2>Who is responsible</h2>
+<p>SajdaTime is made by Ali Imran Khan. Questions about privacy can be raised at <a href="https://github.com/aliimrankhan86/sajdatime-extension/issues">github.com/aliimrankhan86/sajdatime-extension/issues</a>. That page is public, so please do not put private information there.</p>
+
+<footer>SajdaTime is a separate product from the SajdaTime Android app and has its own policy.</footer>
+</body>
+</html>

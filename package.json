@@ -1,0 +1,41 @@
+{
+  "name": "sajdatime-extension",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Prayer times in a Chrome or Edge popup. No account, no ads, no tracking.",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "vite build",
+    "build:watch": "vite build --watch",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "npm run build && playwright test",
+    "check": "npm run typecheck && npm run test && npm run build",
+    "icons": "node tools/make-icons.mjs",
+    "package": "npm run build && mkdir -p artifacts && rm -f artifacts/sajdatime-$npm_package_version.zip && cd dist && zip -qr ../artifacts/sajdatime-$npm_package_version.zip . -x \"*.DS_Store\""
+  },
+  "dependencies": {
+    "adhan": "4.4.6",
+    "preact": "^10.27.2"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.1",
+    "@types/chrome": "^0.1.31",
+    "@types/node": "^24.7.2",
+    "typescript": "^5.9.3",
+    "vite": "^7.1.9",
+    "vitest": "^3.2.4"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aliimrankhan86/sajdatime-extension.git"
+  },
+  "homepage": "https://github.com/aliimrankhan86/sajdatime-extension#readme",
+  "bugs": {
+    "url": "https://github.com/aliimrankhan86/sajdatime-extension/issues"
+  }
+}
