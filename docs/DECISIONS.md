@@ -130,7 +130,7 @@ A decision is added here in the same commit that makes it. Each entry says what 
 
 **Why:** PLAN.md asks for two places to be kinder to privacy. Six or seven decimal places describe a building; two describe a neighbourhood, which is all prayer times need.
 
-**Revisit if:** city search replaces the browser fix and stores a city centre instead.
+**Revisit if:** a place needs finer than two decimal places, which no prayer time does. City search also rounds the city centre to two places.
 
 ## D-015: The countdown is written as "9 h 23 m 59 s"
 
@@ -139,3 +139,27 @@ A decision is added here in the same commit that makes it. Each entry says what 
 **Why:** the spaced form is easier to read at a glance in a small popup, and it fits the available width. The plan's compact form saves space but reads like a timer on a machine, not a prayer time.
 
 **Revisit if:** a later layout gives the countdown a wider column and the shorter form becomes the calmer choice.
+
+## D-016: City search uses a bundled GeoNames list, not a network API
+
+**Decided:** a built-in city list backs "find a place". It is GeoNames `cities5000`, about 70,000 places with coordinates, country and time zone, packed as a compact JSON file shipped with the extension and fetched through `chrome.runtime.getURL`.
+
+**Why:** the plan allows a built-in list and rules out a network call. GeoNames `cities5000` is the largest freely usable set that still fits a popup search. It is CC BY 4.0, credited in `THIRD-PARTY-NOTICES.txt`, in Settings and in the README.
+
+**Revisit if:** the packed size grows, or users need Urdu and Arabic names or a "near this town" fallback for places outside the list.
+
+## D-017: The Settings screen is a sheet reached from a visible button in the Times header
+
+**Decided:** the Times header carries a solid Settings button, not the plan's footer button.
+
+**Why:** the popup is 380 by 600 and the times list already fills it. A footer button would sit below the fold and would not be visible without scrolling, which Ali asked to avoid. The header button is seen the moment the popup opens. It is the only icon-like control in that row, so the no-two-icon-buttons rule still holds.
+
+**Revisit if:** the Times screen is redesigned with room in the footer.
+
+## D-018: The disclaimer is a first row in Settings that opens on tap
+
+**Decided:** Settings opens with a Disclaimer row whose summary is "A helper, not a religious authority. Worth reading." Tapping it reveals the full text.
+
+**Why:** the phone keeps the disclaimer as the first row of Settings, About, and never shows the whole paragraph at first launch. A popup this small cannot show the full text and the controls at once. The summary keeps the warning visible and one tap opens the full text, which keeps all four substance points and the closing dua.
+
+**Revisit if:** the settings screen is redesigned with more room, or the full first-run journey gives the disclaimer its own step.

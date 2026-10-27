@@ -1,6 +1,6 @@
 SajdaTime third-party notices
 
-This extension bundles the following open source libraries. Both are MIT licensed.
+This extension bundles the following open source libraries and data. adhan-js and Preact are MIT licensed. The city data is CC BY 4.0.
 
 adhan-js 4.4.6
 Copyright (c) 2016 Batoul Apps
@@ -9,6 +9,11 @@ https://github.com/batoulapps/adhan-js
 Preact 10.29.8
 Copyright (c) 2015-present Jason Miller
 https://github.com/preactjs/preact
+
+GeoNames cities5000
+Contains data from GeoNames, licensed under the Creative Commons Attribution 4.0 International License.
+https://www.geonames.org/
+https://creativecommons.org/licenses/by/4.0/
 
 MIT License
 

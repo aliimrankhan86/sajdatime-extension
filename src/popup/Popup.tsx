@@ -11,9 +11,13 @@ import {
   type Prayer,
   type PrayerSlot,
 } from '../core';
+import type { City } from '../core/cities';
 import { firstSettings } from '../settings/create';
+import { MAKKAH, placeFromBrowser, placeFromCity } from '../settings/place';
 import { clearSettings, loadSettings, saveSettings, watchSettings } from '../settings/storage';
-import type { Place, Settings } from '../settings/types';
+import type { Settings } from '../settings/types';
+import { CitySearch } from './CitySearch';
+import { Settings as SettingsScreen } from './Settings';
 
 const HIJRI_MONTHS = [
   'Muharram',
@@ -60,6 +64,7 @@ function formatCountdown(target: Date, now: Date): string {
 
 export function Popup() {
   const [settings, setSettings] = useState<Settings | null | undefined>(undefined);
+  const [screen, setScreen] = useState<'times' | 'settings'>('times');
 
   useEffect(() => {
     let alive = true;
@@ -97,7 +102,17 @@ export function Popup() {
       .then(() => setSettings(null));
   }
 
-  return <Times settings={settings} onReset={resetPlace} />;
+  if (screen === 'settings') {
+    return (
+      <SettingsScreen
+        settings={settings}
+        onClose={() => setScreen('times')}
+        onSaved={setSettings}
+      />
+    );
+  }
+
+  return <Times settings={settings} onReset={resetPlace} onOpenSettings={() => setScreen('settings')} />;
 }
 
 function FirstRun({ onSaved }: { onSaved: (settings: Settings) => void }) {
@@ -113,13 +128,11 @@ function FirstRun({ onSaved }: { onSaved: (settings: Settings) => void }) {
     setBusy(true);
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        const place: Place = {
-          name: 'My location',
-          latitude: Math.round(position.coords.latitude * 100) / 100,
-          longitude: Math.round(position.coords.longitude * 100) / 100,
-          timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
-          countryCode: 'ZZ',
-        };
+        const place = placeFromBrowser(
+          position.coords.latitude,
+          position.coords.longitude,
+          Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
+        );
         const next = firstSettings(place);
         saveSettings(next)
           .then(() => {
@@ -139,17 +152,25 @@ function FirstRun({ onSaved }: { onSaved: (settings: Settings) => void }) {
     );
   }
 
+  function useCity(city: City) {
+    setError(null);
+    setBusy(true);
+    const next = firstSettings(placeFromCity(city));
+    saveSettings(next)
+      .then(() => {
+        setBusy(false);
+        onSaved(next);
+      })
+      .catch(() => {
+        setBusy(false);
+        setError('Your place could not be saved. Try again.');
+      });
+  }
+
   function useMakkah() {
     setError(null);
     setBusy(true);
-    const place: Place = {
-      name: 'Makkah',
-      latitude: 21.4225,
-      longitude: 39.8262,
-      timeZone: 'Asia/Riyadh',
-      countryCode: 'SA',
-    };
-    const next = firstSettings(place);
+    const next = firstSettings(MAKKAH);
     saveSettings(next)
       .then(() => {
         setBusy(false);
@@ -172,8 +193,9 @@ function FirstRun({ onSaved }: { onSaved: (settings: Settings) => void }) {
         {busy ? 'Finding your place...' : 'Use my location'}
       </button>
       <p class="welcome-note">
-        SajdaTime does not send your location anywhere. There is no account and no ads.
+        SajdaTime keeps your location on this computer. There is no account and no ads.
       </p>
+      <CitySearch onPick={useCity} disabled={busy} />
       {error ? (
         <>
           <p class="error" role="alert">
@@ -189,7 +211,15 @@ function FirstRun({ onSaved }: { onSaved: (settings: Settings) => void }) {
   );
 }
 
-function Times({ settings, onReset }: { settings: Settings; onReset: () => void }) {
+function Times({
+  settings,
+  onReset,
+  onOpenSettings,
+}: {
+  settings: Settings;
+  onReset: () => void;
+  onOpenSettings: () => void;
+}) {
   const [now, setNow] = useState(() => new Date());
 
   useEffect(() => {
@@ -245,7 +275,12 @@ function Times({ settings, onReset }: { settings: Settings; onReset: () => void 
   return (
     <main>
       <header class="hero">
-        <p class="brand">SajdaTime</p>
+        <div class="hero-top">
+          <p class="brand">SajdaTime</p>
+          <button class="header-button" type="button" onClick={onOpenSettings}>
+            Settings
+          </button>
+        </div>
         <h1 class="place">{settings.place.name}</h1>
         {hijri ? <p class="hijri">{hijri}</p> : null}
       </header>

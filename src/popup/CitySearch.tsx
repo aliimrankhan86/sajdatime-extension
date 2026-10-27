@@ -1,0 +1,95 @@
+import { useState } from 'preact/hooks';
+import { countryName, loadCities, searchCities, type City } from '../core/cities';
+
+interface Props {
+  onPick: (city: City) => void;
+  disabled?: boolean;
+}
+
+/**
+ * An offline town search. The list is loaded only when the field is first used, so a
+ * person who allows location never waits for three megabytes they do not need.
+ */
+export function CitySearch({ onPick, disabled = false }: Props) {
+  const [query, setQuery] = useState('');
+  const [cities, setCities] = useState<City[] | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  function ensureLoaded() {
+    if (cities || loading) return;
+    setLoading(true);
+    loadCities()
+      .then((list) => {
+        setCities(list);
+        setLoading(false);
+      })
+      .catch(() => {
+        setError('The town list could not be read. Try using your location instead.');
+        setLoading(false);
+      });
+  }
+
+  function change(value: string) {
+    setQuery(value);
+    ensureLoaded();
+  }
+
+  const trimmed = query.trim();
+  const results = cities && trimmed.length >= 2 ? searchCities(cities, trimmed) : [];
+  const locale = navigator.language || 'en-GB';
+
+  return (
+    <div class="city-search">
+      <label class="field-label" for="city-search">
+        Or find a place
+      </label>
+      <input
+        class="search-input"
+        id="city-search"
+        type="search"
+        value={query}
+        disabled={disabled}
+        autocomplete="off"
+        spellcheck={false}
+        aria-controls="city-results"
+        onFocus={ensureLoaded}
+        onInput={(event) => change(event.currentTarget.value)}
+      />
+      <p class="field-hint" id="city-hint">
+        {trimmed.length === 1
+          ? 'Type one more letter.'
+          : error
+            ? error
+            : loading
+              ? 'Loading places...'
+              : trimmed.length === 0
+                ? 'Type the name of your town or city.'
+                : results.length === 0
+                  ? 'No place found. Try a larger town nearby.'
+                  : `${results.length} ${results.length === 1 ? 'place' : 'places'} found.`}
+      </p>
+      {results.length > 0 ? (
+        <ul class="city-results" id="city-results" aria-label="Places found">
+          {results.map((city) => (
+            <li key={`${city.name}-${city.countryCode}-${city.latitude}-${city.longitude}`}>
+              <button
+                class="city-result"
+                type="button"
+                disabled={disabled}
+                onClick={() => onPick(city)}
+              >
+                <span class="city-name">{city.name}</span>
+                <span class="city-country">{countryName(city.countryCode, locale)}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p class="sr-only" role="status">
+          {loading ? 'Loading places.' : ''}
+        </p>
+      )}
+    </div>
+  );
+}

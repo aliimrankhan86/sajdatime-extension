@@ -27,13 +27,14 @@ Limit: 16,000 characters on Chrome. Edge allows 250 to 10,000.
 > - Fajr, Sunrise, Dhuhr, Asr, Maghrib and Isha for your place.
 > - The next prayer with a countdown that updates every second.
 > - The Hijri date from the Umm al-Qura calendar.
-> - A method chosen for your country, and a clear fallback to Makkah if you would rather not share your location.
+> - A place chosen from your location or an offline search of about 70,000 towns and cities, with a clear fallback to Makkah.
+> - A Settings screen for your place, 13 calculation methods, the Hanafi or Shafi'i Asr school, and a Hijri date shift.
 > - Light and dark themes that follow your computer.
 > - A popup designed to fit without scrolling, with large readable times.
 >
 > **Private by design**
 >
-> SajdaTime makes no network requests. Prayer times are worked out on your computer with the open source adhan-js library. There is no account, no advertising, no analytics and no remote code.
+> SajdaTime makes no network requests. Prayer times are worked out on your computer with the open source adhan-js library. The city list is built into the extension, so searching a town is also offline. There is no account, no advertising, no analytics and no remote code.
 >
 > Your place and settings are stored in your browser's local extension storage. When you choose **Use my location**, the browser supplies the coordinates and SajdaTime keeps them on your computer. SajdaTime does not send them anywhere.
 >
@@ -45,7 +46,7 @@ Limit: 16,000 characters on Chrome. Edge allows 250 to 10,000.
 >
 > **Coming next**
 >
-> A settings screen to choose from 13 calculation methods, the Hanafi or Shafi'i Asr school, and a Hijri date shift. Prayer alerts, a countdown badge, a Ramadan timetable, and Urdu, Arabic, Turkish and Indonesian. The listing will be updated when those are ready. Do not install this build expecting them yet.
+> Prayer alerts, a countdown badge, a Ramadan timetable, and Urdu, Arabic, Turkish and Indonesian. The listing will be updated when those are ready. Do not install this build expecting them yet.
 
 ## What is new
 
@@ -94,11 +95,11 @@ Chrome needs at least one, up to five, at 1280 by 800. Edge accepts the same set
 
 1. **Times, light.** The whole popup, next prayer and countdown. Caption: "The next prayer, the whole day, and a quiet countdown."
 2. **Times, dark.** The same screen in dark mode. Caption: "Follows your computer's light or dark theme."
-3. **First run.** The location step. Caption: "One tap to use your location. Nothing is sent anywhere."
-4. **Settings.** Method and Asr school. Caption: "13 methods, Hanafi or Shafi'i Asr."
+3. **First run.** The location step with city search. Caption: "Use your location, or find a town offline."
+4. **Settings.** Method and Asr school. Caption: "13 methods, Hanafi or Shafi'i Asr, and a place of your choice."
 5. **Ramadan.** The timetable month. Caption: "A Ramadan timetable that prints." **Only when that screen exists.**
 
-Until screenshot 5 is real, use a fourth screenshot of the About and disclaimer screen, or submit four.
+Until screenshot 5 is real, submit the four that exist. The store needs at least one.
 
 ## Promotional images
 
@@ -114,7 +115,7 @@ At submission: English first. Add Arabic, Turkish and Indonesian once the UI has
 
 Short note in the submission form:
 
-> SajdaTime calculates prayer times locally with adhan-js. It makes no network requests, has no analytics and no ads. Location is used only after the user presses "Use my location" and is stored in local extension storage. If the user refuses location, the extension offers Makkah as a clearly labelled fallback. The privacy policy explains local storage and the browser's own location service.
+> SajdaTime calculates prayer times locally with adhan-js. It makes no network requests, has no analytics and no ads. Location is used only after the user presses "Use my location" and is stored in local extension storage. If the user refuses location, the extension offers a built-in offline city search and a clearly labelled Makkah fallback. The privacy policy explains local storage and the browser's own location service.
 
 This build asks only for `storage` and `geolocation`. Alarm, notification and audio permissions are added with the first working alert, not before.
 

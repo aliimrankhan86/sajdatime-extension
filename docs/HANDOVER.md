@@ -1,12 +1,12 @@
 # Handover
 
-**Updated:** 27 October 2026, afternoon, Europe/London.
+**Updated:** 27 October 2026, late afternoon, Europe/London.
 
 This file says what is true now. It is written for the next person or AI who opens the repository. Read it before the plan. The plan describes the whole build. This file describes the part that exists.
 
 ## Where this is
 
-The repository was empty on 27 October 2026. It now has a working scaffold, a tested prayer engine, and a Times popup that opens in Chrome. It is **not in any store**. Version 0.1.0 in the manifest is a development version.
+The repository was empty on 27 October 2026. It now has a working scaffold, a tested prayer engine, a Times popup, city search and a Settings screen. It is **not in any store**. Version 0.1.0 in the manifest is a development version.
 
 The Chrome Web Store developer account is open. The Edge Partner Center account is not. Ali opens accounts and presses Submit. Nobody else handles his credentials or payment.
 
@@ -15,12 +15,14 @@ The Chrome Web Store developer account is open. The Edge Partner Center account 
 | Area | State | Evidence |
 | --- | --- | --- |
 | Manifest V3 extension | Loads in Chrome for Testing | Playwright launches it with `--load-extension=dist` and finds the popup |
-| Prayer engine | 13 methods, both Asr schools, polar projection and correction clamp | `npm test`: 59 unit tests pass |
+| Prayer engine | 13 methods, both Asr schools, polar projection and correction clamp | `npm test`: 70 unit tests pass |
 | Golden values | Four phone fixtures pinned, plus 13 broad Aladhan sanity fixtures | `tests/unit/engine.test.ts`, `tests/unit/aladhan.test.ts` |
 | Hijri calendar | Umm al-Qura, shift, Ramadan windows, Eids | `tests/unit/hijri.test.ts` |
 | Method suggestion | Country table and Shia rule | `tests/unit/suggestions.test.ts` |
-| Popup | Place, Hijri date, next prayer, countdown, six times, 253 pixel viewport | Playwright screenshot and seven end-to-end tests |
-| First run | Location, method suggestion, save, show times | Playwright test with a supplied fix |
+| City search | Offline GeoNames city list, search and pick | `tests/unit/cities.test.ts`, Playwright first-run test |
+| Popup | Place, Hijri date, next prayer, countdown, six times, 253 pixel viewport, visible Settings button | Playwright screenshots and ten end-to-end tests |
+| First run | Location, city search, method suggestion, save, show times | Playwright tests with a supplied geolocation fix |
+| Settings | Place change, method, Asr school, Hijri shift, disclaimer, privacy link | Playwright tests |
 | Light and dark | Both themes from `tokens.css` | Screenshots in `docs/images/` |
 | Build | Production bundle in `dist/` | `npm run build` |
 | TypeScript | Strict, no errors | `npm run typecheck` |
@@ -29,9 +31,9 @@ Commands actually run on 27 October 2026:
 
 ```text
 npm run typecheck    pass
-npm test             6 files, 59 tests passed
+npm test             7 files, 70 tests passed
 npm run build        pass, dist/manifest.json and the popup bundle written
-npm run test:e2e     7 tests passed
+npm run test:e2e     10 tests passed
 ```
 
 The end-to-end suite uses Chrome for Testing at:
@@ -44,11 +46,11 @@ That path is machine-specific. Change it in `tests/e2e/extension.ts` if the brow
 
 ## What is not built
 
-- A settings screen, city search, and changing the place after first run.
+- The full first run journey: the school and madhab steps, a language choice and the six-step sequence in the plan.
 - Prayer alerts, the countdown badge, offscreen audio and the late-alarm rule.
 - Ramadan notices, the suhoor timer, Eid notices and the timetable page.
 - Urdu, Arabic, Turkish and Indonesian, with right-to-left layout and the Arabic Western-digit rule.
-- Store screenshots, the final listing, the hosted privacy URL and the zipped builds.
+- Store screenshots, the final listing, and the zipped builds. Two early screenshots exist in `docs/images/` but are not the store set.
 - A second browser test for Edge. Playwright cannot load an extension into Edge, so Edge gets a manual load and a short check later.
 - An automated GitHub Actions workflow. The file exists locally at `.github/workflows/ci.yml` but is not in the repository: this Mac's GitHub login lacks the `workflow` scope, and the keyring refused the refresh. The local checks above are the evidence for now. After `gh auth refresh -s workflow` succeeds in a normal Terminal, remove the path from `.git/info/exclude`, commit the workflow and push it. Do not claim CI is green before it has actually run.
 
@@ -56,28 +58,31 @@ That path is machine-specific. Change it in `tests/e2e/extension.ts` if the brow
 
 - The real browser permission bubble for geolocation is not automated. The end-to-end test supplies a known fix through `navigator.geolocation` and checks that the extension saves it. The banner and the real prompt still need a manual look.
 - The popup was tested at 380 by 600 and at 253 by 600, which is what 150 percent browser zoom gives. 200 percent zoom and other window sizes are not tested yet.
-- The first run uses the computer's time zone. A city search later will use the city's zone.
+- The first run uses the computer's time zone when it reads the browser's location. A city chosen by name uses the city's own time zone.
+- City search matches Latin names only. Urdu and Arabic names, local regions and a "near" label for remote places are not built.
 - Only English exists. No language switcher, no right-to-left test.
 - No accessibility audit yet. The markup uses real buttons and labels, but axe and a screen reader have not run.
 - The service worker is nearly empty by design. Do not treat its presence as proof that alarms work.
+- The Settings screen has a disclaimer and place, method, Asr school and Hijri shift. It does not yet have language, theme, alert choice or the full About page.
 
 ## Decisions that must not be undone by accident
 
-Read `docs/DECISIONS.md`. The four that matter most:
+Read `docs/DECISIONS.md`. The five that matter most:
 
 1. This is a separate product from the phone. Do not copy the phone's release notes or store listing into this repo.
 2. High latitude uses `TwilightAngle`, not `recommended`. The plan's line about `recommended` is older than the phone behaviour and would break the London fixtures.
 3. Golden values are the phone engine's values, not the Aladhan numbers in the phone's test file.
 4. No network requests. No host permissions. The privacy words must stay true. The manifest asks only for `storage` and `geolocation` until an alert exists.
+5. City data is bundled and fetched from the extension, never from the internet. It is GeoNames `cities5000` under CC BY 4.0.
 
 ## Next step
 
-The next milestone is the settings and first-run completion step in `docs/PLAN.md`:
+The next milestone is the full first-run journey and the rest of Settings in `docs/PLAN.md`:
 
-- Add **Search for a city** beside **Use my location**.
-- Add the settings sheet: method, madhab, alert choice, Hijri shift, language, theme, about.
-- Put the religious disclaimer in About, first row, with all four substance points and the final dua request.
+- Add the school and madhab steps, a language choice and the six-step sequence to the first run.
+- Add language, theme and alert choice to Settings once an alert exists.
 - Keep the Times popup unchanged while those screens are built.
+- Add the store screenshots and the final listing, then hand Ali the submission checks.
 
 Do not start alarms or the badge until the settings can save an alert choice. The worker should be written once, against a stable settings shape.
 
@@ -89,11 +94,11 @@ npm_config_cache=/tmp/npm-cache npm run check
 npm_config_cache=/tmp/npm-cache npm run test:e2e
 ```
 
-The extension source is in `/tmp` at the moment. Push it to `https://github.com/aliimrankhan86/sajdatime-extension` so it survives a temporary folder cleanup. The remote is public. The initial scaffold should be the first commit.
+The extension source is in `/tmp` at the moment. Push it to `https://github.com/aliimrankhan86/sajdatime-extension` so it survives a temporary folder cleanup. The remote is public.
 
 ## What Ali needs to do
 
-1. Nothing right now except look at the screenshots and say whether the popup feels right.
+1. Look at the screenshots and say whether the popup and Settings feel right.
 2. Later: open the Edge Partner Center account when the Chrome build is close to submission.
 3. At submission: press Submit and Publish himself, after reading the listing and the privacy answers.
 

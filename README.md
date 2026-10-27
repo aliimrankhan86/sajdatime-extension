@@ -4,7 +4,7 @@ Prayer times in a quiet browser popup: Fajr to Isha, a calm countdown, and the H
 
 This is a separate product from the [SajdaTime Android app](https://github.com/aliimrankhan86/SajdaTime). The two share a name and a design language, nothing else.
 
-> **Status: early build.** Version 0.1.0 is not in any store. The engine, the first run and the Times popup work. Settings, alerts, the badge, Ramadan, the five languages and the store listing are still to come. See [the handover](docs/HANDOVER.md) for exactly what is done.
+> **Status: early build.** Version 0.1.0 is not in any store. The engine, the first run, the Times popup, city search and a Settings screen work. Alerts, the badge, Ramadan, the five languages and the store listing are still to come. See [the handover](docs/HANDOVER.md) for exactly what is done.
 
 ![The Times popup in light mode](docs/images/times-light.png)
 
@@ -15,13 +15,14 @@ This is a separate product from the [SajdaTime Android app](https://github.com/a
 - Sunrise, the current prayer and the whole day at a glance.
 - The Hijri date from the Umm al-Qura calendar.
 - A first run that asks for location, then keeps the place on this computer, with a clearly labelled Makkah fallback if location is refused.
+- A built-in city search that works offline, so a town can be typed in and chosen.
+- A Settings screen for the place, calculation method, Asr school, Hijri date shift, the privacy policy and the disclaimer.
 - Light and dark themes that follow the computer.
-- A popup that fits 380 by 600 pixels without scrolling.
+- A Times popup that fits 380 by 600 pixels without scrolling.
 
 ## What is not built yet
 
-- A settings screen, so the calculation method and Asr school cannot be chosen yet. They are selected for the user from the place.
-- City search, and changing the place after first run.
+- The full first run journey with the school and madhab steps and a language choice.
 - Prayer alerts, the countdown badge, and the offscreen audio page.
 - Ramadan notices, the suhoor timer, Eid notices and the timetable page.
 - Urdu, Arabic, Turkish and Indonesian, with right-to-left layout.
@@ -61,7 +62,7 @@ src/background/ service worker (empty until the alerts step)
 src/manifest.json
 tests/unit/     Vitest
 tests/e2e/      Playwright against the built extension
-tools/          icon generation
+tools/          icon generation and city data build
 docs/           plan, decisions, handover, privacy, store copy
 ```
 
@@ -69,7 +70,7 @@ The engine is pure TypeScript and has no DOM dependency. The popup works everyth
 
 ## Privacy
 
-SajdaTime makes no network requests. It has no analytics, no accounts and no remote code. Your place, method and other settings live in `chrome.storage.local` on this computer. When you choose **Use my location**, the browser supplies the coordinates and SajdaTime stores them locally. It does not send them anywhere.
+SajdaTime makes no network requests. It has no analytics, no accounts and no remote code. Your place, method and other settings live in `chrome.storage.local` on this computer. When you choose **Use my location**, the browser supplies the coordinates and SajdaTime stores them locally. It does not send them anywhere. The city list is built into the extension, so searching a town is also offline. City data comes from [GeoNames](https://www.geonames.org/) under CC BY 4.0.
 
 Read the full [privacy policy](docs/privacy.html). The hosted copy is [aliimrankhan86.github.io/sajdatime-extension/privacy.html](https://aliimrankhan86.github.io/sajdatime-extension/privacy.html).
 
@@ -78,7 +79,7 @@ Read the full [privacy policy](docs/privacy.html). The hosted copy is [aliimrank
 - Manifest V3, TypeScript strict, Preact, adhan-js pinned to 4.4.6.
 - Permissions only: `storage`, `geolocation`. Alarm, notification and offscreen permissions arrive with the first working alert. No host permissions, no content scripts, no `tabs`, no remote code.
 - No Qibla. No network. No tracking.
-- The religious disclaimer is never softened or hidden. It arrives with the settings screen.
+- The religious disclaimer is never softened or hidden. It is the first row of Settings, opened by tapping the row.
 - Quiet Glass: solid green pill buttons, white bold text, tabular numbers, nothing below 14 pixels.
 - UK English, plain words, no en or em dashes.
 
