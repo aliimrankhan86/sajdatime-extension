@@ -1,7 +1,7 @@
 # Review request
 
-**Baseline:** [`aliimrankhan86/sajdatime-extension`](https://github.com/aliimrankhan86/sajdatime-extension) at commit `eeac1ad` on `main`.
-**Previous review:** `fab4abb`, code at `c3f39e5`. This commit fixes the three P1s and the first P2 from that pass.
+**Baseline:** [`aliimrankhan86/sajdatime-extension`](https://github.com/aliimrankhan86/sajdatime-extension) at commit `cb92544` on `main`.
+**Previous reviews:** `fab4abb`, code at `c3f39e5`; then `eeac1ad`, which fixed the three P1s from the first pass. This commit does the P2s from the `eeac1ad` pass and records the one new P1 that needs Ali's decision.
 **Date:** 27 October 2026.
 **Reviewer:** Claude, Opus review pass.
 **Owner:** Ali. He presses Submit, Publish, Merge, payment and consent. Do not ask him for credentials.
@@ -21,7 +21,12 @@ The previous pass found that Shia (Jafari and Tehran) days above about 60 degree
 - **First-run wording.** It no longer says the location is "kept" on the computer. It now says SajdaTime does not send the location anywhere and the browser's location service finds it.
 - **Docs.** `DECISIONS.md` D-002 and `HANDOVER.md` now state the separate Shia pass instead of claiming every method mirrors the phone in the same way. The stale "pick this up in /tmp" instructions are gone.
 - **Settings focus.** Controls no longer use native `disabled` while saving. They use `aria-disabled` plus a save guard, so focus stays on the pressed control after a save. A new test presses Enter on Hanafi and on the Hijri stepper and asserts focus.
-- **Smaller P2s.** The Next row no longer carries `aria-current`; row text has spaces so a screen reader does not hear "AsrNow14:12"; a long place name wraps; city search says "Top N places" rather than implying only N exist; the Vite module preload polyfill is off so the bundle has no injected `fetch` helper.
+- **Smaller P2s.** The Next row no longer carries `aria-current`; row text has spaces so a screen reader does not hear "AsrNow14:12"; a long place name wraps; city search says "Top 6 places" only when a seventh match exists; the Vite module preload polyfill is off so the bundle has no injected `fetch` helper.
+- **Second-pass P2s.** The keyboard focus test now waits for the heading before pressing, so it no longer races Preact's focus effect. Times are truncated to the whole minute after corrections and the order clamp, matching the phone. At 200 percent zoom the Hijri minus and plus stack instead of sitting side by side. `CLAUDE.md` no longer lists permissions the manifest does not use, the plan points at D-002 instead of the superseded `maghribAngle` build, and the Java probe that produced the Oslo and Trondheim values is committed under `tools/adhan-probe`.
+
+## Open P1 from the second review
+
+The second review found that the Shia Maghrib pass caps its result at sunset plus `angle / 60` of the night, even on a summer day when the sun does reach 4 or 4.5 degrees. The phone has the same cap. Above about 52 degrees north this makes the shown Maghrib early: Oslo on 21 June shows 23:05, when the sun is about 2.26 degrees down, rather than the true 4 degree moment near 23:36. This is recorded in D-002 and HANDOVER. It is not changed here because it is religious content and must stay in step with the phone. **Ali has to choose:** use the true angle whenever the sun reaches it, or keep the cap and describe it plainly. Do not treat the current time as confirmed correct for the UK and Scandinavia until he does.
 
 ## What to run
 
@@ -52,7 +57,7 @@ To look by hand, open `chrome://extensions`, enable Developer mode, choose **Loa
 
 ## Evidence in this commit
 
-`npm run check`: 7 unit files, 82 tests passed, strict typecheck passed, production build passed.
+`npm run check`: 7 unit files, 83 tests passed, strict typecheck passed, production build passed.
 `npm run test:e2e`: 25 tests passed.
 
 | Test file | What it covers |
@@ -91,6 +96,7 @@ The 190 pixel Settings screenshot is deliberately tall. It shows the stacked sch
 - A remaining recorded P2: after midnight the Isha row still shows tonight's time with a "Now" pill.
 - A remaining recorded P2: the default method survives a place change if the user never chose one.
 - A remaining recorded P2: the polar note does not name the latitude it borrowed.
+- **Open P1, inherited from the phone:** the Shia Maghrib cap above about 52 degrees north in summer, described above. This is waiting on Ali, not on code.
 - No Edge run, no Windows run and no real screen reader run. These are stated limits.
 - No GitHub Actions workflow. This Mac's `gh` login lacks the `workflow` scope. Local checks are the evidence.
 - The real browser geolocation bubble is mocked in the tests because the extension origin cannot be granted a permission from Playwright.
