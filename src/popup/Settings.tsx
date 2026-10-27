@@ -36,6 +36,7 @@ export function Settings({ settings, onClose, onSaved }: Props) {
   const locale = navigator.language || 'en-GB';
   const title = useRef<HTMLHeadingElement>(null);
   const wasChangingPlace = useRef(false);
+  const saving = useRef(false);
 
   useEffect(() => {
     title.current?.focus();
@@ -60,15 +61,19 @@ export function Settings({ settings, onClose, onSaved }: Props) {
   }, [changingPlace]);
 
   function update(patch: Partial<Omit<SettingsValue, 'version'>>) {
+    if (saving.current) return;
+    saving.current = true;
     setError(null);
     setBusy(true);
     const next: SettingsValue = { ...settings, ...patch, version: 1 };
     saveSettings(next)
       .then(() => {
+        saving.current = false;
         setBusy(false);
         onSaved(next);
       })
       .catch(() => {
+        saving.current = false;
         setBusy(false);
         setError('Your settings could not be saved. Try again.');
       });
@@ -141,8 +146,10 @@ export function Settings({ settings, onClose, onSaved }: Props) {
           <button
             class="compact-button"
             type="button"
-            onClick={() => setChangingPlace(true)}
-            disabled={busy}
+            aria-disabled={busy}
+            onClick={() => {
+              if (!busy) setChangingPlace(true);
+            }}
           >
             Change
           </button>
@@ -160,7 +167,7 @@ export function Settings({ settings, onClose, onSaved }: Props) {
           class="select"
           id="method"
           value={settings.method}
-          disabled={busy}
+          aria-disabled={busy}
           onChange={(event) => update({ method: event.currentTarget.value as MethodId })}
         >
           {METHOD_IDS.map((method) => (
@@ -186,7 +193,7 @@ export function Settings({ settings, onClose, onSaved }: Props) {
               class={settings.madhab === 'shafii' ? 'segment is-selected' : 'segment'}
               type="button"
               aria-pressed={settings.madhab === 'shafii'}
-              disabled={busy}
+              aria-disabled={busy}
               onClick={() => update({ madhab: 'shafii' })}
             >
               Shafi'i
@@ -195,7 +202,7 @@ export function Settings({ settings, onClose, onSaved }: Props) {
               class={settings.madhab === 'hanafi' ? 'segment is-selected' : 'segment'}
               type="button"
               aria-pressed={settings.madhab === 'hanafi'}
-              disabled={busy}
+              aria-disabled={busy}
               onClick={() => update({ madhab: 'hanafi' })}
             >
               Hanafi
@@ -214,8 +221,12 @@ export function Settings({ settings, onClose, onSaved }: Props) {
             class="step-button"
             type="button"
             aria-label="One day earlier"
-            disabled={busy || settings.hijriOffsetDays <= -2}
-            onClick={() => update({ hijriOffsetDays: settings.hijriOffsetDays - 1 })}
+            aria-disabled={busy || settings.hijriOffsetDays <= -2}
+            onClick={() => {
+              if (!busy && settings.hijriOffsetDays > -2) {
+                update({ hijriOffsetDays: settings.hijriOffsetDays - 1 });
+              }
+            }}
           >
             −
           </button>
@@ -228,8 +239,12 @@ export function Settings({ settings, onClose, onSaved }: Props) {
             class="step-button"
             type="button"
             aria-label="One day later"
-            disabled={busy || settings.hijriOffsetDays >= 2}
-            onClick={() => update({ hijriOffsetDays: settings.hijriOffsetDays + 1 })}
+            aria-disabled={busy || settings.hijriOffsetDays >= 2}
+            onClick={() => {
+              if (!busy && settings.hijriOffsetDays < 2) {
+                update({ hijriOffsetDays: settings.hijriOffsetDays + 1 });
+              }
+            }}
           >
             +
           </button>

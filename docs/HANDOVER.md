@@ -17,12 +17,12 @@ An independent review brief for this commit is in [`docs/REVIEW-REQUEST.md`](REV
 | Area | State | Evidence |
 | --- | --- | --- |
 | Manifest V3 extension | Loads in Chrome for Testing | Playwright launches it with `--load-extension=dist` and finds the popup |
-| Prayer engine | 13 methods, both Asr schools, polar projection and correction clamp | `npm test`: 80 unit tests pass |
+| Prayer engine | 13 methods, both Asr schools, polar projection and correction clamp, Shia Maghrib from a separate Twilight Angle pass so a normal Shia day above 60 degrees is not projected | `npm test`: 82 unit tests pass |
 | Golden values | Four phone fixtures pinned, plus 13 broad Aladhan sanity fixtures | `tests/unit/engine.test.ts`, `tests/unit/aladhan.test.ts` |
 | Hijri calendar | Umm al-Qura, shift, Ramadan windows, Eids | `tests/unit/hijri.test.ts` |
 | Method suggestion | Country table and Shia rule | `tests/unit/suggestions.test.ts` |
 | City search | Offline GeoNames city list, search and pick | `tests/unit/cities.test.ts`, Playwright first-run test |
-| Popup | Place, Hijri date, next prayer, countdown, six times, 190 and 253 pixel viewports, visible Settings button, explicit Next and Now pills | Playwright screenshots and 23 end-to-end tests |
+| Popup | Place, Hijri date, next prayer, countdown, six times, 190 and 253 pixel viewports, visible Settings button, explicit Next and Now pills | Playwright screenshots and 25 end-to-end tests |
 | First run | Location, city search, method suggestion, save, show times | Playwright tests with a supplied geolocation fix |
 | Settings | Place change, method, Asr school, Hijri shift, disclaimer, privacy link, keyboard focus and Escape | Playwright tests |
 | Light and dark | Both themes from `tokens.css`, WCAG AA contrast pairs | `tests/unit/contrast.test.ts`, `docs/images/times-dark.png`, `docs/images/settings-dark.png` |
@@ -35,18 +35,18 @@ Commands actually run on 27 October 2026:
 
 ```text
 npm run typecheck    pass
-npm test             7 files, 80 tests passed
+npm test             7 files, 82 tests passed
 npm run build        pass, dist/manifest.json and the popup bundle written
-npm run test:e2e     23 tests passed
+npm run test:e2e     25 tests passed
 ```
 
-The 23 end-to-end tests are five Settings and state tests, five design and responsive tests, three axe tests and ten original popup tests. They run in Chrome for Testing at:
+The 25 end-to-end tests are six Settings and state tests, six design and responsive tests, three axe tests and ten original popup tests. They run in Chrome for Testing at:
 
 ```text
 /Users/aliimrankhan/Library/Caches/ms-playwright/chromium-1223/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing
 ```
 
-That path is machine-specific. Change it in `tests/e2e/extension.ts` if the browser moves.
+That path is one example of where Playwright keeps Chrome for Testing. `tests/e2e/extension.ts` resolves the browser itself from `SAJATIME_CHROME`, `chromium.executablePath()` or the Playwright cache, so a fresh machine needs no edit.
 
 
 ## What is not built
@@ -71,6 +71,7 @@ That path is machine-specific. Change it in `tests/e2e/extension.ts` if the brow
 - The service worker is nearly empty by design. Do not treat its presence as proof that alarms work.
 - The Settings screen has a disclaimer and place, method, Asr school and Hijri shift. It does not yet have language, theme, alert choice or the full About page.
 - The screenshots are review evidence, not the final store set. `docs/store/` still has placeholders.
+- The review also flagged, left for later: the Isha row shows tonight's time with a "Now" pill in the small hours; the default method survives a place change when the user never chose it; an Arabic browser shows Arabic meridian words beside English labels; and the polar note does not name the latitude it borrowed. Each is a known, recorded P2, not a hidden defect.
 
 
 ## Decisions that must not be undone by accident
@@ -97,12 +98,14 @@ Do not start alarms or the badge until the settings can save an alert choice. Th
 ## How to pick this up
 
 ```bash
-cd /tmp/sajdatime-extension
-npm_config_cache=/tmp/npm-cache npm run check
-npm_config_cache=/tmp/npm-cache npm run test:e2e
+git clone https://github.com/aliimrankhan86/sajdatime-extension.git
+cd sajdatime-extension
+npm ci
+npm run check
+npm run test:e2e
 ```
 
-The extension source is in `/tmp` at the moment. Push it to `https://github.com/aliimrankhan86/sajdatime-extension` so it survives a temporary folder cleanup. The remote is public.
+The code lives at `https://github.com/aliimrankhan86/sajdatime-extension` on `main`, public. Do not rebuild it from `/tmp`. `tests/e2e/extension.ts` finds Chrome for Testing by itself through `SAJATIME_CHROME` or Playwright's cache; there is no hard-coded browser path to change.
 
 ## What Ali needs to do
 

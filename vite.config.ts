@@ -26,6 +26,7 @@ export default defineConfig({
     emptyOutDir: true,
     target: 'chrome127',
     sourcemap: false,
+    modulePreload: { polyfill: false },
     rollupOptions: {
       input: {
         popup: resolve(root, 'src/popup/index.html'),

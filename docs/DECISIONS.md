@@ -20,7 +20,9 @@ A decision is added here in the same commit that makes it. Each entry says what 
 
 `AqrabYaum` alone was not enough. adhan-js returns finite but impossible values above the polar circle: on 21 December 2026 it puts Asr before Dhuhr at Tromso, and Asr after Maghrib at Longyearbyen. The hero card then names Maghrib as the next prayer while Asr is still to come. The phone's `isUsable` rejects such a whole day and projects it from a reference latitude. The extension now does the same, and clamps manual corrections so they cannot cross the six times either.
 
-**Evidence:** extension unit tests pin London 10 April 2026 at 04:12 and London 21 June 2026 at 02:31 and 23:27, matching the phone's shipped engine. Tromso and Longyearbyen on 21 December 2026, and McMurdo on 21 June 2026, are polar, finite and strictly ordered. A Dhuhr +30 and Asr -30 correction at 59.9 degrees cannot reverse the day.
+The Shia Maghrib is the one deliberate exception. The phone keeps its ordinary parameters at sunset and computes Jafari (4 degrees) and Tehran (4.5 degrees) from a second Isha-only pass with the Twilight Angle rule. adhan-js's own `maghribAngle` would also feed `isUsable`, and because the Shia Maghrib sits well after sunset the solar-noon midpoint check then wrongly projects a normal Oslo summer to 45 degrees. The extension mirrors the phone: main parameters at sunset, Shia Maghrib from the second pass at the same latitude.
+
+**Evidence:** extension unit tests pin London 10 April 2026 at 04:12 and London 21 June 2026 at 02:31 and 23:27, matching the phone's shipped engine. Tromso and Longyearbyen on 21 December 2026, and McMurdo on 21 June 2026, are polar, finite and strictly ordered. A Dhuhr +30 and Asr -30 correction at 59.9 degrees cannot reverse the day. Oslo 21 June 2026 stays a real day for both Shia methods, and Trondheim gives the phone's 23:52 (Jafari) and 23:53 (Tehran) Maghrib.
 
 **Revisit if:** the phone changes its high latitude rule or its reference latitudes, or a scholar Ali trusts shows this is wrong for a community he serves.
 

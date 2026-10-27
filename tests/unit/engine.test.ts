@@ -12,6 +12,8 @@ import { SLOTS, type CalculationPrefs, type PrayerSlot } from '../../src/core/ty
 const MAKKAH = { latitude: 21.4225, longitude: 39.8262 };
 const TEHRAN = { latitude: 35.6892, longitude: 51.389 };
 const LONDON = { latitude: 51.5074, longitude: -0.1278 };
+const OSLO = { latitude: 59.9139, longitude: 10.7522 };
+const TRONDHEIM = { latitude: 63.4305, longitude: 10.3951 };
 
 function prefs(overrides: Partial<CalculationPrefs>): CalculationPrefs {
   return {
@@ -67,6 +69,39 @@ describe('computeDay', () => {
         isha: '20:44',
       },
     );
+  });
+
+  it('keeps a normal Shia day usable above 60 degrees in summer', () => {
+    // The Shia Maghrib sits after sunset, so the solar day must be judged against sunset
+    // itself. Before this fix Oslo on midsummer was wrongly projected to 45 degrees and
+    // showed Sunrise 05:30 with a false "cannot be worked out" note.
+    const jafari = computeDay(OSLO, '2026-06-21', prefs({ method: 'jafari', timeZone: 'Europe/Oslo' }));
+    const tehran = computeDay(OSLO, '2026-06-21', prefs({ method: 'tehran', timeZone: 'Europe/Oslo' }));
+
+    expect(jafari.isPolar).toBe(false);
+    expect(tehran.isPolar).toBe(false);
+    expect(clock(jafari.times.sunrise, 'Europe/Oslo')).toBe('03:54');
+    expect(clock(jafari.times.maghrib, 'Europe/Oslo')).toBe('23:05');
+    expect(clock(tehran.times.maghrib, 'Europe/Oslo')).toBe('23:07');
+  });
+
+  it('uses the phone Shia Maghrib when the sun never reaches the angle', () => {
+    // At Trondheim on midsummer the sun never dips 4 degrees, so a plain maghrib angle
+    // would quietly fall back to sunset. The phone's second pass with the Twilight Angle
+    // rule gives a later Maghrib. Values are the phone engine's, from the Java adhan probe.
+    const jafari = computeDay(
+      TRONDHEIM,
+      '2026-06-21',
+      prefs({ method: 'jafari', timeZone: 'Europe/Oslo' }),
+    );
+    const tehran = computeDay(
+      TRONDHEIM,
+      '2026-06-21',
+      prefs({ method: 'tehran', timeZone: 'Europe/Oslo' }),
+    );
+
+    expect(clock(jafari.times.maghrib, 'Europe/Oslo')).toBe('23:52');
+    expect(clock(tehran.times.maghrib, 'Europe/Oslo')).toBe('23:53');
   });
 
   it('matches the phone for London, Muslim World League, 10 April 2026', () => {

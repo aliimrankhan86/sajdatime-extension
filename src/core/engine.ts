@@ -1,5 +1,12 @@
-import { Coordinates as AdhanCoordinates, PrayerTimes, PolarCircleResolution } from 'adhan';
-import { parametersFor } from './methods';
+import {
+  CalculationParameters,
+  Coordinates as AdhanCoordinates,
+  HighLatitudeRule,
+  Madhab as AdhanMadhab,
+  PrayerTimes,
+  PolarCircleResolution,
+} from 'adhan';
+import { isShiaMethod, parametersFor } from './methods';
 import { isRamadan } from './hijri';
 import {
   PRAYERS,
@@ -7,6 +14,7 @@ import {
   type CalculationPrefs,
   type Coordinates,
   type DayTimes,
+  type MethodId,
   type NextPrayer,
   type Prayer,
   type PrayerSlot,
@@ -101,6 +109,33 @@ function isUsable(times: PrayerTimes): boolean {
 }
 
 /**
+ * The Shia Maghrib is the evening twilight at 4 degrees (Jafari) or 4.5 degrees
+ * (Tehran). adhan's own `maghribAngle` would also change what `isUsable` sees, so the
+ * phone keeps the main calculation at sunset and reads this angle from a second,
+ * Isha-only run. The result must be computed at the same latitude as the day, including
+ * the borrowed polar latitude, or the two halves would describe different places.
+ */
+function shiaMaghrib(
+  coordinates: AdhanCoordinates,
+  date: Date,
+  method: MethodId,
+): Date | null {
+  const angle = method === 'jafari' ? 4 : method === 'tehran' ? 4.5 : null;
+  if (angle === null) return null;
+
+  const params = new CalculationParameters('Other', 0, angle);
+  params.madhab = AdhanMadhab.Shafi;
+  params.highLatitudeRule = HighLatitudeRule.TwilightAngle;
+
+  try {
+    const probe = new PrayerTimes(coordinates, date, params);
+    return valid(probe.isha) ? probe.isha : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * The six times for one civil date at one place.
  *
  * The date is the place's date, not the computer's. adhan-js only reads the year, month
@@ -155,14 +190,14 @@ export function computeDay(
   const projectedLatitude = coordinates.latitude < 0 ? -referenceLatitude : referenceLatitude;
 
   const mustProject = local === null || !hasRealDay || !isUsable(local);
+  const baseCoordinates =
+    local !== null && !mustProject
+      ? adhanCoordinates
+      : new AdhanCoordinates(projectedLatitude, coordinates.longitude);
   const base =
     local !== null && !mustProject
       ? local
-      : new PrayerTimes(
-          new AdhanCoordinates(projectedLatitude, coordinates.longitude),
-          dateAtLocalNoon,
-          params,
-        );
+      : new PrayerTimes(baseCoordinates, dateAtLocalNoon, params);
 
   const baseTimes = {} as Record<PrayerSlot, Date>;
   for (const slot of SLOTS) {
@@ -171,6 +206,11 @@ export function computeDay(
       throw new EngineError(`No ${slot} time for ${date} at this place`);
     }
     baseTimes[slot] = value;
+  }
+
+  if (isShiaMethod(prefs.method)) {
+    const maghrib = shiaMaghrib(baseCoordinates, dateAtLocalNoon, prefs.method);
+    if (maghrib) baseTimes.maghrib = maghrib;
   }
 
   const offset = prefs.hijriOffsetDays ?? 0;

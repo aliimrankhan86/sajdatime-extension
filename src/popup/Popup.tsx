@@ -203,7 +203,8 @@ function FirstRun({ onSaved }: { onSaved: (settings: Settings) => void }) {
         {busy ? 'Finding your place...' : 'Use my location'}
       </button>
       <p class="welcome-note">
-        SajdaTime keeps your location on this computer. There is no account and no ads.
+        SajdaTime does not send your location anywhere. Your browser's location service finds it.
+        There is no account and no ads.
       </p>
       <CitySearch onPick={useCity} disabled={busy} />
       {error ? (
@@ -339,13 +340,14 @@ function Times({
               key={slot}
               data-slot={slot}
               data-testid={`time-${slot}`}
-              aria-current={isNext ? 'true' : isNow ? 'time' : undefined}
+              aria-current={isNow ? 'time' : undefined}
             >
               <span class="time-label">
                 {LABELS[slot]}
+                {isNext || isNow ? ' ' : null}
                 {isNext ? <span class="state-pill next-pill">Next</span> : null}
                 {isNow ? <span class="state-pill now-pill">Now</span> : null}
-              </span>
+              </span>{' '}
               <span class="time-value">{clock.format(day.times[slot])}</span>
             </li>
           );

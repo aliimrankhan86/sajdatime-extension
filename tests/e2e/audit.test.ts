@@ -61,6 +61,7 @@ test('changing place in Settings updates the name, times and zone', async () => 
     await result.click();
     await expect(extension.page.getByRole('heading', { name: 'Settings' })).toBeVisible();
     await expect(extension.page.locator('.setting-title')).toHaveText('Makkah');
+    await expect(extension.page.getByRole('button', { name: 'Change' })).toBeFocused();
     await closeSettings(extension.page);
     await expect(extension.page.locator('.place')).toHaveText('Makkah');
     await expect(extension.page.locator('[data-slot="dhuhr"] .time-value')).toHaveText('12:06');
@@ -132,6 +133,26 @@ test('keyboard focus enters Settings and returns to its button', async () => {
     await extension.page.keyboard.press('Escape');
     await expect(extension.page.locator('.next-card')).toBeVisible();
     await expect(settings).toBeFocused();
+  } finally {
+    await extension.close();
+  }
+});
+
+test('keyboard focus stays on the control after a save', async () => {
+  const extension = await launchExtension();
+  try {
+    await seedSettings(extension);
+    await openSettings(extension.page);
+
+    const hanafi = extension.page.getByRole('button', { name: 'Hanafi' });
+    await hanafi.press('Enter');
+    await expect(hanafi).toBeFocused();
+    await expect(hanafi).toHaveAttribute('aria-pressed', 'true');
+
+    const later = extension.page.getByRole('button', { name: 'One day later' });
+    await later.press('Enter');
+    await expect(later).toBeFocused();
+    await expect(extension.page.locator('.step-value')).toContainText('+1 day');
   } finally {
     await extension.close();
   }

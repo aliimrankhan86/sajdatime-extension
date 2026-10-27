@@ -54,9 +54,11 @@ export function isShiaMethod(method: MethodId): boolean {
 /**
  * The parameters for one method.
  *
- * adhan-js has no Jafari method. The phone builds it from `Other` with Fajr 16, Isha 14
- * and Maghrib at 4 degrees below the horizon. `CalculationParameters` applies
- * `maghribAngle` whenever it is above zero, which is exactly the Jafari rule.
+ * adhan-js has no Jafari method. The phone builds it from `Other` with Fajr 16 and Isha 14.
+ * The Shia Maghrib is not set here. adhan's `maghribAngle` also participates in the solar
+ * day check, which would make a normal Oslo summer look like a broken polar day. The phone
+ * keeps the main settings at sunset and computes the Shia Maghrib in a second pass. See
+ * `computeDay` and DECISIONS D-002.
  *
  * The high latitude rule is the phone's TwilightAngle, not `recommended`. adhan-js applies
  * `recommended`'s one seventh of the night as a floor even when the angle is valid, which
@@ -68,8 +70,13 @@ export function isShiaMethod(method: MethodId): boolean {
 export function parametersFor(method: MethodId, madhab: Madhab): CalculationParameters {
   const params =
     method === 'jafari'
-      ? new CalculationParameters('Other', 16, 14, 0, 4)
+      ? new CalculationParameters('Other', 16, 14)
       : ADHAN_METHODS[method]();
+
+  // Tehran ships with a Maghrib angle. Clear it for the ordinary calculation: the day
+  // check and the displayed sunset must both use the real sunset. The Shia Maghrib is
+  // added separately in `computeDay`, exactly as the phone does it.
+  if (isShiaMethod(method)) params.maghribAngle = 0;
 
   // The two Shia methods use their own Asr rule, which is Shafi in adhan's terms. A Hanafi
   // choice from a Shia user would contradict the method, so the method wins.

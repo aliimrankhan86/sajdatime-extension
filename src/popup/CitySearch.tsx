@@ -68,7 +68,9 @@ export function CitySearch({ onPick, disabled = false }: Props) {
                 ? 'Type the name of your town or city.'
                 : results.length === 0
                   ? 'No place found. Try a larger town nearby.'
-                  : `${results.length} ${results.length === 1 ? 'place' : 'places'} found.`}
+                  : results.length === 1
+                    ? '1 place found.'
+                    : `Top ${results.length} places.`}
       </p>
       {results.length > 0 ? (
         <ul class="city-results" id="city-results" aria-label="Places found">

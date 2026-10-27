@@ -47,6 +47,20 @@ test('shows a Now pill on the current prayer and a Next pill on the next', async
   }
 });
 
+test('the Next row never announces itself as current', async () => {
+  const extension = await launchExtension();
+  try {
+    await seedSettings(extension, new Date('2026-10-27T11:00:00Z'));
+    await expect(extension.page.locator('.time-row.is-next')).toHaveCount(1);
+    await expect(extension.page.locator('.time-row.is-next')).not.toHaveAttribute(
+      'aria-current',
+      /.*/,
+    );
+  } finally {
+    await extension.close();
+  }
+});
+
 test('every control on every screen has a 44px target', async () => {
   const extension = await launchExtension();
   try {

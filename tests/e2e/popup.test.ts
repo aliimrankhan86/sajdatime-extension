@@ -84,6 +84,8 @@ test('first run asks for location, then saves the place', async () => {
     await extension.page.evaluate(async () => chrome.storage.local.clear());
     await extension.page.reload();
     await expect(extension.page.getByRole('button', { name: 'Use my location' })).toBeVisible();
+    await expect(extension.page.locator('.welcome-note')).not.toContainText('keeps your location');
+    await expect(extension.page.locator('.welcome-note')).not.toContainText('never leaves');
     await extension.page.screenshot({ path: 'docs/images/first-run-light.png' });
 
     // The browser's own permission bubble cannot be driven from Playwright for an
