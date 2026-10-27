@@ -17,14 +17,14 @@ An independent review brief for this commit is in [`docs/REVIEW-REQUEST.md`](REV
 | Area | State | Evidence |
 | --- | --- | --- |
 | Manifest V3 extension | Loads in Chrome for Testing | Playwright launches it with `--load-extension=dist` and finds the popup |
-| Prayer engine | 13 methods, both Asr schools, polar projection and correction clamp, Shia Maghrib from the Twilight Angle cap exactly as the phone does it, so a normal Shia day above 60 degrees is not projected | `npm test`: 85 unit tests pass |
+| Prayer engine | 13 methods, both Asr schools, polar projection and correction clamp, Shia Maghrib from the Twilight Angle cap exactly as the phone does it, so a normal Shia day above 60 degrees is not projected | `npm test`: 89 unit tests pass |
 | Golden values | Six phone fixtures pinned, plus 13 broad Aladhan sanity fixtures | `tests/unit/engine.test.ts`, `tests/unit/aladhan.test.ts` |
 | Hijri calendar | Umm al-Qura, shift, Ramadan windows, Eids | `tests/unit/hijri.test.ts` |
 | Method suggestion | Country table and Shia rule | `tests/unit/suggestions.test.ts` |
 | City search | Offline GeoNames city list, search and pick | `tests/unit/cities.test.ts`, Playwright first-run test |
-| Popup | Place, Hijri date, next prayer, countdown, six times, 190 and 253 pixel viewports, visible Settings button, explicit Next and Now pills | Playwright screenshots and 25 end-to-end tests |
+| Popup | Place, Hijri date, next prayer, countdown, six times, a fixed 380 pixel width, 190 and 253 pixel viewports, visible Settings button, explicit Next and Now pills | Playwright screenshots and 30 end-to-end tests |
 | First run | Location, city search, method suggestion, save, show times | Playwright tests with a supplied geolocation fix |
-| Settings | Place change, method, Asr school, Hijri shift, disclaimer, privacy link, keyboard focus and Escape | Playwright tests |
+| Settings | Place change, School (Sunni or Shia), method, Asr school, Hijri shift, disclaimer, privacy link, keyboard focus and Escape | Playwright tests |
 | Light and dark | Both themes from `tokens.css`, WCAG AA contrast pairs | `tests/unit/contrast.test.ts`, `docs/images/times-dark.png`, `docs/images/settings-dark.png` |
 | Accessibility | Keyboard focus moves into full screens and returns, every control has a 44 pixel target, axe finds no WCAG 2.2 AA violation | `tests/e2e/a11y.test.ts`, `tests/e2e/design.test.ts` |
 | No network | No request leaves the extension while it shows times | Playwright request listener |
@@ -35,12 +35,12 @@ Commands actually run on 27 October 2026:
 
 ```text
 npm run typecheck    pass
-npm test             7 files, 87 tests passed
+npm test             8 files, 89 tests passed
 npm run build        pass, dist/manifest.json and the popup bundle written
-npm run test:e2e     25 tests passed
+npm run test:e2e     30 tests passed
 ```
 
-The 25 end-to-end tests are six Settings and state tests, six design and responsive tests, three axe tests and ten original popup tests. They run in Chrome for Testing at:
+The 30 end-to-end tests are six Settings and state tests, six design and responsive tests, three axe tests, ten original popup tests, four School tests and one popup-width test. They run in Chrome for Testing at:
 
 ```text
 /Users/aliimrankhan/Library/Caches/ms-playwright/chromium-1223/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing
@@ -62,7 +62,8 @@ That path is one example of where Playwright keeps Chrome for Testing. `tests/e2
 ## Known gaps in what was tested
 
 - The real browser permission bubble for geolocation is not automated. The end-to-end test supplies a known fix through `navigator.geolocation` and checks that the extension saves it. The banner and the real prompt still need a manual look.
-- The popup was tested at 380 by 600, 253 by 600 (150 percent zoom) and 190 by 600 (200 percent zoom). The 190 pixel test proves no horizontal scroll and no control outside the viewport, but it is a layout emulation, not a real browser zoom. Sizes a user could get from a resized window, and Windows display scaling, are not tested yet.
+- The zoom tests run the popup as a 380 pixel tab at 253 by 600 (150 percent) and 190 by 600 (200 percent). They prove no horizontal scroll and no control outside the viewport, but they are a layout emulation, not a real browser zoom. Sizes a user could get from a resized window, and Windows display scaling, are not tested yet.
+- **Lesson, 27 October 2026: the popup was only ever tested as a 380 pixel tab, so the real action popup opening at about 150 pixels went unnoticed.** `chrome.action.openPopup()` resolves under Playwright but opens no page the harness can measure, so the real width still cannot be asserted in the suite. The fix gives the `html` and `body` elements a fixed 380 pixel width, and `tests/e2e/popup-width.test.ts` reproduces the root cause (the document sized to its content) instead. The real popup still deserves a manual look in a real Chrome profile.
 - No screen reader was run against the popup. axe reports no WCAG 2.2 AA violation on Times, first run, Settings and Location in light and dark, but axe cannot judge reading order, announcement quality or whether a real screen reader makes sense of the page.
 - Windows, Edge and a real user's Chrome profile are not tested. The suite runs on macOS with Chrome for Testing. Edge gets a manual load and a short check later.
 - The first run uses the computer's time zone when it reads the browser's location. A city chosen by name uses the city's own time zone.

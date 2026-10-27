@@ -179,3 +179,13 @@ The Shia Maghrib is not an exception to the phone's behaviour. The phone keeps i
 **Evidence:** `tests/e2e/design.test.ts` checks the visible pills and `aria-current="time"` on the current row. `tests/e2e/audit.test.ts` checks Tab into Settings, heading focus, Escape, return to the Settings button, and Escape from Location back to Change. `tests/e2e/a11y.test.ts` runs axe on Times, first run, Settings and Location in light and dark.
 
 **Revisit if:** the layout leaves no room for a text pill and the label moves to an icon. Then the icon needs an accessible name and the same test.
+
+## D-020: School offers only the methods that belong to it
+
+**Decided:** Settings has a School row with Sunni and Shia. Shia is offered Jafari and Tehran only; Sunni is offered every other method. Changing school keeps the current method when the new school offers it, and otherwise resets to the country's suggestion for that school in the same single save.
+
+**Why:** the phone's `CalcMethod.offeredTo` treats Jafari and Tehran as Shia-only and everything else as Sunni-only, and `SettingsRepository.setSect` discards a method the new school was never offered. The extension mirrors both, with the country suggestion standing in for the phone's `AUTO`. A Shia user kept on a Sunni method would silently lose the Jafari Maghrib, and a Sunni user kept on Jafari would silently gain it.
+
+**Evidence:** `src/core/methods.ts` holds one `isMethodOfferedTo` used by both the Settings method list and the School setter, so the two cannot disagree. `tests/unit/methods.test.ts` pins the split; `tests/e2e/school.test.ts` covers both reset directions, the keep case and focus after a save.
+
+**Revisit if:** a method spans both schools, or a scholar Ali trusts asks for a different split.

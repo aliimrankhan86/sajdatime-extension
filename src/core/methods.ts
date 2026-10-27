@@ -6,7 +6,7 @@ import {
   PolarCircleResolution,
   Rounding,
 } from 'adhan';
-import type { Madhab, MethodId } from './types';
+import type { Madhab, MethodId, Sect } from './types';
 
 /**
  * The 13 methods the extension offers, in the order the Settings sheet shows them.
@@ -50,6 +50,22 @@ export function isMethodId(value: unknown): value is MethodId {
 
 export function isShiaMethod(method: MethodId): boolean {
   return method === 'jafari' || method === 'tehran';
+}
+
+/**
+ * Whether a method is one a user of [sect] should be offered at all. Jafari and Tehran
+ * are Shia conventions (a Maghrib after sunset); the rest are Sunni. One definition,
+ * used by the list the user picks from and by the School setter that has to discard a
+ * method the new school was never offered, so the two cannot disagree. Mirrors the
+ * phone's `CalcMethod.offeredTo`.
+ */
+export function isMethodOfferedTo(method: MethodId, sect: Sect): boolean {
+  return sect === 'shia' ? isShiaMethod(method) : !isShiaMethod(method);
+}
+
+/** The methods the Settings list shows for [sect], in the same order as `METHOD_IDS`. */
+export function methodsOfferedTo(sect: Sect): MethodId[] {
+  return METHOD_IDS.filter((method) => isMethodOfferedTo(method, sect));
 }
 
 /**

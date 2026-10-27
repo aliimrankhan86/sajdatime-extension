@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { countryName } from '../core/cities';
-import { METHOD_IDS, isShiaMethod } from '../core/methods';
+import { isMethodOfferedTo, isShiaMethod, methodsOfferedTo } from '../core/methods';
 import { suggestMethod } from '../core/suggestions';
-import type { MethodId } from '../core/types';
+import type { MethodId, Sect } from '../core/types';
 import { saveSettings } from '../settings/storage';
 import type { Settings as SettingsValue } from '../settings/types';
 import { LocationSheet } from './LocationSheet';
@@ -77,6 +77,17 @@ export function Settings({ settings, onClose, onSaved }: Props) {
         setBusy(false);
         setError('Your settings could not be saved. Try again.');
       });
+  }
+
+  function changeSect(sect: Sect) {
+    const patch: Partial<Omit<SettingsValue, 'version'>> = { sect };
+    // A method the new school was never offered goes back to the school's suggestion,
+    // not silently kept: a Sunni convention on a Shia user loses the Jafari Maghrib,
+    // and a Shia one on a Sunni user gains it. Mirrors the phone's setSect.
+    if (!isMethodOfferedTo(settings.method, sect)) {
+      patch.method = suggestMethod(settings.place.countryCode, sect).suggested;
+    }
+    update(patch);
   }
 
   if (changingPlace) {
@@ -156,6 +167,33 @@ export function Settings({ settings, onClose, onSaved }: Props) {
         </div>
       </section>
 
+      <section class="settings-group" aria-labelledby="school-heading">
+        <h2 class="group-title" id="school-heading">
+          School
+        </h2>
+        <div class="segmented" role="group" aria-labelledby="school-heading">
+          <button
+            class={settings.sect === 'sunni' ? 'segment is-selected' : 'segment'}
+            type="button"
+            aria-pressed={settings.sect === 'sunni'}
+            aria-disabled={busy}
+            onClick={() => changeSect('sunni')}
+          >
+            Sunni
+          </button>
+          <button
+            class={settings.sect === 'shia' ? 'segment is-selected' : 'segment'}
+            type="button"
+            aria-pressed={settings.sect === 'shia'}
+            aria-disabled={busy}
+            onClick={() => changeSect('shia')}
+          >
+            Shia
+          </button>
+        </div>
+        <p class="field-hint">This sets which calculation methods are offered.</p>
+      </section>
+
       <section class="settings-group" aria-labelledby="method-heading">
         <h2 class="group-title" id="method-heading">
           Calculation method
@@ -170,7 +208,7 @@ export function Settings({ settings, onClose, onSaved }: Props) {
           aria-disabled={busy}
           onChange={(event) => update({ method: event.currentTarget.value as MethodId })}
         >
-          {METHOD_IDS.map((method) => (
+          {methodsOfferedTo(settings.sect).map((method) => (
             <option value={method} key={method}>
               {METHOD_LABELS[method]}
             </option>

@@ -16,7 +16,7 @@ This is a separate product from the [SajdaTime Android app](https://github.com/a
 - The Hijri date from the Umm al-Qura calendar.
 - A first run that asks for location, then keeps the place on this computer, with a clearly labelled Makkah fallback if location is refused.
 - A built-in city search that works offline, so a town can be typed in and chosen.
-- A Settings screen for the place, calculation method, Asr school, Hijri date shift, the privacy policy and the disclaimer.
+- A Settings screen for the place, school, calculation method, Asr school, Hijri date shift, the privacy policy and the disclaimer.
 - Light and dark themes that follow the computer.
 - A Times popup that fits 380 by 600 pixels without scrolling.
 
