@@ -9,6 +9,9 @@ Tehran (4.5 degrees) Maghrib from a second Isha-only pass with the Twilight Angl
 rule. `AdhanProbe.java` does the same, so the extension can be checked against the
 library the phone actually ships.
 
+Needs Java 16 or newer. On a Mac with an older default, set `JAVA_HOME` first:
+`export JAVA_HOME=$(/usr/libexec/java_home -v 21)`.
+
 ```bash
 curl -L -o /tmp/adhan-1.2.1.jar \
   https://repo1.maven.org/maven2/com/batoulapps/adhan/adhan/1.2.1/adhan-1.2.1.jar

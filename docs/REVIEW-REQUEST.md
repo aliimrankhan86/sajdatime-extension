@@ -1,7 +1,7 @@
 # Review request
 
 **Baseline:** [`aliimrankhan86/sajdatime-extension`](https://github.com/aliimrankhan86/sajdatime-extension) at commit `c7320e3` on `main`.
-**Previous reviews:** `fab4abb`; then `eeac1ad`, which fixed the three P1s from the first pass; then `cb92544`, which did the P2s; then `ebcc4e0`, which applied Ali's ruling on the open P1; then the true-angle build and its third-pass fixes. This commit reverses the true-angle ruling and makes the Shia Maghrib match the phone everywhere.
+**Previous reviews:** `fab4abb`; then `eeac1ad`, which fixed the three P1s from the first pass; then `cb92544`, which did the P2s; then `ebcc4e0`, which applied Ali's ruling on the open P1; then the true-angle build and its third-pass fixes; then `f964ee8`, which reversed the true-angle ruling and was judged READY with two P2 fixes to the notes. This commit applies those two P2 fixes and makes the Shia Maghrib match the phone everywhere except the two small differences listed in `DECISIONS.md`.
 **Date:** 27 October 2026.
 **Reviewer:** Claude, Opus review pass.
 **Owner:** Ali. He presses Submit, Publish, Merge, payment and consent. Do not ask him for credentials.
@@ -18,7 +18,7 @@ The previous build used the raw true angle for the Shia (Jafari and Tehran) Magh
 whenever the sun reached it before Isha. The review measured that angle jumping about
 45 minutes between neighbouring days, landing one minute before Isha, and putting Jafari
 after Tehran at Anchorage. This commit reverts to the Twilight Angle cap the phone
-ships, so the two products agree everywhere.
+ships, so the two products agree everywhere except the two small differences listed in `DECISIONS.md`.
 
 - **Shia Maghrib is the cap.** `src/core/engine.ts` reads Jafari (4 degrees) and Tehran
   (4.5 degrees) Maghrib from a separate Isha-only pass with the Twilight Angle rule,
@@ -44,7 +44,7 @@ minute before Isha at 00:48; and Anchorage, Jafari came after Tehran (00:47 agai
 00:04), which is impossible in the sky. The true angle also matched no standard
 reference and would have moved Maghrib for existing users. The Twilight Angle cap the
 phone ships is smooth and is what Aladhan gives with its default angle-based setting,
-so the extension now matches the phone everywhere. The full reasoning and the rejected
+so the extension now matches the phone everywhere except the two small differences listed in `DECISIONS.md`. The full reasoning and the rejected
 option are recorded in `DECISIONS.md` D-002.
 
 ## What to run
