@@ -306,10 +306,12 @@ sajdatime-extension/
 | Qatar | `Qatar` | 18 / 90 min after Maghrib | |
 | Turkey (Diyanet) | `Turkey` | 18 / 17 | Sunrise minus 7, Dhuhr plus 5, Asr plus 4, Maghrib plus 7 built in. Do not add them again |
 | Singapore (MUIS) | `Singapore` | 20 / 18 | Dhuhr plus 1 built in, rounds up |
-| Jafari (Shia) | custom from `Other` | 16 / 14, Maghrib at 4 degrees | adhan-js has no Jafari. Build it as `new CalculationParameters('Other', 16, 14, 0, 4)` and test it. The library applies `maghribAngle` for any method that sets it |
-| Tehran (Shia) | `Tehran` | 17.7 / 14, Maghrib at 4.5 degrees | |
+| Jafari (Shia) | custom from `Other` | 16 / 14, Maghrib at 4 degrees | adhan-js has no Jafari. Build it from `CalculationParameters('Other', 16, 14)`, not with a `maghribAngle`; see D-002 for the separate Maghrib pass |
+| Tehran (Shia) | `Tehran` | 17.7 / 14, Maghrib at 4.5 degrees | Same separate pass as Jafari; see D-002 |
 
 The "built in" offsets are the library's `methodAdjustments`, verified in adhan 4.4.6 on 20 Oct 2026. Check them again against the phone engine. Where the phone differs, follow the phone and write it down.
+
+**For Jafari and Tehran, the `maghribAngle` column above is superseded by [`DECISIONS.md`](DECISIONS.md) D-002.** Do not set `maghribAngle` on the main parameters. The main pass stays at sunset, and Maghrib comes from a second Isha-only pass at the same latitude. Setting `maghribAngle` makes the high-latitude day check judge the solar day by Maghrib and wrongly project a normal Shia summer day. See D-002 for the phone evidence.
 
 ### 5.3 Which method to suggest
 

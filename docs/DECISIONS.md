@@ -24,7 +24,11 @@ The Shia Maghrib is the one deliberate exception. The phone keeps its ordinary p
 
 **Evidence:** extension unit tests pin London 10 April 2026 at 04:12 and London 21 June 2026 at 02:31 and 23:27, matching the phone's shipped engine. Tromso and Longyearbyen on 21 December 2026, and McMurdo on 21 June 2026, are polar, finite and strictly ordered. A Dhuhr +30 and Asr -30 correction at 59.9 degrees cannot reverse the day. Oslo 21 June 2026 stays a real day for both Shia methods, and Trondheim gives the phone's 23:52 (Jafari) and 23:53 (Tehran) Maghrib.
 
-**Revisit if:** the phone changes its high latitude rule or its reference latitudes, or a scholar Ali trusts shows this is wrong for a community he serves.
+**Recorded limit, 27 October 2026:** the Twilight Angle rule caps its Isha at sunset plus `angle / 60` of the night, even on a summer day when the sun does reach that angle. Because the Shia Maghrib reuses that pass, it inherits the cap. At Oslo on 21 June the shown Jafari Maghrib is 23:05, when the sun is about 2.26 degrees down, not the true 4 degree moment near 23:36. The phone has the same cap. This is not the projection bug fixed in `eeac1ad`, and it is not changed here because it is a religious rule that must match the phone. Ali has to choose between the true angle whenever it is reached and keeping this cap; until then, do not describe the Shia Maghrib as exactly 4 or 4.5 degrees above about 52 degrees north in summer.
+
+**Smaller known differences from the phone, all library behaviour:** above 66 degrees the extension rejects a day where Asr equals Dhuhr, while the phone accepts that minute and projects less often. The extension is the safer of the two. In a few high latitude cases the extension's Fajr is one minute earlier, because adhan-java drops the fraction of a second from the night portion and adhan-js keeps it. Neither difference is hidden by a tolerance.
+
+**Revisit if:** the phone changes its high latitude rule or its reference latitudes, a scholar Ali trusts shows this is wrong for a community he serves, or Ali rules on the Shia Maghrib cap above.
 
 ## D-003: Turkey's Diyanet offsets are not added twice
 
@@ -42,7 +46,7 @@ The Shia Maghrib is the one deliberate exception. The phone keeps its ordinary p
 
 **Why:** the phone's `PrayerEngineTest` calls Aladhan while developing and asserts within two minutes. Its expected Makkah Asr is 15:37, the phone engine gives 15:38. Copying the API values would make the extension test fail against the library the app actually uses, or hide a one-minute disagreement behind a tolerance.
 
-**Rounding:** adhan-js 4.4.6 rounds its exact time to the nearest minute by default. The phone's `instantOf` truncates adhan-java's exact time to the minute. The two libraries do not produce identical seconds, so the same place, date and method can land one minute apart when the seconds fall on different sides of the boundary. The extension keeps the library default. It does not hide the difference behind a wide tolerance.
+**Rounding:** adhan-js 4.4.6 rounds its exact time to the nearest minute by default. The phone's `instantOf` truncates adhan-java's exact time to the minute. The extension now truncates the final Date to whole minutes in `computeDay`, after manual corrections and the order clamp, so alarms and the countdown sit on the minute. That does not recreate adhan-java's exact second, because adhan-js has already rounded, so the same place, date and method can still land one minute apart when the seconds fall on different sides of the boundary. The difference is not hidden behind a wide tolerance.
 
 **Known one minute case:** Makkah, 15 January 2026, Singapore method. The extension gives Dhuhr 12:32 and Isha 19:18. The Java reference gives 12:31 and 19:17, and the phone truncates to those. This is a library rounding difference, not a wrong angle. The plan's same-minute rule cannot be met everywhere without copying adhan-java's exact seconds, which adhan-js does not expose. Every fixture the extension pins agrees with the phone.
 

@@ -232,7 +232,9 @@ export function computeDay(
       throw new EngineError(`Adjustment for ${slot} is outside -30 to +30`);
     }
     const moved = baseTimes[slot].getTime() + minutes * 60 * 1000;
-    const at = new Date(Math.max(moved, floor));
+    // adhan rounds to the nearest minute but leaves the milliseconds of the call in the
+    // Date. The phone truncates, which keeps alarms on the minute and the countdown steady.
+    const at = new Date(Math.floor(Math.max(moved, floor) / 60000) * 60000);
     times[slot] = at;
     floor = at.getTime();
   }

@@ -104,6 +104,14 @@ describe('computeDay', () => {
     expect(clock(tehran.times.maghrib, 'Europe/Oslo')).toBe('23:53');
   });
 
+  it('keeps every time on the whole minute, as the phone does', () => {
+    const day = computeDay(OSLO, '2026-06-21', prefs({ method: 'jafari', timeZone: 'Europe/Oslo' }));
+    for (const slot of SLOTS) {
+      expect(day.times[slot].getSeconds()).toBe(0);
+      expect(day.times[slot].getMilliseconds()).toBe(0);
+    }
+  });
+
   it('matches the phone for London, Muslim World League, 10 April 2026', () => {
     expect(clocks(LONDON, '2026-04-10', prefs({ method: 'mwl' }))).toEqual({
       fajr: '04:12',

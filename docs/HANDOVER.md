@@ -17,8 +17,8 @@ An independent review brief for this commit is in [`docs/REVIEW-REQUEST.md`](REV
 | Area | State | Evidence |
 | --- | --- | --- |
 | Manifest V3 extension | Loads in Chrome for Testing | Playwright launches it with `--load-extension=dist` and finds the popup |
-| Prayer engine | 13 methods, both Asr schools, polar projection and correction clamp, Shia Maghrib from a separate Twilight Angle pass so a normal Shia day above 60 degrees is not projected | `npm test`: 82 unit tests pass |
-| Golden values | Four phone fixtures pinned, plus 13 broad Aladhan sanity fixtures | `tests/unit/engine.test.ts`, `tests/unit/aladhan.test.ts` |
+| Prayer engine | 13 methods, both Asr schools, polar projection and correction clamp, Shia Maghrib from a separate Twilight Angle pass so a normal Shia day above 60 degrees is not projected | `npm test`: 83 unit tests pass |
+| Golden values | Six phone fixtures pinned, plus 13 broad Aladhan sanity fixtures | `tests/unit/engine.test.ts`, `tests/unit/aladhan.test.ts` |
 | Hijri calendar | Umm al-Qura, shift, Ramadan windows, Eids | `tests/unit/hijri.test.ts` |
 | Method suggestion | Country table and Shia rule | `tests/unit/suggestions.test.ts` |
 | City search | Offline GeoNames city list, search and pick | `tests/unit/cities.test.ts`, Playwright first-run test |
@@ -35,7 +35,7 @@ Commands actually run on 27 October 2026:
 
 ```text
 npm run typecheck    pass
-npm test             7 files, 82 tests passed
+npm test             7 files, 83 tests passed
 npm run build        pass, dist/manifest.json and the popup bundle written
 npm run test:e2e     25 tests passed
 ```
@@ -72,6 +72,7 @@ That path is one example of where Playwright keeps Chrome for Testing. `tests/e2
 - The Settings screen has a disclaimer and place, method, Asr school and Hijri shift. It does not yet have language, theme, alert choice or the full About page.
 - The screenshots are review evidence, not the final store set. `docs/store/` still has placeholders.
 - The review also flagged, left for later: the Isha row shows tonight's time with a "Now" pill in the small hours; the default method survives a place change when the user never chose it; an Arabic browser shows Arabic meridian words beside English labels; and the polar note does not name the latitude it borrowed. Each is a known, recorded P2, not a hidden defect.
+- **Open decision, Shia Maghrib above about 52 degrees north in summer.** The separate Twilight Angle pass caps Maghrib at sunset plus `angle / 60` of the night, even on days when the sun does reach 4 or 4.5 degrees. The phone has the same cap. This is not a regression and it is not the projection bug fixed in `eeac1ad`. In Oslo on 21 June it gives 23:05, when the sun is about 2.26 degrees down, rather than the true 4 degree moment near 23:36. Ali has to choose: use the true angle whenever the sun reaches it, or keep the cap and state it in D-002. The extension must not be changed alone, or it will disagree with the phone.
 
 
 ## Decisions that must not be undone by accident

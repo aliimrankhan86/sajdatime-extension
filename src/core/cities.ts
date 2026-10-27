@@ -123,7 +123,13 @@ function normalise(value: string): string {
  * name that contains it. Within one score the larger place wins, which puts London above
  * a village of the same name.
  */
-export function searchCities(cities: readonly City[], query: string, limit = 6): City[] {
+export const CITY_SEARCH_LIMIT = 6;
+
+export function searchCities(
+  cities: readonly City[],
+  query: string,
+  limit = CITY_SEARCH_LIMIT,
+): City[] {
   const needle = normalise(query);
   if (needle.length < 2) return [];
 

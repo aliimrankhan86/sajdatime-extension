@@ -620,7 +620,12 @@ button {
   }
 
   .stepper {
-    flex-wrap: wrap;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .stepper .step-button {
+    align-self: center;
   }
 
   .step-value {

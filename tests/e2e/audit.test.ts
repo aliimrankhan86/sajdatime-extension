@@ -143,6 +143,9 @@ test('keyboard focus stays on the control after a save', async () => {
   try {
     await seedSettings(extension);
     await openSettings(extension.page);
+    // Preact moves focus to the heading after the next frame. Wait for that before
+    // pressing, or the heading can steal focus from the button in a slow run.
+    await expect(extension.page.getByRole('heading', { name: 'Settings' })).toBeFocused();
 
     const hanafi = extension.page.getByRole('button', { name: 'Hanafi' });
     await hanafi.press('Enter');

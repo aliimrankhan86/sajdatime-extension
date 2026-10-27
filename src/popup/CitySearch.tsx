@@ -1,5 +1,5 @@
 import { useState } from 'preact/hooks';
-import { countryName, loadCities, searchCities, type City } from '../core/cities';
+import { countryName, CITY_SEARCH_LIMIT, loadCities, searchCities, type City } from '../core/cities';
 
 interface Props {
   onPick: (city: City) => void;
@@ -36,7 +36,12 @@ export function CitySearch({ onPick, disabled = false }: Props) {
   }
 
   const trimmed = query.trim();
-  const results = cities && trimmed.length >= 2 ? searchCities(cities, trimmed) : [];
+  const found =
+    cities && trimmed.length >= 2
+      ? searchCities(cities, trimmed, CITY_SEARCH_LIMIT + 1)
+      : [];
+  const results = found.slice(0, CITY_SEARCH_LIMIT);
+  const hasMore = found.length > CITY_SEARCH_LIMIT;
   const locale = navigator.language || 'en-GB';
 
   return (
@@ -70,7 +75,9 @@ export function CitySearch({ onPick, disabled = false }: Props) {
                   ? 'No place found. Try a larger town nearby.'
                   : results.length === 1
                     ? '1 place found.'
-                    : `Top ${results.length} places.`}
+                    : hasMore
+                      ? `Top ${CITY_SEARCH_LIMIT} places.`
+                      : `${results.length} places found.`}
       </p>
       {results.length > 0 ? (
         <ul class="city-results" id="city-results" aria-label="Places found">
