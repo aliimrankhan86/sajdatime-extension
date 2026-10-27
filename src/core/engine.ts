@@ -111,44 +111,22 @@ function isUsable(times: PrayerTimes): boolean {
 /**
  * The Shia Maghrib is the evening twilight at 4 degrees (Jafari) or 4.5 degrees
  * (Tehran). adhan's own `maghribAngle` would also change what `isUsable` sees, so the
- * main calculation stays at sunset and this angle is read from a separate run. The
- * result must be computed at the same latitude as the day, including the borrowed polar
- * latitude, or the two halves would describe different places.
- *
- * The true angle wins whenever the sun reaches it before Isha. When it never does, or
- * it would land on or after Isha, fall back to the Twilight Angle cap at sunset plus a
- * portion of the night. The phone still caps in both cases; this is a deliberate
- * difference recorded in D-002 until the phone follows.
+ * main calculation stays at sunset and this angle is read from a separate Isha-only
+ * pass with the Twilight Angle rule. That rule returns the true twilight when the sun
+ * reaches the angle early and otherwise caps the result at sunset plus `angle / 60` of
+ * the night. The pass is computed at the same latitude as the day, including the
+ * borrowed polar latitude, so the two halves describe the same place. This mirrors the
+ * phone's `PrayerEngine` exactly.
  */
 function shiaMaghrib(
   coordinates: AdhanCoordinates,
   date: Date,
   method: MethodId,
-  sunset: Date,
-  isha: Date,
 ): Date | null {
   const angle = method === 'jafari' ? 4 : method === 'tehran' ? 4.5 : null;
   if (angle === null) return null;
 
-  const minute = (value: Date) => Math.floor(value.getTime() / 60000);
-
   try {
-    // A long Isha interval keeps adhan's own maghrib guard out of the way, so this
-    // probe returns the true angle even when the Twilight Angle cap would be earlier.
-    const trueParams = new CalculationParameters('Other', 0, 0, 24 * 60);
-    trueParams.maghribAngle = angle;
-    const trueProbe = new PrayerTimes(coordinates, date, trueParams);
-    // The true angle is only usable while it sits in a strictly earlier minute than
-    // Isha. Near solar midnight in summer it can reach or pass the method's Isha, and
-    // the order clamp would then pull Isha onto Maghrib and show the same minute twice.
-    if (
-      valid(trueProbe.maghrib) &&
-      trueProbe.maghrib.getTime() > sunset.getTime() &&
-      minute(trueProbe.maghrib) < minute(isha)
-    ) {
-      return trueProbe.maghrib;
-    }
-
     const capParams = new CalculationParameters('Other', 0, angle);
     capParams.madhab = AdhanMadhab.Shafi;
     capParams.highLatitudeRule = HighLatitudeRule.TwilightAngle;
@@ -233,13 +211,7 @@ export function computeDay(
   }
 
   if (isShiaMethod(prefs.method)) {
-    const maghrib = shiaMaghrib(
-      baseCoordinates,
-      dateAtLocalNoon,
-      prefs.method,
-      baseTimes.maghrib,
-      baseTimes.isha,
-    );
+    const maghrib = shiaMaghrib(baseCoordinates, dateAtLocalNoon, prefs.method);
     if (maghrib) baseTimes.maghrib = maghrib;
   }
 

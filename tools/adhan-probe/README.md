@@ -6,10 +6,8 @@ reproduced without trusting the extension to check itself.
 
 The phone keeps its main parameters at sunset and reads Jafari (4 degrees) and
 Tehran (4.5 degrees) Maghrib from a second Isha-only pass with the Twilight Angle
-rule. `AdhanProbe.java` prints that capped value and, separately, the true angle
-from `SolarTime`. The true angle is what the extension now uses whenever the sun
-reaches it. The phone still caps in both cases, so the two products deliberately
-differ until the phone makes the same change.
+rule. `AdhanProbe.java` does the same, so the extension can be checked against the
+library the phone actually ships.
 
 ```bash
 curl -L -o /tmp/adhan-1.2.1.jar \
@@ -18,18 +16,20 @@ javac -cp /tmp/adhan-1.2.1.jar -d /tmp/adhan-probe tools/adhan-probe/AdhanProbe.
 java -cp /tmp/adhan-1.2.1.jar:/tmp/adhan-probe AdhanProbe
 ```
 
-Expected on 21 June 2026, Europe/Oslo:
+Expected output:
 
-| Place | Sunrise | Sunset | True Jafari | True Tehran | Phone cap, Jafari / Tehran |
-| --- | --- | --- | --- | --- | --- |
-| Oslo | 03:54 | 22:44 | 23:35 | 23:46 | 23:05 / 23:07 |
-| Trondheim | 03:02 | 23:38 | not reached | not reached | 23:52 / 23:53 |
+| Place | Sunrise | Sunset | Jafari Maghrib / Isha | Tehran Maghrib / Isha |
+| --- | --- | --- | --- | --- |
+| Oslo, 21 June | 03:54 | 22:44 | 23:05 / 23:56 | 23:07 / 23:56 |
+| Trondheim, 21 June | 03:02 | 23:38 | 23:52 / 00:26 | 23:53 / 00:26 |
+| Tampere, 21 June | 03:42 | 23:12 | 23:30 / 00:15 | 23:32 / 00:15 |
+| Manchester, 21 June | 04:40 | 21:42 | 22:10 / 23:19 | 22:13 / 23:19 |
+| Anchorage, 20 June | 04:20 | 23:43 | 00:01 / 00:47 | 00:03 / 00:47 |
 
-The extension pins Oslo Jafari 23:35 and Tehran 23:46. The probe rounds with
-`CalendarUtil.roundedMinute`, the same rounding the phone's `PrayerTimes` uses,
-so both products agree to the minute. Trondheim never reaches either angle, so
-both fall back to the Twilight Angle cap and the fixtures stay 23:52 and 23:53.
-
-Those are the numbers pinned in `tests/unit/engine.test.ts`. If they drift, the
-extension and this probe have diverged. Do not adjust a fixture to make the
-extension pass without checking this probe first.
+The probe rounds with `CalendarUtil.roundedMinute`, the same rounding the phone's
+`PrayerTimes` uses, so both products agree to the minute. When the sun reaches the
+angle early the result is the true twilight; when it is slow or never reaches it,
+the Twilight Angle rule caps it at sunset plus `angle / 60` of the night. Those
+values are pinned in `tests/unit/engine.test.ts`. If they drift, the extension and
+this probe have diverged. Do not adjust a fixture to make the extension pass
+without checking this probe first.

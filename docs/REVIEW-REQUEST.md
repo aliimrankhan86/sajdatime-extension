@@ -1,7 +1,7 @@
 # Review request
 
-**Baseline:** [`aliimrankhan86/sajdatime-extension`](https://github.com/aliimrankhan86/sajdatime-extension) at commit `04a8f4f` on `main`.
-**Previous reviews:** `fab4abb`, code at `c3f39e5`; then `eeac1ad`, which fixed the three P1s from the first pass; then `cb92544`, which did the P2s; then `ebcc4e0`, which applied Ali's ruling on the open P1. This commit adds the before-Isha boundary the third review asked for, the Singapore and probe rounding fixes, and a full-summer sweep test.
+**Baseline:** [`aliimrankhan86/sajdatime-extension`](https://github.com/aliimrankhan86/sajdatime-extension) at commit `c7320e3` on `main`.
+**Previous reviews:** `fab4abb`; then `eeac1ad`, which fixed the three P1s from the first pass; then `cb92544`, which did the P2s; then `ebcc4e0`, which applied Ali's ruling on the open P1; then the true-angle build and its third-pass fixes. This commit reverses the true-angle ruling and makes the Shia Maghrib match the phone everywhere.
 **Date:** 27 October 2026.
 **Reviewer:** Claude, Opus review pass.
 **Owner:** Ali. He presses Submit, Publish, Merge, payment and consent. Do not ask him for credentials.
@@ -14,22 +14,38 @@ There is no account, no ad, no analytics, no host permission, no content script 
 
 ## What this fix commit changed
 
-The previous pass found that Shia (Jafari and Tehran) days above about 60 degrees north were silently wrong in summer. This commit fixes that and the other P1s.
+The previous build used the raw true angle for the Shia (Jafari and Tehran) Maghrib
+whenever the sun reached it before Isha. The review measured that angle jumping about
+45 minutes between neighbouring days, landing one minute before Isha, and putting Jafari
+after Tehran at Anchorage. This commit reverts to the Twilight Angle cap the phone
+ships, so the two products agree everywhere.
 
-- **Shia Maghrib.** The main calculation no longer carries adhan's `maghribAngle`. It stays at sunset, so `isUsable` judges the true solar day. Jafari (4 degrees) and Tehran (4.5 degrees) Maghrib now come from a separate Isha-only pass with the Twilight Angle rule, at the same latitude as the day, including the borrowed polar latitude. This mirrors the phone's `PrayerEngine`.
-- **Regression evidence.** The new unit tests pin Oslo and Trondheim on 21 June 2026 to values taken from the phone's Java adhan probe: Oslo sunrise 03:54, Jafari Maghrib 23:05, Tehran 23:07; Trondheim Jafari 23:52, Tehran 23:53. Both days are real, not polar.
-- **First-run wording.** It no longer says the location is "kept" on the computer. It now says SajdaTime does not send the location anywhere and the browser's location service finds it.
-- **Docs.** `DECISIONS.md` D-002 and `HANDOVER.md` now state the separate Shia pass instead of claiming every method mirrors the phone in the same way. The stale "pick this up in /tmp" instructions are gone.
-- **Settings focus.** Controls no longer use native `disabled` while saving. They use `aria-disabled` plus a save guard, so focus stays on the pressed control after a save. A new test presses Enter on Hanafi and on the Hijri stepper and asserts focus.
-- **Smaller P2s.** The Next row no longer carries `aria-current`; row text has spaces so a screen reader does not hear "AsrNow14:12"; a long place name wraps; city search says "Top 6 places" only when a seventh match exists; the Vite module preload polyfill is off so the bundle has no injected `fetch` helper.
-- **Second-pass P2s.** The keyboard focus test now waits for the heading before pressing, so it no longer races Preact's focus effect. Times are truncated to the whole minute after corrections and the order clamp, matching the phone. At 200 percent zoom the Hijri minus and plus stack instead of sitting side by side. `CLAUDE.md` no longer lists permissions the manifest does not use, the plan points at D-002 instead of the superseded `maghribAngle` build, and the Java probe that produced the Oslo and Trondheim values is committed under `tools/adhan-probe`.
-- **Third-pass fixes.** The true angle is now rejected when it would land in the same minute as Isha or later, so the order clamp never collapses Maghrib and Isha onto one minute; a sweep from 55 to 66 degrees keeps them apart all summer. Singapore uses nearest-minute rounding like adhan-java instead of `Rounding.Up`, and the probe rounds through `CalendarUtil.roundedMinute` so its true Tehran value matches the extension. `D-002` and `D-004` were corrected for these, and the two stale doc lines were fixed.
+- **Shia Maghrib is the cap.** `src/core/engine.ts` reads Jafari (4 degrees) and Tehran
+  (4.5 degrees) Maghrib from a separate Isha-only pass with the Twilight Angle rule,
+  exactly as the phone does: the true twilight when the sun reaches it early, and sunset
+  plus `angle / 60` of the night otherwise. The true-angle probe and its before-Isha
+  guard are gone. The main day check still sees sunset, so a normal Shia day above 60
+  degrees is not projected.
+- **Regression evidence.** Unit tests pin Oslo, Trondheim, Tampere, Manchester and
+  Anchorage to the phone's Java probe values, and a sweep from 50 to 66 degrees across
+  all of 2026 asserts Maghrib before Isha, Jafari no later than Tehran, and a daily
+  Maghrib move of at most 10 minutes.
+- **Docs.** `DECISIONS.md` D-002 records the reversal and the measured faults of the
+  true angle. `HANDOVER.md`, this file and the probe README no longer describe a "Shia
+  difference from the phone". `docs/PHONE-FOLLOW-UP.md` is deleted: there is no longer a
+  phone change to hand over.
 
-## P1-A decision, made
+## The reversal, made
 
-The second review found that the Shia Maghrib pass caps its result at sunset plus `angle / 60` of the night, even on a summer day when the sun does reach 4 or 4.5 degrees. The phone has the same cap. Ali chose the true angle. The extension now uses the real angle whenever it lands after sunset and in an earlier minute than the method's Isha, and falls back to the Twilight Angle cap when the sun never reaches it or it would land on or after Isha. Oslo on 21 June now shows Jafari 23:35 and Tehran 23:46, not 23:05 and 23:07; Trondheim stays at 23:52 and 23:53; Tampere keeps the cap so Maghrib stays before Isha. The phone still caps and must make the same change in its next release, so the two products deliberately differ until then. That difference is recorded in D-002 and HANDOVER, and `tools/adhan-probe` prints both the true angle and the current phone cap.
-
-The exact change the phone needs is written up in [`PHONE-FOLLOW-UP.md`](PHONE-FOLLOW-UP.md). The phone repo is separate and Claude's to edit.
+The true-angle ruling from the previous round is reversed. The measured faults that
+ended it: Tampere, Jafari jumped from 00:04 on 9 June to 23:25 on 12 June, about 45
+minutes across neighbouring days; Anchorage, Jafari on 21 June landed at 00:47, one
+minute before Isha at 00:48; and Anchorage, Jafari came after Tehran (00:47 against
+00:04), which is impossible in the sky. The true angle also matched no standard
+reference and would have moved Maghrib for existing users. The Twilight Angle cap the
+phone ships is smooth and is what Aladhan gives with its default angle-based setting,
+so the extension now matches the phone everywhere. The full reasoning and the rejected
+option are recorded in `DECISIONS.md` D-002.
 
 ## What to run
 
@@ -55,17 +71,17 @@ To look by hand, open `chrome://extensions`, enable Developer mode, choose **Loa
 4. **First run and Settings.** Whether the words are plain and true, whether the location flow is understandable without a manual, whether Settings preserves a deliberately chosen method when the place changes, and whether the disclaimer is intact and readable. The disclaimer must never be removed, softened or hidden.
 5. **Accessibility.** axe is not a screen reader. Check the tab order, the heading focus, Escape, the `aria-current` value, the live city hint and whether the visible pills match what is announced. Check the new `aria-disabled` controls still behave for keyboard and pointer, and that focus does not move during a save.
 6. **Correctness and privacy in the code.** The engine mirrors the phone's high-latitude rule, the projection to the signed reference latitude, the Ramadan Isha adjustment, manual corrections last and the ascending clamp. The manifest should still ask only for `storage` and `geolocation`. There should be no `fetch` to a remote host, no remote code and no content script.
-7. **Test quality.** Look for tests that only assert the code's own output, tests that pass for the wrong reason, and state that is not covered. The engine fixtures are the phone's values, not Aladhan's, except the broad sanity fixtures. The new Oslo and Trondheim values were produced with the phone's Java adhan library, not by running the extension.
+7. **Test quality.** Look for tests that only assert the code's own output, tests that pass for the wrong reason, and state that is not covered. The engine fixtures are the phone's values, not Aladhan's, except the broad sanity fixtures. The high-latitude Shia values were produced with the phone's Java adhan library, not by running the extension.
 8. **Documentation accuracy.** If a claim in `HANDOVER.md` is not true of this commit, that is a finding.
 
 ## Evidence in this commit
 
-`npm run check`: 7 unit files, 87 tests passed, strict typecheck passed, production build passed.
+`npm run check`: 7 unit files, 85 tests passed, strict typecheck passed, production build passed.
 `npm run test:e2e`: 25 tests passed.
 
 | Test file | What it covers |
 | --- | --- |
-| `tests/unit/engine.test.ts` | Phone fixtures, including the new Oslo and Trondheim Shia summer cases, polar projection and correction clamp |
+| `tests/unit/engine.test.ts` | Phone fixtures, including the five high-latitude Shia cases, polar projection and correction clamp |
 | `tests/unit/aladhan.test.ts` | 13 broad independent sanity fixtures |
 | `tests/e2e/popup.test.ts` | Times, 253 pixel viewport, countdown tick, 12-hour language, tomorrow Fajr, first run wording, Makkah fallback, Settings, city search, method persistence |
 | `tests/e2e/audit.test.ts` | Asr school, method change, place change, dark link contrast, keyboard focus and Escape, focus after a save |
@@ -99,7 +115,6 @@ The 190 pixel Settings screenshot is deliberately tall. It shows the stacked sch
 - A remaining recorded P2: after midnight the Isha row still shows tonight's time with a "Now" pill.
 - A remaining recorded P2: the default method survives a place change if the user never chose one.
 - A remaining recorded P2: the polar note does not name the latitude it borrowed.
-- **Shia Maghrib difference from the phone, until the phone follows:** the extension uses the true angle above about 52 degrees north; the phone still caps. This is Ali's decision and is not a defect.
 - No Edge run, no Windows run and no real screen reader run. These are stated limits.
 - No GitHub Actions workflow. This Mac's `gh` login lacks the `workflow` scope. Local checks are the evidence.
 - The real browser geolocation bubble is mocked in the tests because the extension origin cannot be granted a permission from Playwright.

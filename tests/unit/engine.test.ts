@@ -16,6 +16,7 @@ const OSLO = { latitude: 59.9139, longitude: 10.7522 };
 const TRONDHEIM = { latitude: 63.4305, longitude: 10.3951 };
 const TAMPERE = { latitude: 61.4978, longitude: 23.761 };
 const ANCHORAGE = { latitude: 61.2181, longitude: -149.9003 };
+const MANCHESTER = { latitude: 53.48, longitude: -2.24 };
 
 function prefs(overrides: Partial<CalculationPrefs>): CalculationPrefs {
   return {
@@ -46,6 +47,12 @@ function clocks(
   ) as Record<PrayerSlot, string>;
 }
 
+function circularMinutes(a: number, b: number): number {
+  const minutes = Math.abs(a - b) / 60000;
+  const rem = minutes % 1440;
+  return Math.min(rem, 1440 - rem);
+}
+
 describe('computeDay', () => {
   it('matches the phone for Makkah, Umm al-Qura, 15 January 2026', () => {
     expect(
@@ -73,103 +80,102 @@ describe('computeDay', () => {
     );
   });
 
-  it('keeps a normal Shia day usable above 60 degrees in summer', () => {
+  it('keeps a normal Shia day above 60 degrees in summer as a real day', () => {
     // The Shia Maghrib sits after sunset, so the solar day must be judged against sunset
     // itself. Before this fix Oslo on midsummer was wrongly projected to 45 degrees and
-    // showed Sunrise 05:30 with a false "cannot be worked out" note. The sun does reach
-    // 4 degrees here, so the true angle is used rather than the Twilight Angle cap.
+    // showed Sunrise 05:30 with a false "cannot be worked out" note.
     const jafari = computeDay(OSLO, '2026-06-21', prefs({ method: 'jafari', timeZone: 'Europe/Oslo' }));
     const tehran = computeDay(OSLO, '2026-06-21', prefs({ method: 'tehran', timeZone: 'Europe/Oslo' }));
 
     expect(jafari.isPolar).toBe(false);
     expect(tehran.isPolar).toBe(false);
     expect(clock(jafari.times.sunrise, 'Europe/Oslo')).toBe('03:54');
-    expect(clock(jafari.times.maghrib, 'Europe/Oslo')).toBe('23:35');
-    expect(clock(tehran.times.maghrib, 'Europe/Oslo')).toBe('23:46');
   });
 
-  it('uses the phone Shia Maghrib when the sun never reaches the angle', () => {
-    // At Trondheim on midsummer the sun never dips 4 degrees, so a plain maghrib angle
-    // would quietly fall back to sunset. The phone's second pass with the Twilight Angle
-    // rule gives a later Maghrib. Values are the phone engine's, from the Java adhan probe.
-    const jafari = computeDay(
-      TRONDHEIM,
-      '2026-06-21',
-      prefs({ method: 'jafari', timeZone: 'Europe/Oslo' }),
-    );
-    const tehran = computeDay(
-      TRONDHEIM,
-      '2026-06-21',
-      prefs({ method: 'tehran', timeZone: 'Europe/Oslo' }),
-    );
+  it('matches the phone Shia Maghrib and Isha at five high-latitude places', () => {
+    // Values are the phone's, from tools/adhan-probe (adhan-java 1.2.1, the library the
+    // phone ships). The Shia Maghrib is the Twilight Angle cap; Isha is the method's
+    // 14-degree Isha, itself capped by the Twilight Angle rule when the sun never reaches
+    // it. See DECISIONS D-002.
+    const cases = [
+      {
+        name: 'Oslo', place: OSLO, zone: 'Europe/Oslo', date: '2026-06-21',
+        jafari: { maghrib: '23:05', isha: '23:56' },
+        tehran: { maghrib: '23:07', isha: '23:56' },
+      },
+      {
+        name: 'Trondheim', place: TRONDHEIM, zone: 'Europe/Oslo', date: '2026-06-21',
+        jafari: { maghrib: '23:52', isha: '00:26' },
+        tehran: { maghrib: '23:53', isha: '00:26' },
+      },
+      {
+        name: 'Tampere', place: TAMPERE, zone: 'Europe/Helsinki', date: '2026-06-21',
+        jafari: { maghrib: '23:30', isha: '00:15' },
+        tehran: { maghrib: '23:32', isha: '00:15' },
+      },
+      {
+        name: 'Manchester', place: MANCHESTER, zone: 'Europe/London', date: '2026-06-21',
+        jafari: { maghrib: '22:10', isha: '23:19' },
+        tehran: { maghrib: '22:13', isha: '23:19' },
+      },
+      {
+        name: 'Anchorage', place: ANCHORAGE, zone: 'America/Anchorage', date: '2026-06-20',
+        jafari: { maghrib: '00:01', isha: '00:47' },
+        tehran: { maghrib: '00:03', isha: '00:47' },
+      },
+    ];
 
-    expect(clock(jafari.times.maghrib, 'Europe/Oslo')).toBe('23:52');
-    expect(clock(tehran.times.maghrib, 'Europe/Oslo')).toBe('23:53');
-  });
-
-  it('keeps the Shia Maghrib strictly before Isha when the true angle is late', () => {
-    // Between about 60.5 and 70 degrees north the sun reaches 4 or 4.5 degrees near solar
-    // midnight, after the method's Isha. Without the before-Isha guard the order clamp
-    // would move Isha onto Maghrib and show the same minute twice. The guard falls back
-    // to the Twilight Angle cap, which is always earlier than Isha.
-    const tampereJafari = computeDay(
-      TAMPERE,
-      '2026-06-21',
-      prefs({ method: 'jafari', timeZone: 'Europe/Helsinki' }),
-    );
-    expect(clock(tampereJafari.times.maghrib, 'Europe/Helsinki')).toBe('23:30');
-    expect(clock(tampereJafari.times.isha, 'Europe/Helsinki')).toBe('00:15');
-
-    const tampereTehran = computeDay(
-      TAMPERE,
-      '2026-06-21',
-      prefs({ method: 'tehran', timeZone: 'Europe/Helsinki' }),
-    );
-    expect(clock(tampereTehran.times.maghrib, 'Europe/Helsinki')).toBe('23:32');
-    expect(clock(tampereTehran.times.isha, 'Europe/Helsinki')).toBe('00:15');
-
-    const trondheim = computeDay(
-      TRONDHEIM,
-      '2026-05-26',
-      prefs({ method: 'jafari', timeZone: 'Europe/Oslo' }),
-    );
-    expect(clock(trondheim.times.maghrib, 'Europe/Oslo')).toBe('23:12');
-    expect(clock(trondheim.times.isha, 'Europe/Oslo')).toBe('23:59');
-  });
-
-  it('keeps a late true angle that is still before Isha', () => {
-    // Anchorage on 20 June reaches 4 degrees at 00:01, after sunset but still before the
-    // method's Isha, so the true angle wins and the cap is not used.
-    const anchorage = computeDay(
-      ANCHORAGE,
-      '2026-06-20',
-      prefs({ method: 'jafari', timeZone: 'America/Anchorage' }),
-    );
-    expect(clock(anchorage.times.maghrib, 'America/Anchorage')).toBe('00:01');
-    expect(clock(anchorage.times.isha, 'America/Anchorage')).toBe('00:47');
-  });
-
-  it('never lets the Shia Maghrib land on or after Isha from May to August', () => {
-    // The collision window runs from late May to mid July, and its edges differ by
-    // latitude, so this sweeps the whole window for both Shia methods rather than
-    // pinning three days.
-    for (let latitude = 55; latitude <= 66; latitude += 1) {
-      for (let offset = 0; offset <= 122; offset += 3) {
-        const date = new Date(Date.UTC(2026, 4, 1) + offset * 86_400_000)
-          .toISOString()
-          .slice(0, 10);
-        for (const method of ['jafari', 'tehran'] as const) {
-          const day = computeDay(
-            { latitude, longitude: 10 },
-            date,
-            prefs({ method, timeZone: 'UTC' }),
-          );
-          if (day.isPolar) continue;
-          expect(day.times.maghrib.getTime()).toBeLessThan(day.times.isha.getTime());
-        }
-      }
+    for (const item of cases) {
+      const jafari = computeDay(item.place, item.date, prefs({ method: 'jafari', timeZone: item.zone }));
+      const tehran = computeDay(item.place, item.date, prefs({ method: 'tehran', timeZone: item.zone }));
+      expect(clock(jafari.times.maghrib, item.zone), `${item.name} Jafari Maghrib`).toBe(item.jafari.maghrib);
+      expect(clock(jafari.times.isha, item.zone), `${item.name} Jafari Isha`).toBe(item.jafari.isha);
+      expect(clock(tehran.times.maghrib, item.zone), `${item.name} Tehran Maghrib`).toBe(item.tehran.maghrib);
+      expect(clock(tehran.times.isha, item.zone), `${item.name} Tehran Isha`).toBe(item.tehran.isha);
     }
   });
+
+  it('keeps the Shia Maghrib before Isha, ordered, and continuous all of 2026', () => {
+    // The phone cap is smooth: it returns the true 4 or 4.5 degree twilight when the sun
+    // reaches it, and sunset plus angle / 60 of the night otherwise, so a real day never
+    // jumps. This sweeps the whole year from 50 to 66 degrees and asserts three things on
+    // every real day: Maghrib is before Isha, Jafari is never later than Tehran, and
+    // Maghrib moves at most 10 minutes from one day to the next, measured as circular
+    // time-of-day distance so a midnight crossing (23:59 to 00:01) counts as two minutes,
+    // not 24 hours. Polar days and the first real day after them are skipped, because the
+    // 45-degree projection changes the place and is not a day-to-day move.
+    let largestMove = 0;
+    for (let latitude = 50; latitude <= 66; latitude += 0.5) {
+      let previousWasPolar = false;
+      let previous: { jafari: number; tehran: number } | null = null;
+      for (let dayOfYear = 0; dayOfYear < 365; dayOfYear += 1) {
+        const date = new Date(Date.UTC(2026, 0, 1 + dayOfYear)).toISOString().slice(0, 10);
+        const place = { latitude, longitude: 10 };
+        const jafari = computeDay(place, date, prefs({ method: 'jafari', timeZone: 'UTC' }));
+        const tehran = computeDay(place, date, prefs({ method: 'tehran', timeZone: 'UTC' }));
+        const polar = jafari.isPolar || tehran.isPolar;
+        if (polar || previousWasPolar) {
+          previousWasPolar = polar;
+          previous = null;
+          continue;
+        }
+        previousWasPolar = false;
+
+        expect(jafari.times.maghrib.getTime()).toBeLessThan(jafari.times.isha.getTime());
+        expect(tehran.times.maghrib.getTime()).toBeLessThan(tehran.times.isha.getTime());
+        expect(jafari.times.maghrib.getTime()).toBeLessThanOrEqual(tehran.times.maghrib.getTime());
+
+        if (previous) {
+          const jafariMove = circularMinutes(jafari.times.maghrib.getTime(), previous.jafari);
+          const tehranMove = circularMinutes(tehran.times.maghrib.getTime(), previous.tehran);
+          largestMove = Math.max(largestMove, jafariMove, tehranMove);
+        }
+        previous = { jafari: jafari.times.maghrib.getTime(), tehran: tehran.times.maghrib.getTime() };
+      }
+    }
+    console.log('largest daily Shia Maghrib move (minutes):', largestMove.toFixed(2));
+    expect(largestMove).toBeLessThanOrEqual(10);
+  }, 60_000);
 
   it('keeps every time on the whole minute, as the phone does', () => {
     const day = computeDay(OSLO, '2026-06-21', prefs({ method: 'jafari', timeZone: 'Europe/Oslo' }));
