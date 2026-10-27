@@ -84,7 +84,7 @@ These are the answers to the dashboard's data and privacy form. They must match 
 - **Selling data:** no.
 - **Using data for unrelated purposes:** no.
 - **Using data to decide creditworthiness:** no.
-- **Privacy policy URL:** `https://aliimrankhan86.github.io/sajdatime-extension/privacy.html` once GitHub Pages is on. Until then the listing is not ready.
+- **Privacy policy URL:** `https://aliimrankhan86.github.io/sajdatime-extension/privacy.html` (live from the `docs` folder on `main`).
 
 The dashboard wording changes from time to time. Answer the question it asks, using these facts. Do not tick "no data" just because the data never leaves the computer. Location is handled by the extension and must be declared.
 

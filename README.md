@@ -25,7 +25,7 @@ This is a separate product from the [SajdaTime Android app](https://github.com/a
 - Prayer alerts, the countdown badge, and the offscreen audio page.
 - Ramadan notices, the suhoor timer, Eid notices and the timetable page.
 - Urdu, Arabic, Turkish and Indonesian, with right-to-left layout.
-- Store screenshots, the listing, the privacy page URL and the zipped builds.
+- Store screenshots, the final listing and the submission checks.
 
 ## Build it
 
@@ -71,7 +71,7 @@ The engine is pure TypeScript and has no DOM dependency. The popup works everyth
 
 SajdaTime makes no network requests. It has no analytics, no accounts and no remote code. Your place, method and other settings live in `chrome.storage.local` on this computer. When you choose **Use my location**, the browser supplies the coordinates and SajdaTime stores them locally. It does not send them anywhere.
 
-Read the full [privacy policy](docs/privacy.html).
+Read the full [privacy policy](docs/privacy.html). The hosted copy is [aliimrankhan86.github.io/sajdatime-extension/privacy.html](https://aliimrankhan86.github.io/sajdatime-extension/privacy.html).
 
 ## The rules this build follows
 
@@ -87,6 +87,6 @@ Read the full [privacy policy](docs/privacy.html).
 - [Plan](docs/PLAN.md)
 - [Decisions](docs/DECISIONS.md)
 - [Handover](docs/HANDOVER.md)
-- [Privacy policy](docs/privacy.html)
+- [Privacy policy](docs/privacy.html), also hosted at [aliimrankhan86.github.io/sajdatime-extension/privacy.html](https://aliimrankhan86.github.io/sajdatime-extension/privacy.html)
 - [Store listing draft](docs/store/listing.md)
 - [Publishing steps for the owner](docs/store/PUBLISHING.md)
