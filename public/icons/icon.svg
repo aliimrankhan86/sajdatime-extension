@@ -1,6 +1,2 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="108" height="108" viewBox="0 0 108 108" role="img" aria-label="SajdaTime">
-  <rect width="108" height="108" rx="22" fill="#0E6B4F"/>
-  <path fill="#F0D69A" d="M54,26C44.9,31.3 39.6,40.9 39.6,52.2V82H48.6V52.2C48.6,45.1 50.5,40.1 54,37C57.5,40.1 59.4,45.1 59.4,52.2V82H68.4V52.2C68.4,40.9 63.1,31.3 54,26Z"/>
-  <path fill="#F0D69A" d="M30,82H35.4V56.4H30V82ZM72.6,82H78V56.4H72.6V82Z"/>
-</svg>
+<svg width="108" height="108" role="img" aria-label="SajdaTime" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 108 108"><rect width="108" height="108" rx="24" fill="#0E6B4F"/><g transform="translate(54 54) scale(1.65) translate(-54 -54)" fill="#F0D69A"><path d="M54,26C44.9,31.3 39.6,40.9 39.6,52.2V82H48.6V52.2C48.6,45.1 50.5,40.1 54,37C57.5,40.1 59.4,45.1 59.4,52.2V82H68.4V52.2C68.4,40.9 63.1,31.3 54,26Z"/><path d="M30,82H35.4V56.4H30V82ZM72.6,82H78V56.4H72.6V82Z"/></g></svg>

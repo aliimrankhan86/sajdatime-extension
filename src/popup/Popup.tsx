@@ -194,7 +194,10 @@ function FirstRun({ onSaved }: { onSaved: (settings: Settings) => void }) {
 
   return (
     <main class="welcome">
-      <p class="brand">SajdaTime</p>
+      <p class="brand">
+            <img class="brand-logo" src="/icons/icon-128.png" alt="" width="48" height="48" />
+            SajdaTime
+          </p>
       <h1 class="welcome-title">Prayer times, quietly in your browser.</h1>
       <p class="welcome-lead">
         Fajr to Isha, a calm countdown, and the Hijri date. Worked out on your computer.
@@ -287,7 +290,10 @@ function Times({
     <main>
       <header class="hero">
         <div class="hero-top">
-          <p class="brand">SajdaTime</p>
+          <p class="brand">
+            <img class="brand-logo" src="/icons/icon-128.png" alt="" width="48" height="48" />
+            SajdaTime
+          </p>
           <button class="header-button" type="button" onClick={onOpenSettings}>
             Settings
           </button>

@@ -61,12 +61,24 @@ button {
 }
 
 .brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   margin: 0;
   color: var(--primary);
   font-size: 14px;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+}
+
+/* The phone app's launcher mark. The 128 icon carries Chrome's transparent padding, so
+   the negative margin keeps the visible tile aligned with the text edge. */
+.brand-logo {
+  flex: none;
+  width: 48px;
+  height: 48px;
+  margin: -5px;
 }
 
 .place {
