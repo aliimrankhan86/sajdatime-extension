@@ -12,9 +12,16 @@ A Manifest V3 browser extension, Chrome first and Edge later. It shows today's s
 
 There is no account, no ad, no analytics, no host permission, no content script and no runtime network request. Location is handled on the computer. The full intent is in [`docs/PLAN.md`](PLAN.md). Binding decisions are in [`docs/DECISIONS.md`](DECISIONS.md). If the plan and a decision disagree, the decision wins. The current state is [`docs/HANDOVER.md`](HANDOVER.md).
 
-## What this fix commit changed
+## What this commit changed
 
-The previous commit (`7de9d3f`) set the body to `width: 380px` with `max-width: 100vw`. That collapsed the real action popup to 25 pixels, because Chrome sizes an action popup while its viewport is still tiny, so `100vw` shrank the body to match. The earlier `width: 100%` body collapsed it to 147 pixels. The School choice from that commit is unchanged and accepted; this commit only re-fixes the popup width and the zoom tests.
+This commit applies the two P2 fixes from the READY review of `5c29e83`. The popup width fix from that commit stands unchanged.
+
+- **Screenshots are opt in.** `tests/e2e/extension.ts` exposes a `screenshot` helper that does nothing unless `SAJDATIME_SCREENSHOTS=1` is set, so a plain `npm run test:e2e` leaves the checkout clean. Refresh the images deliberately and commit them.
+- **Zoom above 210 percent is a stated limit.** No layout change. Above about 210 percent the 380 pixel popup needs more than the 800 pixel width Chrome allows an action popup, so the page may need sideways scrolling. It is listed in the known gaps.
+
+### What the previous commit changed
+
+The previous commit (`7de9d3f`) set the body to `width: 380px` with `max-width: 100vw`. That collapsed the real action popup to 25 pixels, because Chrome sizes an action popup while its viewport is still tiny, so `100vw` shrank the body to match. The earlier `width: 100%` body collapsed it to 147 pixels. The School choice from that commit is unchanged and accepted.
 
 - **Popup width.** The `html` width rule is gone and the body is a fixed 380 pixels with no `max-width`, the only value that holds in a real popup.
 - **Real popup measurement.** `tests/e2e/popup-width.test.ts` now opens the real toolbar popup in headful Chrome for Testing over a remote debugging port and reads the window, body width and Settings button from the DevTools protocol. It fails at 147 pixels against the `width: 100%` body and at 25 pixels against the `max-width: 100vw` body, so it cannot pass for the wrong reason.
@@ -72,7 +79,7 @@ To look by hand, open `chrome://extensions`, enable Developer mode, choose **Loa
 
 ## Screenshots
 
-These are review evidence at 380 by 600, not the final store set.
+These are review evidence at 380 by 600, not the final store set. They are refreshed only when `SAJDATIME_SCREENSHOTS=1` is set, so a plain test run does not rewrite them.
 
 ![Times, light](images/times-light.png)
 ![Times, dark](images/times-dark.png)
@@ -97,6 +104,7 @@ The 200 percent zoom Settings screenshot is deliberately tall. It shows the stac
 - A remaining recorded P2: the polar note does not name the latitude it borrowed.
 - No Edge run, no Windows run and no real screen reader run. These are stated limits.
 - `tests/e2e/popup-width.test.ts` runs headful, because `chrome.action.openPopup()` never surfaces a measurable target under headless Chrome. On a machine without a display, only that test cannot run; the other 29 run headless.
+- Zoom is tested at 200 percent only. Above about 210 percent, 380 CSS pixels at that zoom is more than the 800 pixel width Chrome allows an action popup, so the page may need sideways scrolling. This is a stated limit, not a layout change.
 - No GitHub Actions workflow. This Mac's `gh` login lacks the `workflow` scope. Local checks are the evidence.
 - The real browser geolocation bubble is mocked in the tests because the extension origin cannot be granted a permission from Playwright.
 - The store listing, privacy URL and zip are not final.

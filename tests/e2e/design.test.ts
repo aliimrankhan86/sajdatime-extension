@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { launchExtension, seedSettings } from './extension';
+import { launchExtension, screenshot, seedSettings } from './extension';
 import { countdownLineCount, undersizedControls } from './measures';
 
 test('shows a Now pill on the current prayer and a Next pill on the next', async () => {
@@ -75,7 +75,7 @@ test('keeps the popup readable at 200 percent zoom', async () => {
         .filter((rect) => rect.left < -0.5 || rect.right > window.innerWidth + 0.5),
     );
     expect(outside).toEqual([]);
-    await extension.page.screenshot({ path: 'docs/images/zoom-200.png', fullPage: true });
+    await screenshot(extension.page, 'docs/images/zoom-200.png', { fullPage: true });
 
     await extension.page.getByRole('button', { name: 'Settings' }).click();
     const settingsWidths = await extension.page.evaluate(() => ({
@@ -84,7 +84,7 @@ test('keeps the popup readable at 200 percent zoom', async () => {
     }));
     expect(settingsWidths.scroll).toBeLessThanOrEqual(settingsWidths.client);
     expect(await undersizedControls(extension.page)).toEqual([]);
-    await extension.page.screenshot({ path: 'docs/images/settings-zoom-200.png', fullPage: true });
+    await screenshot(extension.page, 'docs/images/settings-zoom-200.png', { fullPage: true });
   } finally {
     await extension.close();
   }
@@ -110,7 +110,7 @@ test('dark mode uses a flat card and stays complete', async () => {
       clientHeight: document.documentElement.clientHeight,
     }));
     expect(sizes.scrollHeight).toBeLessThanOrEqual(sizes.clientHeight);
-    await extension.page.screenshot({ path: 'docs/images/times-dark.png' });
+    await screenshot(extension.page, 'docs/images/times-dark.png');
   } finally {
     await extension.close();
   }

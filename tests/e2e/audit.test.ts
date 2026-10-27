@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { launchExtension, seedSettings } from './extension';
+import { launchExtension, screenshot, seedSettings } from './extension';
 
 async function openSettings(page: import('@playwright/test').Page) {
   await page.getByRole('button', { name: 'Settings' }).click();
@@ -101,7 +101,7 @@ test('dark mode keeps every link readable', async () => {
       (a, b) => b - a,
     );
     expect((light! + 0.05) / (dark! + 0.05)).toBeGreaterThanOrEqual(4.5);
-    await extension.page.screenshot({ path: 'docs/images/settings-dark.png' });
+    await screenshot(extension.page, 'docs/images/settings-dark.png');
   } finally {
     await extension.close();
   }

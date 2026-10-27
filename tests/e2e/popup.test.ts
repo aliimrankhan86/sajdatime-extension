@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { launchExtension, seedSettings } from './extension';
+import { launchExtension, screenshot, seedSettings } from './extension';
 import { countdownLineCount, undersizedControls } from './measures';
 
 test('shows the place, the next prayer and all six times', async () => {
@@ -18,7 +18,7 @@ test('shows the place, the next prayer and all six times', async () => {
       clientHeight: document.documentElement.clientHeight,
     }));
     expect(sizes.scrollHeight).toBeLessThanOrEqual(sizes.clientHeight);
-    await extension.page.screenshot({ path: 'docs/images/times-light.png' });
+    await screenshot(extension.page, 'docs/images/times-light.png');
   } finally {
     await extension.close();
   }
@@ -92,7 +92,7 @@ test('first run asks for location, then saves the place', async () => {
     await expect(extension.page.getByRole('button', { name: 'Use my location' })).toBeVisible();
     await expect(extension.page.locator('.welcome-note')).not.toContainText('keeps your location');
     await expect(extension.page.locator('.welcome-note')).not.toContainText('never leaves');
-    await extension.page.screenshot({ path: 'docs/images/first-run-light.png' });
+    await screenshot(extension.page, 'docs/images/first-run-light.png');
 
     // The browser's own permission bubble cannot be driven from Playwright for an
     // extension origin, so this test supplies a known fix and checks what we do with it.
@@ -173,7 +173,7 @@ test('keeps Settings visible and opens the sheet', async () => {
     await button.click();
     await expect(extension.page.getByRole('heading', { name: 'Settings' })).toBeVisible();
     await expect(extension.page.getByRole('heading', { name: 'Place' })).toBeVisible();
-    await extension.page.screenshot({ path: 'docs/images/settings-light.png' });
+    await screenshot(extension.page, 'docs/images/settings-light.png');
   } finally {
     await extension.close();
   }

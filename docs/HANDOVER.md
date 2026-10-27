@@ -63,6 +63,7 @@ That path is one example of where Playwright keeps Chrome for Testing. `tests/e2
 
 - The real browser permission bubble for geolocation is not automated. The end-to-end test supplies a known fix through `navigator.geolocation` and checks that the extension saves it. The banner and the real prompt still need a manual look.
 - The zoom tests used to fake 150 and 200 percent zoom by shrinking the viewport to 253 and 190 pixels. Chrome does not shrink a popup's viewport on zoom; it enlarges the window and keeps 380 CSS pixels. Both zoom tests now set `deviceScaleFactor: 2` on a 380 by 600 viewport and check that nothing clips, the countdown stays on one line and every control keeps its 44 CSS pixel target. Sizes a user could get from a resized window, and Windows display scaling, are not tested yet.
+- Zoom is tested at 200 percent only. Above about 210 percent, 380 CSS pixels at that zoom is more than the 800 pixel width Chrome allows an action popup, so the page may need sideways scrolling. The layout is not changed for it, and that range is not tested.
 - **Lesson, 27 October 2026: `max-width: 100vw` on a popup collapses it, and only a real-popup measurement catches it.** While Chrome sizes an action popup its viewport starts tiny, so `100vw` shrinks the body to match. The first width fix (`width: 100%` with `max-width: 380px`) opened the real popup at about 147 pixels, and the second (`width: 380px` with `max-width: 100vw`) at about 25 pixels, neither of which any tab-based test could see. `tests/e2e/popup-width.test.ts` now opens the real toolbar popup in headful Chrome for Testing over a remote debugging port and reads the window size, the body width and the Settings button straight from the DevTools protocol. It fails against both earlier CSS states, so it cannot pass for the wrong reason. A tab is not a popup.
 - No screen reader was run against the popup. axe reports no WCAG 2.2 AA violation on Times, first run, Settings and Location in light and dark, but axe cannot judge reading order, announcement quality or whether a real screen reader makes sense of the page.
 - Windows, Edge and a real user's Chrome profile are not tested. The suite runs on macOS with Chrome for Testing. Edge gets a manual load and a short check later.
@@ -106,6 +107,8 @@ npm ci
 npm run check
 npm run test:e2e
 ```
+
+`npm run test:e2e` leaves `docs/images` untouched. To refresh the screenshots, run `SAJDATIME_SCREENSHOTS=1 npm run test:e2e`, then commit the images.
 
 The code lives at `https://github.com/aliimrankhan86/sajdatime-extension` on `main`, public. Do not rebuild it from `/tmp`. `tests/e2e/extension.ts` finds Chrome for Testing by itself through `SAJATIME_CHROME` or Playwright's cache; there is no hard-coded browser path to change.
 

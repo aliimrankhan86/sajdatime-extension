@@ -119,3 +119,16 @@ export async function seedSettings(
   await extension.page.reload();
   await extension.page.waitForSelector('.next-card');
 }
+
+/**
+ * Screenshots are opt in, so a plain test run leaves the checkout clean. Set
+ * SAJDATIME_SCREENSHOTS=1 to rewrite the committed images in docs/images, then commit them.
+ */
+export async function screenshot(
+  page: Page,
+  path: string,
+  options: { fullPage?: boolean } = {},
+): Promise<void> {
+  if (process.env.SAJDATIME_SCREENSHOTS !== '1') return;
+  await page.screenshot({ path, ...options });
+}
