@@ -1,5 +1,5 @@
 import { chromium } from '@playwright/test';
-import { readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const sizes = [16, 32, 48, 128, 300];
@@ -18,7 +18,6 @@ try {
     const path = resolve(`public/icons/icon-${size}.png`);
     await page.screenshot({ path, omitBackground: true });
     await page.close();
-    writeFileSync(path, readFileSync(path));
     console.log(`${path} ${size}x${size}`);
   }
 } finally {
