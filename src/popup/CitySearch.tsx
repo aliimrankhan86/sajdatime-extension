@@ -56,7 +56,7 @@ export function CitySearch({ onPick, disabled = false }: Props) {
         onFocus={ensureLoaded}
         onInput={(event) => change(event.currentTarget.value)}
       />
-      <p class="field-hint" id="city-hint">
+      <p class="field-hint" id="city-hint" aria-live="polite">
         {trimmed.length === 1
           ? 'Type one more letter.'
           : error
