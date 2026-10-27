@@ -31,6 +31,7 @@ export default defineConfig({
       input: {
         popup: resolve(root, 'src/popup/index.html'),
         'background/index': resolve(root, 'src/background/index.ts'),
+        offscreen: resolve(root, 'src/offscreen/index.html'),
       },
       output: {
         entryFileNames: (chunk) =>

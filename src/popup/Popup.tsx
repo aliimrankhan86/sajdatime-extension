@@ -11,6 +11,7 @@ import {
   type Prayer,
   type PrayerSlot,
 } from '../core';
+import { clockFormatter, type ClockFormat } from '../core/clock';
 import type { City } from '../core/cities';
 import { firstSettings } from '../settings/create';
 import { MAKKAH, placeFromCity, placeFromGeolocation } from '../settings/place';
@@ -285,7 +286,7 @@ function Times({
   let day: DayTimes;
   let next: NextPrayer;
   let current: Prayer | null;
-  let clock: Intl.DateTimeFormat;
+  let clock: ClockFormat;
   try {
     today = dateInZone(now, prefs.timeZone);
     day = computeDay(settings.place, today, prefs);
@@ -295,14 +296,7 @@ function Times({
     // will take over when the language screen lands. In 24 hour style the hour
     // keeps its leading zero, so the column of times lines up.
     const locale = navigator.language || 'en-GB';
-    const hourCycle = new Intl.DateTimeFormat(locale, { hour: 'numeric' }).resolvedOptions().hourCycle;
-    const hour12 = hourCycle === 'h11' || hourCycle === 'h12';
-    clock = new Intl.DateTimeFormat(locale, {
-      timeZone: prefs.timeZone,
-      hour: hour12 ? 'numeric' : '2-digit',
-      minute: '2-digit',
-      hour12,
-    });
+    clock = clockFormatter(prefs.timeZone, locale);
   } catch {
     return (
       <main class="welcome">

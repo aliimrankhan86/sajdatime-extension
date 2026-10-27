@@ -2,7 +2,9 @@ import { useEffect, useRef, useState } from 'preact/hooks';
 import { countryName } from '../core/cities';
 import { isMethodOfferedTo, isShiaMethod, methodsOfferedTo } from '../core/methods';
 import { suggestMethod } from '../core/suggestions';
-import type { MethodId, Sect } from '../core/types';
+import { PRAYER_NAMES } from '../core/alerts';
+import { soundMessageType } from '../core/messages';
+import { PRAYERS, type MethodId, type Sect } from '../core/types';
 import { saveSettings } from '../settings/storage';
 import type { Settings as SettingsValue } from '../settings/types';
 import { LocationSheet } from './LocationSheet';
@@ -23,6 +25,50 @@ const METHOD_LABELS: Record<MethodId, string> = {
   tehran: 'Tehran',
 };
 
+function browserName(): 'Edge' | 'Chrome' {
+  const data = (navigator as unknown as { userAgentData?: { brands?: Array<{ brand: string }> } }).userAgentData;
+  return data?.brands?.some((entry) => entry.brand === 'Microsoft Edge') ? 'Edge' : 'Chrome';
+}
+
+function Switch(props: { label: string; checked: boolean; disabled: boolean; onToggle: () => void }) {
+  return (
+    <button
+      class="switch"
+      type="button"
+      role="switch"
+      aria-checked={props.checked}
+      aria-disabled={props.disabled}
+      aria-label={props.label}
+      onClick={props.onToggle}
+    >
+      <span class="switch-track" aria-hidden="true">
+        <span class="switch-thumb" />
+      </span>
+    </button>
+  );
+}
+
+function ChoiceRow(props: {
+  selected: boolean;
+  title: string;
+  hint: string;
+  disabled: boolean;
+  onSelect: () => void;
+}) {
+  return (
+    <button
+      class={props.selected ? 'choice-row is-selected' : 'choice-row'}
+      type="button"
+      aria-pressed={props.selected}
+      aria-disabled={props.disabled}
+      onClick={props.onSelect}
+    >
+      <span class="choice-title">{props.title}</span>
+      <span class="choice-hint">{props.hint}</span>
+    </button>
+  );
+}
+
 interface Props {
   settings: SettingsValue;
   onClose: () => void;
@@ -33,6 +79,9 @@ export function Settings({ settings, onClose, onSaved }: Props) {
   const [changingPlace, setChangingPlace] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [playing, setPlaying] = useState(false);
+  const [blocked, setBlocked] = useState(false);
+  const browser = browserName();
   const locale = navigator.language || 'en-GB';
   const title = useRef<HTMLHeadingElement>(null);
   const wasChangingPlace = useRef(false);
@@ -40,6 +89,10 @@ export function Settings({ settings, onClose, onSaved }: Props) {
 
   useEffect(() => {
     title.current?.focus();
+  }, []);
+
+  useEffect(() => {
+    void chrome.notifications.getPermissionLevel().then((level) => setBlocked(level === 'denied'));
   }, []);
 
   useEffect(() => {
@@ -88,6 +141,24 @@ export function Settings({ settings, onClose, onSaved }: Props) {
       patch.method = suggestMethod(settings.place.countryCode, sect).suggested;
     }
     update(patch);
+  }
+
+  function togglePlay() {
+    if (busy) return;
+    if (playing) {
+      setPlaying(false);
+      void chrome.runtime.sendMessage({ type: 'stop' });
+      return;
+    }
+    const type = soundMessageType(settings.alerts.sound, settings.sect);
+    if (!type) return;
+    setPlaying(true);
+    void chrome.runtime.sendMessage({ type });
+  }
+
+  function sendTestAlert() {
+    if (busy) return;
+    void chrome.runtime.sendMessage({ type: 'test-alert' });
   }
 
   if (changingPlace) {
@@ -290,6 +361,102 @@ export function Settings({ settings, onClose, onSaved }: Props) {
         <p class="field-hint">Use this if your mosque's Hijri date differs by a day or two.</p>
       </section>
 
+      <section class="settings-group" aria-labelledby="alerts-heading">
+        <h2 class="group-title" id="alerts-heading">
+          Alerts
+        </h2>
+
+        {blocked ? (
+          <div class="blocked-notice" role="alert">
+            <p class="blocked-title">Prayer alerts are blocked</p>
+            <p class="blocked-text">
+              {browser} is not allowed to show notifications for SajdaTime, so the alert cannot appear.
+            </p>
+          </div>
+        ) : null}
+
+        <div class="switch-row">
+          <div class="switch-copy">
+            <p class="switch-title">Prayer alerts</p>
+            <p class="switch-hint">A message and a sound at each prayer.</p>
+          </div>
+          <Switch
+            label="Prayer alerts"
+            checked={settings.alerts.enabled}
+            disabled={busy}
+            onToggle={() => update({ alerts: { ...settings.alerts, enabled: !settings.alerts.enabled } })}
+          />
+        </div>
+
+        {settings.alerts.enabled ? (
+          <>
+            {PRAYERS.map((prayer) => (
+              <div class="switch-row" key={prayer}>
+                <div class="switch-copy">
+                  <p class="switch-title">{PRAYER_NAMES[prayer]}</p>
+                </div>
+                <Switch
+                  label={PRAYER_NAMES[prayer]}
+                  checked={settings.alerts.prayers[prayer]}
+                  disabled={busy}
+                  onToggle={() =>
+                    update({
+                      alerts: {
+                        ...settings.alerts,
+                        prayers: { ...settings.alerts.prayers, [prayer]: !settings.alerts.prayers[prayer] },
+                      },
+                    })
+                  }
+                />
+              </div>
+            ))}
+
+            <div class="sound-head">
+              <h3 class="group-title" id="sound-heading">
+                Sound
+              </h3>
+              {settings.alerts.sound !== 'silent' ? (
+                <button class="compact-button" type="button" aria-disabled={busy} onClick={togglePlay}>
+                  {playing ? 'Stop' : 'Play'}
+                </button>
+              ) : null}
+            </div>
+
+            <div class="choices" role="group" aria-labelledby="sound-heading">
+              <ChoiceRow
+                selected={settings.alerts.sound === 'beep'}
+                title="Soft beep"
+                hint="Short and gentle"
+                disabled={busy}
+                onSelect={() => update({ alerts: { ...settings.alerts, sound: 'beep' } })}
+              />
+              <ChoiceRow
+                selected={settings.alerts.sound === 'adhan'}
+                title="Adhan"
+                hint="The full call to prayer"
+                disabled={busy}
+                onSelect={() => update({ alerts: { ...settings.alerts, sound: 'adhan' } })}
+              />
+              <ChoiceRow
+                selected={settings.alerts.sound === 'silent'}
+                title="Silent"
+                hint="The message only"
+                disabled={busy}
+                onSelect={() => update({ alerts: { ...settings.alerts, sound: 'silent' } })}
+              />
+            </div>
+
+            <button class="action action-small" type="button" aria-disabled={busy} onClick={sendTestAlert}>
+              Send a test alert
+            </button>
+            <p class="field-hint">If nothing appears, check your computer's notification and Focus settings.</p>
+
+            <p class="alerts-note">{browser} needs to be open.</p>
+            <p class="alerts-note">If {browser} is closed or the computer is asleep, no alert can sound.</p>
+          </>
+        ) : null}
+      </section>
+
       <section class="settings-group" aria-labelledby="about-heading">
         <h2 class="group-title" id="about-heading">
           About
@@ -310,6 +477,23 @@ export function Settings({ settings, onClose, onSaved }: Props) {
           </a>
           , CC BY 4.0.
         </p>
+        <details class="credits">
+          <summary class="credits-summary">Adhan recordings</summary>
+          <p class="field-hint">Sunni adhan: recorded by Adam-synagda, CC0.</p>
+          <p class="field-hint">
+            Shia adhan: sung by Saeed Hatamzadeh-Varmazyar,{' '}
+            <a
+              class="link"
+              href="https://creativecommons.org/licenses/by-sa/4.0/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              CC BY-SA 4.0
+            </a>
+            .
+          </p>
+          <p class="field-hint">Both via Wikimedia Commons.</p>
+        </details>
       </section>
     </main>
   );

@@ -1,8 +1,8 @@
-import { isSettings, SETTINGS_KEY, type Settings } from './types';
+import { isSettings, migrateSettings, SETTINGS_KEY, type Settings } from './types';
 
 export async function loadSettings(): Promise<Settings | null> {
   const stored = await chrome.storage.local.get(SETTINGS_KEY);
-  const value: unknown = stored[SETTINGS_KEY];
+  const value: unknown = migrateSettings(stored[SETTINGS_KEY]);
   return isSettings(value) ? value : null;
 }
 
@@ -20,7 +20,7 @@ export function watchSettings(onChange: (settings: Settings | null) => void): ()
     areaName: string,
   ): void => {
     if (areaName !== 'local' || !(SETTINGS_KEY in changes)) return;
-    const value: unknown = changes[SETTINGS_KEY]?.newValue;
+    const value: unknown = migrateSettings(changes[SETTINGS_KEY]?.newValue);
     onChange(isSettings(value) ? value : null);
   };
   chrome.storage.onChanged.addListener(listener);

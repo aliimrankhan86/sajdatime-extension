@@ -1,5 +1,5 @@
 import { suggestMethod } from '../core/suggestions';
-import type { Place, Settings } from './types';
+import { DEFAULT_ALERTS, type Place, type Settings } from './types';
 
 /**
  * A first place from the browser's own location.
@@ -19,5 +19,6 @@ export function firstSettings(place: Place): Settings {
     method: suggestion.suggested,
     madhab: 'shafii',
     hijriOffsetDays: 0,
+    alerts: DEFAULT_ALERTS,
   };
 }

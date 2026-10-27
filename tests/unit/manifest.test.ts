@@ -40,8 +40,8 @@ const FORBIDDEN_KEYS = [
 ];
 
 describe('manifest', () => {
-  it('asks only for storage and geolocation', () => {
-    expect(manifest.permissions).toEqual(['storage', 'geolocation']);
+  it('asks only for the permissions the built features need', () => {
+    expect(manifest.permissions).toEqual(['alarms', 'notifications', 'storage', 'offscreen', 'geolocation']);
   });
 
   it('has no top level key that was not agreed', () => {

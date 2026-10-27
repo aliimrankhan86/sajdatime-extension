@@ -1,5 +1,5 @@
 import { isMethodId } from '../core/methods';
-import type { Madhab, MethodId, Sect } from '../core/types';
+import { PRAYERS, type Madhab, type MethodId, type Prayer, type Sect } from '../core/types';
 
 export interface Place {
   /** What the user sees, for example "My location" or a city name. */
@@ -12,6 +12,23 @@ export interface Place {
   countryCode: string;
 }
 
+export const ALERT_SOUNDS = ['beep', 'adhan', 'silent'] as const;
+
+export type AlertSound = (typeof ALERT_SOUNDS)[number];
+
+export interface AlertsSettings {
+  /** Alerts do nothing until the user turns them on in Settings. */
+  enabled: boolean;
+  sound: AlertSound;
+  prayers: Record<Prayer, boolean>;
+}
+
+export const DEFAULT_ALERTS: AlertsSettings = {
+  enabled: false,
+  sound: 'beep',
+  prayers: { fajr: true, dhuhr: true, asr: true, maghrib: true, isha: true },
+};
+
 export interface Settings {
   version: 1;
   place: Place;
@@ -19,6 +36,7 @@ export interface Settings {
   method: MethodId;
   madhab: Madhab;
   hijriOffsetDays: number;
+  alerts: AlertsSettings;
 }
 
 export const SETTINGS_KEY = 'sajdatime.settings.v1';
@@ -26,6 +44,18 @@ export const SETTINGS_KEY = 'sajdatime.settings.v1';
 // A version 2 must be migrated in storage.ts before this guard sees it. Until then a
 // version 2 object is rejected and the popup returns to first run, which is safe before
 // the first release and deliberate once released only if the migration is written first.
+
+/**
+ * A version 1 setting written before alerts shipped has no alerts object. This adds the
+ * defaults before validation, so an upgrade never throws a user back to the first run.
+ */
+export function migrateSettings(value: unknown): unknown {
+  if (!value || typeof value !== 'object') return value;
+  const candidate = value as Partial<Settings>;
+  if (candidate.version !== 1) return value;
+  if (candidate.alerts !== undefined) return value;
+  return { ...value, alerts: DEFAULT_ALERTS };
+}
 
 export function isSettings(value: unknown): value is Settings {
   if (!value || typeof value !== 'object') return false;
@@ -53,8 +83,24 @@ export function isSettings(value: unknown): value is Settings {
     typeof candidate.hijriOffsetDays === 'number' &&
     Number.isInteger(candidate.hijriOffsetDays) &&
     candidate.hijriOffsetDays >= -2 &&
-    candidate.hijriOffsetDays <= 2
+    candidate.hijriOffsetDays <= 2 &&
+    isAlertsSettings(candidate.alerts)
   );
+}
+
+function isAlertsSettings(value: unknown): value is AlertsSettings {
+  if (!value || typeof value !== 'object') return false;
+  const candidate = value as Partial<AlertsSettings>;
+  if (typeof candidate.enabled !== 'boolean') return false;
+  if (!ALERT_SOUNDS.includes(candidate.sound as AlertSound)) return false;
+  const prayers = candidate.prayers;
+  if (!prayers || typeof prayers !== 'object') return false;
+  const keys = Object.keys(prayers);
+  if (keys.length !== PRAYERS.length) return false;
+  for (const prayer of PRAYERS) {
+    if (typeof (prayers as Record<string, unknown>)[prayer] !== 'boolean') return false;
+  }
+  return true;
 }
 
 function isValidTimeZone(timeZone: string): boolean {

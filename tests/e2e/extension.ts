@@ -1,4 +1,4 @@
-import { chromium, type BrowserContext, type Page } from '@playwright/test';
+import { chromium, type BrowserContext, type Page, type Worker } from '@playwright/test';
 import { existsSync, mkdtempSync, readdirSync } from 'node:fs';
 import { homedir, tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
@@ -55,6 +55,7 @@ export function findChromium(): string | undefined {
 export interface Extension {
   context: BrowserContext;
   page: Page;
+  worker: Worker;
   id: string;
   close: () => Promise<void>;
 }
@@ -88,6 +89,7 @@ export async function launchExtension(
   return {
     context,
     page,
+    worker,
     id,
     close: () => context.close(),
   };
@@ -106,15 +108,21 @@ export const LONDON = {
   method: 'mwl',
   madhab: 'shafii',
   hijriOffsetDays: 0,
+  alerts: {
+    enabled: false,
+    sound: 'beep',
+    prayers: { fajr: true, dhuhr: true, asr: true, maghrib: true, isha: true },
+  },
 };
 
 export async function seedSettings(
   extension: Extension,
   time = new Date('2026-10-27T11:00:00Z'),
+  settings: unknown = LONDON,
 ): Promise<void> {
-  await extension.page.evaluate(async (settings) => {
-    await chrome.storage.local.set({ 'sajdatime.settings.v1': settings });
-  }, LONDON);
+  await extension.page.evaluate(async (stored) => {
+    await chrome.storage.local.set({ 'sajdatime.settings.v1': stored });
+  }, settings);
   await extension.page.clock.install({ time });
   await extension.page.reload();
   await extension.page.waitForSelector('.next-card');

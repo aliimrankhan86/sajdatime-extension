@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { firstSettings } from '../../src/settings/create';
-import { isSettings } from '../../src/settings/types';
+import { DEFAULT_ALERTS, isSettings, migrateSettings } from '../../src/settings/types';
 
 const LONDON = {
   version: 1,
@@ -15,6 +15,7 @@ const LONDON = {
   method: 'mwl',
   madhab: 'shafii',
   hijriOffsetDays: 0,
+  alerts: DEFAULT_ALERTS,
 } as const;
 
 function changed(overrides: Record<string, unknown>): unknown {
@@ -57,6 +58,34 @@ describe('stored settings', () => {
     expect(isSettings(changed({ hijriOffsetDays: 3 }))).toBe(false);
     expect(isSettings(changed({ hijriOffsetDays: -3 }))).toBe(false);
   });
+
+  it('rejects a damaged alerts object', () => {
+    const prayers = { fajr: true, dhuhr: true, asr: true, maghrib: true, isha: true };
+    expect(isSettings(changed({ alerts: { enabled: 'yes', prayers, sound: 'beep' } }))).toBe(false);
+    expect(isSettings(changed({ alerts: { enabled: true, prayers, sound: 'loud' } }))).toBe(false);
+    expect(
+      isSettings(
+        changed({
+          alerts: { enabled: true, prayers: { fajr: true, dhuhr: true, asr: true, maghrib: true }, sound: 'beep' },
+        }),
+      ),
+    ).toBe(false);
+    expect(
+      isSettings(changed({ alerts: { enabled: true, prayers: { ...prayers, sunrise: true }, sound: 'beep' } })),
+    ).toBe(false);
+  });
+});
+
+describe('alerts migration', () => {
+  it('adds the default alerts to an old setting without one', () => {
+    const old = { ...LONDON };
+    delete (old as { alerts?: unknown }).alerts;
+    expect(migrateSettings(old)).toEqual(LONDON);
+  });
+
+  it('leaves a setting that already has alerts unchanged', () => {
+    expect(migrateSettings(LONDON)).toBe(LONDON);
+  });
 });
 
 describe('first settings', () => {
@@ -64,6 +93,8 @@ describe('first settings', () => {
     const settings = firstSettings({ ...LONDON.place, countryCode: 'ZZ' });
     expect(settings.method).toBe('mwl');
     expect(settings.place.countryCode).toBe('ZZ');
+    expect(settings.alerts).toEqual(DEFAULT_ALERTS);
+    expect(settings.alerts.enabled).toBe(false);
   });
 
   it('uses the place country when it is known', () => {

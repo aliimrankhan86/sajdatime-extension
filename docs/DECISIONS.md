@@ -92,11 +92,11 @@ The Shia Maghrib is not an exception to the phone's behaviour. The phone keeps i
 
 ## D-009: No host permissions and no content scripts
 
-**Decided:** the manifest asks for `storage` and `geolocation`. Nothing else. `alarms`, `notifications` and `offscreen` are deliberately absent until an alert actually works.
+**Decided:** the manifest asks for `storage`, `geolocation`, `alarms`, `notifications` and `offscreen`. Nothing else, and no host permissions or content scripts.
 
-**Why:** the extension never reads a page, never calls a server and never needs a tab. Every extra permission makes the install warning longer and the store review harder. Declaring notification and alarm permission for a feature that cannot fire asks the user to trust a promise the build does not keep. The review of 27 October 2026 found this, and the first build should ask only for what it uses.
+**Why:** the extension never reads a page, never calls a server and never needs a tab. Every extra permission makes the install warning longer and the store review harder. The first build asked only for `storage` and `geolocation`, because a notification and alarm permission for a feature that cannot fire asks the user to trust a promise the build does not keep. The three alert permissions arrive now, in the same commit as the worker, the offscreen audio page and the Settings switches that use them, as D-024 records.
 
-**Revisit only with:** the first working alert, in the same change that uses the permission, the service worker and the settings screen. A future feature that needs a host permission must bring a written reason and Ali's agreement.
+**Revisit only with:** a future feature that needs a host permission must bring a written reason and Ali's agreement.
 
 ## D-010: The store copy is drafted early, published last
 
@@ -202,7 +202,7 @@ The Shia Maghrib is not an exception to the phone's behaviour. The phone keeps i
 
 ## D-022: The manifest is locked and the build is scanned
 
-**Decided:** `docs/SECURITY.md` is enforced by code, not by memory. `tests/unit/manifest.test.ts` asserts the exact top level key set, the exact permissions (`storage` and `geolocation`), the strict content security policy `script-src 'self'; object-src 'none'; base-uri 'none'`, and the absence of host permissions, content scripts, web accessible resources and external messaging keys. `tools/check-bundle.mjs` runs at the end of `npm run check`, after the build, and fails on `eval`, `new Function`, `document.write`, `importScripts`, external messaging, `console.log`, the storage APIs other than `chrome.storage.local`, the HTML insertion family in `src/`, and any URL outside the four link allowlist entries.
+**Decided:** `docs/SECURITY.md` is enforced by code, not by memory. `tests/unit/manifest.test.ts` asserts the exact top level key set, the exact permissions (`alarms`, `notifications`, `storage`, `offscreen` and `geolocation`), the strict content security policy `script-src 'self'; object-src 'none'; base-uri 'none'`, and the absence of host permissions, content scripts, web accessible resources and external messaging keys. `tools/check-bundle.mjs` runs at the end of `npm run check`, after the build, and fails on `eval`, `new Function`, `document.write`, `importScripts`, external messaging, `console.log`, the storage APIs other than `chrome.storage.local`, the HTML insertion family in `src/`, and any URL outside the four link allowlist entries.
 
 **Why:** the security rules arrived as prose, and a rule with no check is a wish. The manifest is the only place the extension can widen what it can reach, so it is the one file where a quiet addition would matter most, and a test that pins every key makes such an addition a deliberate, reviewed act. The scan covers the other routes a later step could take by accident: a CDN font, a remote sound, a `console.log` that prints a coordinate, or a place name pasted into `innerHTML`. The three `www.w3.org` namespace names are allowed because Preact writes them as identifiers, not requests.
 
@@ -213,3 +213,24 @@ The Shia Maghrib is not an exception to the phone's behaviour. The phone keeps i
 ## D-023: A located point is named by the nearest city that is not a section
 
 **Superseded by D-021.** This decision was first the 15 km radius, then the nearest-non-section pass alone. Both are rejected and folded into the complete naming rule in D-021, which also records why the radius failed.
+
+## D-024: Alerts use Chrome alarms, notifications and one offscreen audio page
+
+**Decided:** prayer alerts ship with three more permissions: `alarms`, `notifications` and `offscreen`. The background service worker schedules one alarm per prayer plus a daily refresh, shows a notification at each prayer time, and plays the sound through a single offscreen audio page, because a service worker cannot play sound by itself. The two adhan recordings are the phone app's own files, copied unchanged, with these SHA-256 values:
+
+- `public/audio/adhan.ogg` (Sunni): `35fe06b08fe80505c550c33fed8a783fa9901ddc81ac884958b4be048f5b2a79`
+- `public/audio/adhan_shia.ogg` (Shia): `0e0433e77bed4ee15044169c4b735cac346836eeae11a36ea194228aaa18ac97`
+
+The badge and "time until the next prayer" reminders are deferred.
+
+**Why:** each permission maps to one visible thing and nothing else. `alarms` wakes the worker at each prayer time, `notifications` shows the message, and `offscreen` plays the beep or the adhan. The offscreen page is the smallest route to sound: a service worker has no `Audio` and the extension will never use a content script or a tab for it. Reusing the phone's own recordings keeps the extension sounding the same without a new asset or licence. The badge and reminders are deferred so this step stays about the alert itself, not a second surface.
+
+**Revisit if:** the sound needs to keep playing past the one minute "Stop sound" window, the badge is wanted, or a reminder before each prayer is wanted. Each is its own feature and brings its own permission question.
+
+## D-025: Prayer alerts are off until the user turns them on
+
+**Decided:** alerts are off by default. `alerts.enabled` is `false` and the sound is `beep`. Nothing is scheduled and no notification can appear until the user turns alerts on in Settings, where a master switch and five per-prayer switches control them, and `beep`, `adhan` and `silent` are the sound choices.
+
+**Why:** the privacy promise, written in `docs/BUILD-NEXT.md` and `docs/privacy.html`, is that the three new permissions do nothing until the user turns alerts on. Shipping off by default means an existing user upgrades with no new sound, no notification and no changed behaviour. There is no full first-run journey yet to explain the three permissions, so off by default is the honest state until that journey exists.
+
+**Revisit when:** the full first run exists. It can then offer alerts as part of onboarding rather than leaving the choice entirely to Settings.

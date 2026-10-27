@@ -120,7 +120,7 @@ test('makes no network requests while showing times', async () => {
   const extension = await launchExtension();
   try {
     const remote: string[] = [];
-    extension.page.on('request', (request) => {
+    extension.context.on('request', (request) => {
       if (!request.url().startsWith('chrome-extension://')) remote.push(request.url());
     });
     await seedSettings(extension);
