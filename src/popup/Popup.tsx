@@ -12,7 +12,7 @@ import {
   type PrayerSlot,
 } from '../core';
 import { firstSettings } from '../settings/create';
-import { loadSettings, saveSettings, watchSettings } from '../settings/storage';
+import { clearSettings, loadSettings, saveSettings, watchSettings } from '../settings/storage';
 import type { Place, Settings } from '../settings/types';
 
 const HIJRI_MONTHS = [
@@ -91,7 +91,13 @@ export function Popup() {
     return <FirstRun onSaved={setSettings} />;
   }
 
-  return <Times settings={settings} />;
+  function resetPlace() {
+    void clearSettings()
+      .catch(() => undefined)
+      .then(() => setSettings(null));
+  }
+
+  return <Times settings={settings} onReset={resetPlace} />;
 }
 
 function FirstRun({ onSaved }: { onSaved: (settings: Settings) => void }) {
@@ -109,12 +115,12 @@ function FirstRun({ onSaved }: { onSaved: (settings: Settings) => void }) {
       (position) => {
         const place: Place = {
           name: 'My location',
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
+          latitude: Math.round(position.coords.latitude * 100) / 100,
+          longitude: Math.round(position.coords.longitude * 100) / 100,
           timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
           countryCode: 'ZZ',
         };
-        const next = firstSettings(place, navigator.language);
+        const next = firstSettings(place);
         saveSettings(next)
           .then(() => {
             setBusy(false);
@@ -133,6 +139,28 @@ function FirstRun({ onSaved }: { onSaved: (settings: Settings) => void }) {
     );
   }
 
+  function useMakkah() {
+    setError(null);
+    setBusy(true);
+    const place: Place = {
+      name: 'Makkah',
+      latitude: 21.4225,
+      longitude: 39.8262,
+      timeZone: 'Asia/Riyadh',
+      countryCode: 'SA',
+    };
+    const next = firstSettings(place);
+    saveSettings(next)
+      .then(() => {
+        setBusy(false);
+        onSaved(next);
+      })
+      .catch(() => {
+        setBusy(false);
+        setError('Your place could not be saved. Try again.');
+      });
+  }
+
   return (
     <main class="welcome">
       <p class="brand">SajdaTime</p>
@@ -147,15 +175,21 @@ function FirstRun({ onSaved }: { onSaved: (settings: Settings) => void }) {
         SajdaTime does not send your location anywhere. There is no account and no ads.
       </p>
       {error ? (
-        <p class="error" role="alert">
-          {error}
-        </p>
+        <>
+          <p class="error" role="alert">
+            {error}
+          </p>
+          <button class="action" type="button" onClick={useMakkah} disabled={busy}>
+            Use Makkah for now
+          </button>
+          <p class="welcome-note">Times will be for Makkah until you set your place.</p>
+        </>
       ) : null}
     </main>
   );
 }
 
-function Times({ settings }: { settings: Settings }) {
+function Times({ settings, onReset }: { settings: Settings; onReset: () => void }) {
   const [now, setNow] = useState(() => new Date());
 
   useEffect(() => {
@@ -197,6 +231,9 @@ function Times({ settings }: { settings: Settings }) {
       <main class="welcome">
         <h1 class="welcome-title">Times are not available for this place.</h1>
         <p class="welcome-lead">The location saved for SajdaTime cannot be used. Set your place again.</p>
+        <button class="action" type="button" onClick={onReset}>
+          Set your place again
+        </button>
       </main>
     );
   }
@@ -234,13 +271,14 @@ function Times({ settings }: { settings: Settings }) {
 
       {day.isPolar ? (
         <p class="polar-note">
-          The sun does not rise or set here today. These times come from the nearest ordinary day.
+          These times are estimated from a place where the sun rises and sets, because they
+          cannot be worked out directly here.
         </p>
       ) : null}
 
       <ul class="times" aria-label="Today's prayer times">
         {SLOTS.map((slot) => {
-          const isNext = slot === next.slot;
+          const isNext = slot === next.slot && !next.isTomorrow;
           const isNow = slot === current;
           const classes = [
             'time-row',

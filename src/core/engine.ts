@@ -72,6 +72,34 @@ function valid(date: Date): boolean {
   return date instanceof Date && !Number.isNaN(date.getTime());
 }
 
+const DAY_MS = 24 * 60 * 60 * 1000;
+const DHUHR_MIDPOINT_TOLERANCE_MS = 30 * 60 * 1000;
+
+/**
+ * A day is usable only when its six instants run forwards and the solar noon is near the
+ * midpoint of sunrise and sunset. adhan-js can return finite but impossible values above
+ * the polar circle: at Tromso on 21 December 2026 it puts Asr before Dhuhr, and at
+ * Longyearbyen it puts Asr after Maghrib. The phone rejects such a day and projects it
+ * from a latitude where the sun still rises and sets, so this extension does the same.
+ */
+function isUsable(times: PrayerTimes): boolean {
+  const values = SLOTS.map((slot) => times[slot]);
+  if (values.some((value) => !valid(value))) return false;
+
+  const milliseconds = values.map((value) => value.getTime());
+  for (let index = 1; index < milliseconds.length; index += 1) {
+    const previous = milliseconds[index - 1];
+    const current = milliseconds[index];
+    if (previous === undefined || current === undefined || current <= previous) return false;
+  }
+
+  const dhuhr = times.dhuhr.getTime();
+  if (milliseconds.some((value) => Math.abs(value - dhuhr) > DAY_MS)) return false;
+
+  const midpoint = (times.sunrise.getTime() + times.maghrib.getTime()) / 2;
+  return Math.abs(dhuhr - midpoint) <= DHUHR_MIDPOINT_TOLERANCE_MS;
+}
+
 /**
  * The six times for one civil date at one place.
  *
@@ -96,50 +124,80 @@ export function computeDay(
     throw new EngineError('Coordinates are outside the world');
   }
 
-  const params = parametersFor(prefs.method, prefs.madhab, coordinates);
+  const params = parametersFor(prefs.method, prefs.madhab);
+  const adhanCoordinates = new AdhanCoordinates(coordinates.latitude, coordinates.longitude);
+  const dateAtLocalNoon = adhanDate(parsed);
+
+  // A resolve that may invent times where the sun never rises. A second, unresolved run
+  // below tells us whether the sun actually rose and set, and whether all six times are
+  // real rather than a nearest-day approximation.
+  let local: PrayerTimes | null = null;
+  try {
+    local = new PrayerTimes(adhanCoordinates, dateAtLocalNoon, params);
+  } catch {
+    local = null;
+  }
+
+  const probeParams = parametersFor(prefs.method, prefs.madhab);
+  probeParams.polarCircleResolution = PolarCircleResolution.Unresolved;
+  let hasRealDay = true;
+  try {
+    const probe = new PrayerTimes(adhanCoordinates, dateAtLocalNoon, probeParams);
+    hasRealDay = SLOTS.every((slot) => valid(probe[slot]));
+  } catch {
+    hasRealDay = false;
+  }
+
+  // The phone uses the Islamic Fiqh Council's 45 degrees for every method except
+  // Moonsighting Committee, which publishes 60. The hemisphere and longitude are kept so
+  // solar noon stays where the user is; only the latitude is borrowed.
+  const referenceLatitude = prefs.method === 'moonsighting' ? 60 : 45;
+  const projectedLatitude = coordinates.latitude < 0 ? -referenceLatitude : referenceLatitude;
+
+  const mustProject = local === null || !hasRealDay || !isUsable(local);
+  const base =
+    local !== null && !mustProject
+      ? local
+      : new PrayerTimes(
+          new AdhanCoordinates(projectedLatitude, coordinates.longitude),
+          dateAtLocalNoon,
+          params,
+        );
+
+  const baseTimes = {} as Record<PrayerSlot, Date>;
+  for (const slot of SLOTS) {
+    const value = base[slot];
+    if (!valid(value)) {
+      throw new EngineError(`No ${slot} time for ${date} at this place`);
+    }
+    baseTimes[slot] = value;
+  }
 
   const offset = prefs.hijriOffsetDays ?? 0;
   if (prefs.method === 'umm-al-qura' && isRamadan(date, offset)) {
     // The phone adds half an hour to Isha for the whole of Ramadan. It is a method
-    // adjustment, not a user adjustment, so it is applied before any manual minutes.
-    params.adjustments.isha += 30;
+    // adjustment, applied before any manual minutes, and after the day is otherwise fixed.
+    baseTimes.isha = new Date(baseTimes.isha.getTime() + 30 * 60 * 1000);
   }
 
+  // Manual corrections run last, then the six are held in order. The bound alone does not
+  // make that safe: at 59.9 degrees Dhuhr and Asr can be twenty-six minutes apart, so
+  // Dhuhr +30 and Asr -30 would cross them. The phone clamps each slot to its neighbour;
+  // that costs nothing where the correction is legal and keeps a backwards day impossible.
+  const times = {} as Record<PrayerSlot, Date>;
+  let floor = Number.NEGATIVE_INFINITY;
   for (const slot of SLOTS) {
     const minutes = prefs.adjustments?.[slot] ?? 0;
-    if (minutes !== 0) {
-      if (!Number.isInteger(minutes) || minutes < -30 || minutes > 30) {
-        throw new EngineError(`Adjustment for ${slot} is outside -30 to +30`);
-      }
-      params.adjustments[slot] += minutes;
+    if (minutes !== 0 && (!Number.isInteger(minutes) || minutes < -30 || minutes > 30)) {
+      throw new EngineError(`Adjustment for ${slot} is outside -30 to +30`);
     }
+    const moved = baseTimes[slot].getTime() + minutes * 60 * 1000;
+    const at = new Date(Math.max(moved, floor));
+    times[slot] = at;
+    floor = at.getTime();
   }
 
-  const adhanCoordinates = new AdhanCoordinates(coordinates.latitude, coordinates.longitude);
-  const prayerTimes = new PrayerTimes(adhanCoordinates, adhanDate(parsed), params);
-
-  const times = {} as Record<PrayerSlot, Date>;
-  for (const slot of SLOTS) {
-    const value = prayerTimes[slot];
-    if (!valid(value)) {
-      throw new EngineError(`No ${slot} time for ${date} at this place`);
-    }
-    times[slot] = value;
-  }
-
-  // The resolved day hides whether the sun rose or set. A second, deliberately
-  // unresolved run answers that without changing the times above.
-  const probeParams = parametersFor(prefs.method, prefs.madhab, coordinates);
-  probeParams.polarCircleResolution = PolarCircleResolution.Unresolved;
-  let isPolar = false;
-  try {
-    const probe = new PrayerTimes(adhanCoordinates, adhanDate(parsed), probeParams);
-    isPolar = !valid(probe.sunrise) || !valid(probe.sunset);
-  } catch {
-    isPolar = true;
-  }
-
-  return { date, times, isPolar };
+  return { date, times, isPolar: mustProject };
 }
 
 /**

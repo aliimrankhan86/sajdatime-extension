@@ -39,6 +39,12 @@ export function hijriFor(date: string, offsetDays = 0): HijriDay | null {
     if (!Number.isInteger(year) || !Number.isInteger(month) || !Number.isInteger(day)) {
       return null;
     }
+    // A browser without the Umm al-Qura table silently formats a Gregorian date. The
+    // phone's supported range is 1300 to 1600 AH, so a 2026 here means the table is
+    // missing, not a real Hijri year. Reject it instead of showing a plausible wrong date.
+    if (year < 1300 || year > 1600) {
+      return null;
+    }
     return { year, month, day };
   } catch {
     return null;

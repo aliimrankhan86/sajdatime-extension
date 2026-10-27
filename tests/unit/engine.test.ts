@@ -7,7 +7,7 @@ import {
   nextPrayer,
   parseISODate,
 } from '../../src/core/engine';
-import type { CalculationPrefs, PrayerSlot } from '../../src/core/types';
+import { SLOTS, type CalculationPrefs, type PrayerSlot } from '../../src/core/types';
 
 const MAKKAH = { latitude: 21.4225, longitude: 39.8262 };
 const TEHRAN = { latitude: 35.6892, longitude: 51.389 };
@@ -99,6 +99,40 @@ describe('computeDay', () => {
     );
     expect(Object.values(day.times).every((value) => Number.isFinite(value.getTime()))).toBe(true);
     expect(day.isPolar).toBe(true);
+  });
+
+  it('never returns a polar day in an impossible order', () => {
+    const cases = [
+      { place: { latitude: 69.6492, longitude: 18.9553 }, zone: 'Europe/Oslo', date: '2026-12-21' },
+      {
+        place: { latitude: 78.2232, longitude: 15.6267 },
+        zone: 'Arctic/Longyearbyen',
+        date: '2026-12-21',
+      },
+      {
+        place: { latitude: -77.8419, longitude: 166.6863 },
+        zone: 'Antarctica/McMurdo',
+        date: '2026-06-21',
+      },
+    ];
+
+    for (const item of cases) {
+      const day = computeDay(item.place, item.date, prefs({ timeZone: item.zone }));
+      const milliseconds = SLOTS.map((slot) => day.times[slot].getTime());
+      for (let index = 1; index < milliseconds.length; index += 1) {
+        expect(milliseconds[index]).toBeGreaterThan(milliseconds[index - 1] ?? Number.NaN);
+      }
+      expect(day.isPolar).toBe(true);
+    }
+  });
+
+  it('holds the day in order when two corrections cross', () => {
+    const day = computeDay(
+      { latitude: 59.9, longitude: 10.75 },
+      '2026-01-01',
+      prefs({ timeZone: 'Europe/Oslo', adjustments: { dhuhr: 30, asr: -30 } }),
+    );
+    expect(day.times.asr.getTime()).toBeGreaterThanOrEqual(day.times.dhuhr.getTime());
   });
 
   it('does not call an ordinary London day polar', () => {

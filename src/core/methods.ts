@@ -5,7 +5,7 @@ import {
   Madhab as AdhanMadhab,
   PolarCircleResolution,
 } from 'adhan';
-import type { Coordinates, Madhab, MethodId } from './types';
+import type { Madhab, MethodId } from './types';
 
 /**
  * The 13 methods the extension offers, in the order the Settings sheet shows them.
@@ -43,6 +43,10 @@ const ADHAN_METHODS: Record<Exclude<MethodId, 'jafari'>, () => CalculationParame
   tehran: CalculationMethod.Tehran,
 };
 
+export function isMethodId(value: unknown): value is MethodId {
+  return typeof value === 'string' && (METHOD_IDS as readonly string[]).includes(value);
+}
+
 export function isShiaMethod(method: MethodId): boolean {
   return method === 'jafari' || method === 'tehran';
 }
@@ -61,16 +65,14 @@ export function isShiaMethod(method: MethodId): boolean {
  * reaches it. That is the phone's shipped behaviour. See DECISIONS D-002.
  * Moonsighting Committee has its own seasonal rule and ignores the setting.
  */
-export function parametersFor(
-  method: MethodId,
-  madhab: Madhab,
-  _coordinates: Coordinates,
-): CalculationParameters {
+export function parametersFor(method: MethodId, madhab: Madhab): CalculationParameters {
   const params =
     method === 'jafari'
       ? new CalculationParameters('Other', 16, 14, 0, 4)
       : ADHAN_METHODS[method]();
 
+  // The two Shia methods use their own Asr rule, which is Shafi in adhan's terms. A Hanafi
+  // choice from a Shia user would contradict the method, so the method wins.
   params.madhab =
     isShiaMethod(method) || madhab === 'shafii' ? AdhanMadhab.Shafi : AdhanMadhab.Hanafi;
 

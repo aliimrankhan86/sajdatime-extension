@@ -17,6 +17,23 @@ test('shows the place, the next prayer and all six times', async () => {
   }
 });
 
+test('does not clip the time column when browser zoom shrinks the viewport', async () => {
+  const extension = await launchExtension();
+  try {
+    await seedSettings(extension);
+    await extension.page.setViewportSize({ width: 253, height: 600 });
+    const sizes = await extension.page.evaluate(() => ({
+      scroll: document.documentElement.scrollWidth,
+      client: document.documentElement.clientWidth,
+    }));
+    expect(sizes.scroll).toBe(sizes.client);
+    await expect(extension.page.locator('[data-slot="fajr"] .time-value')).toBeVisible();
+    await extension.page.screenshot({ path: 'docs/images/zoom-253.png' });
+  } finally {
+    await extension.close();
+  }
+});
+
 test('counts down without losing the next prayer', async () => {
   const extension = await launchExtension();
   try {
@@ -43,6 +60,18 @@ test('uses the browser 12 hour style when its language does', async () => {
   }
 });
 
+test('does not mark today for tomorrow Fajr', async () => {
+  const extension = await launchExtension();
+  try {
+    await seedSettings(extension, new Date('2026-10-27T21:00:00Z'));
+    await expect(extension.page.locator('.next-name')).toHaveText('Fajr');
+    await expect(extension.page.locator('.next-label')).toHaveText('Next prayer, tomorrow');
+    await expect(extension.page.locator('.time-row.is-next')).toHaveCount(0);
+  } finally {
+    await extension.close();
+  }
+});
+
 test('first run asks for location, then saves the place', async () => {
   const extension = await launchExtension();
   try {
@@ -61,16 +90,57 @@ test('first run asks for location, then saves the place', async () => {
         },
       });
     });
+    await extension.page.clock.install({ time: new Date('2026-10-27T11:00:00Z') });
     await extension.page.reload();
     await extension.page.getByRole('button', { name: 'Use my location' }).click();
     await extension.page.waitForSelector('.next-card', { timeout: 20_000 });
     await expect(extension.page.locator('.place')).toHaveText('My location');
     await expect(extension.page.locator('.time-row')).toHaveCount(6);
+    await expect(extension.page.locator('.next-name')).toHaveText('Dhuhr');
+    await expect(extension.page.locator('[data-slot="fajr"] .time-value')).toHaveText('04:53');
 
     const stored = await extension.page.evaluate(async () =>
       chrome.storage.local.get('sajdatime.settings.v1'),
     );
-    expect(stored['sajdatime.settings.v1']).toBeTruthy();
+    expect(stored['sajdatime.settings.v1']).toMatchObject({
+      method: 'mwl',
+      place: { countryCode: 'ZZ', latitude: 51.51, longitude: -0.13 },
+    });
+  } finally {
+    await extension.close();
+  }
+});
+
+test('first run offers Makkah when location is refused', async () => {
+  const extension = await launchExtension();
+  try {
+    await extension.page.addInitScript(() => {
+      Object.defineProperty(navigator, 'geolocation', {
+        configurable: true,
+        value: {
+          getCurrentPosition: (_ok: unknown, fail: (error: unknown) => void) =>
+            fail({ code: 1 }),
+        },
+      });
+    });
+    await extension.page.reload();
+    await extension.page.getByRole('button', { name: 'Use my location' }).click();
+
+    await expect(extension.page.getByRole('alert')).toContainText('could not read your location');
+    const makkah = extension.page.getByRole('button', { name: 'Use Makkah for now' });
+    await expect(makkah).toBeVisible();
+    await makkah.click();
+
+    await extension.page.waitForSelector('.next-card', { timeout: 20_000 });
+    await expect(extension.page.locator('.place')).toHaveText('Makkah');
+    await expect(extension.page.locator('.time-row')).toHaveCount(6);
+    const stored = await extension.page.evaluate(async () =>
+      chrome.storage.local.get('sajdatime.settings.v1'),
+    );
+    expect(stored['sajdatime.settings.v1']).toMatchObject({
+      method: 'umm-al-qura',
+      place: { countryCode: 'SA' },
+    });
   } finally {
     await extension.close();
   }

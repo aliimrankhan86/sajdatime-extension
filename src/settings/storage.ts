@@ -10,6 +10,10 @@ export async function saveSettings(settings: Settings): Promise<void> {
   await chrome.storage.local.set({ [SETTINGS_KEY]: settings });
 }
 
+export async function clearSettings(): Promise<void> {
+  await chrome.storage.local.remove(SETTINGS_KEY);
+}
+
 export function watchSettings(onChange: (settings: Settings | null) => void): () => void {
   const listener = (
     changes: Record<string, chrome.storage.StorageChange>,

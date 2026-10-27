@@ -9,7 +9,9 @@ body {
 }
 
 body {
-  width: 380px;
+  width: 100%;
+  max-width: 380px;
+  min-width: 0;
   min-height: 600px;
   background: var(--paper);
   color: var(--ink);
@@ -221,7 +223,7 @@ button {
 .action {
   min-height: 52px;
   padding: 0 20px;
-  color: #ffffff;
+  color: var(--on-primary);
   background: var(--primary-strong);
   border: 0;
   border-radius: 999px;
@@ -231,7 +233,7 @@ button {
 }
 
 .action:hover {
-  background: var(--primary);
+  background: var(--primary-hover);
 }
 
 .action:disabled {

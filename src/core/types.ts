@@ -58,8 +58,9 @@ export interface DayTimes {
   date: string;
   times: Record<PrayerSlot, Date>;
   /**
-   * True when the sun does not rise or set on this date. The six times are then
-   * worked out from the nearest ordinary day; the Times screen says so in one line.
+   * True when the six times had to be estimated from a reference latitude, because the
+   * sun does not rise or set here, or because the local day would not run forwards. The
+   * Times screen says so in one line.
    */
   isPolar: boolean;
 }

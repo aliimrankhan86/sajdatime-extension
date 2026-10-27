@@ -7,7 +7,9 @@
   --ink-muted: #5f6963;
   --primary: #0b5a43;
   --primary-strong: #17805a;
+  --primary-hover: #094b38;
   --primary-soft: #dcebe2;
+  --on-primary: #ffffff;
   --line: #d9dfd9;
   --line-strong: #c9cfc9;
   --warning: #9a6208;
@@ -28,7 +30,9 @@
     --ink-muted: #aab7ae;
     --primary: #7fd1b0;
     --primary-strong: #17805a;
+    --primary-hover: #146b4a;
     --primary-soft: #1c3a2d;
+    --on-primary: #ffffff;
     --line: #2a3931;
     --line-strong: #3b4c43;
     --warning: #f0c26a;

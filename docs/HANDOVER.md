@@ -1,6 +1,6 @@
 # Handover
 
-**Updated:** 27 October 2026, morning, Europe/London.
+**Updated:** 27 October 2026, afternoon, Europe/London.
 
 This file says what is true now. It is written for the next person or AI who opens the repository. Read it before the plan. The plan describes the whole build. This file describes the part that exists.
 
@@ -15,11 +15,11 @@ The Chrome Web Store developer account is open. The Edge Partner Center account 
 | Area | State | Evidence |
 | --- | --- | --- |
 | Manifest V3 extension | Loads in Chrome for Testing | Playwright launches it with `--load-extension=dist` and finds the popup |
-| Prayer engine | 13 methods, both Asr schools, polar safety | `npm test`: 33 unit tests pass |
-| Golden values | Four phone fixtures pinned | `tests/unit/engine.test.ts` |
+| Prayer engine | 13 methods, both Asr schools, polar projection and correction clamp | `npm test`: 59 unit tests pass |
+| Golden values | Four phone fixtures pinned, plus 13 broad Aladhan sanity fixtures | `tests/unit/engine.test.ts`, `tests/unit/aladhan.test.ts` |
 | Hijri calendar | Umm al-Qura, shift, Ramadan windows, Eids | `tests/unit/hijri.test.ts` |
 | Method suggestion | Country table and Shia rule | `tests/unit/suggestions.test.ts` |
-| Popup | Place, Hijri date, next prayer, countdown, six times | Playwright screenshot and four end-to-end tests |
+| Popup | Place, Hijri date, next prayer, countdown, six times, 253 pixel viewport | Playwright screenshot and seven end-to-end tests |
 | First run | Location, method suggestion, save, show times | Playwright test with a supplied fix |
 | Light and dark | Both themes from `tokens.css` | Screenshots in `docs/images/` |
 | Build | Production bundle in `dist/` | `npm run build` |
@@ -29,9 +29,9 @@ Commands actually run on 27 October 2026:
 
 ```text
 npm run typecheck    pass
-npm test             3 files, 33 tests passed
+npm test             6 files, 59 tests passed
 npm run build        pass, dist/manifest.json and the popup bundle written
-npm run test:e2e     4 tests passed
+npm run test:e2e     7 tests passed
 ```
 
 The end-to-end suite uses Chrome for Testing at:
@@ -55,7 +55,7 @@ That path is machine-specific. Change it in `tests/e2e/extension.ts` if the brow
 ## Known gaps in what was tested
 
 - The real browser permission bubble for geolocation is not automated. The end-to-end test supplies a known fix through `navigator.geolocation` and checks that the extension saves it. The banner and the real prompt still need a manual look.
-- The popup was tested at exactly 380 by 600. Other window sizes and 200 percent zoom are not tested yet.
+- The popup was tested at 380 by 600 and at 253 by 600, which is what 150 percent browser zoom gives. 200 percent zoom and other window sizes are not tested yet.
 - The first run uses the computer's time zone. A city search later will use the city's zone.
 - Only English exists. No language switcher, no right-to-left test.
 - No accessibility audit yet. The markup uses real buttons and labels, but axe and a screen reader have not run.
@@ -68,7 +68,7 @@ Read `docs/DECISIONS.md`. The four that matter most:
 1. This is a separate product from the phone. Do not copy the phone's release notes or store listing into this repo.
 2. High latitude uses `TwilightAngle`, not `recommended`. The plan's line about `recommended` is older than the phone behaviour and would break the London fixtures.
 3. Golden values are the phone engine's values, not the Aladhan numbers in the phone's test file.
-4. No network requests. No host permissions. The privacy words must stay true.
+4. No network requests. No host permissions. The privacy words must stay true. The manifest asks only for `storage` and `geolocation` until an alert exists.
 
 ## Next step
 

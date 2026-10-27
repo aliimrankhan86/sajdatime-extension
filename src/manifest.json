@@ -36,5 +36,5 @@
       "description": "Open SajdaTime"
     }
   },
-  "permissions": ["alarms", "notifications", "storage", "offscreen", "geolocation"]
+  "permissions": ["storage", "geolocation"]
 }

@@ -26,9 +26,8 @@ Limit: 16,000 characters on Chrome. Edge allows 250 to 10,000.
 >
 > - Fajr, Sunrise, Dhuhr, Asr, Maghrib and Isha for your place.
 > - The next prayer with a countdown that updates every second.
-> - The Hijri date from the Umm al-Qura calendar, with a shift you control when your community follows a different sighting.
-> - 13 calculation methods, including Umm al-Qura, Muslim World League, ISNA, Karachi, Egyptian, Dubai, Kuwait, Qatar, Turkey, Singapore, Moonsighting Committee, Jafari and Tehran.
-> - Asr in the Hanafi or Shafi'i school.
+> - The Hijri date from the Umm al-Qura calendar.
+> - A method chosen for your country, and a clear fallback to Makkah if you would rather not share your location.
 > - Light and dark themes that follow your computer.
 > - A popup designed to fit without scrolling, with large readable times.
 >
@@ -46,7 +45,7 @@ Limit: 16,000 characters on Chrome. Edge allows 250 to 10,000.
 >
 > **Coming next**
 >
-> Prayer alerts, a countdown badge, a Ramadan timetable, and Urdu, Arabic, Turkish and Indonesian. The listing will be updated when those are ready. Do not install this build expecting them yet.
+> A settings screen to choose from 13 calculation methods, the Hanafi or Shafi'i Asr school, and a Hijri date shift. Prayer alerts, a countdown badge, a Ramadan timetable, and Urdu, Arabic, Turkish and Indonesian. The listing will be updated when those are ready. Do not install this build expecting them yet.
 
 ## What is new
 
@@ -58,13 +57,10 @@ Chrome shows these in the install prompt and asks for a reason during review.
 
 | Permission | Why SajdaTime asks | When it is used |
 | --- | --- | --- |
-| `storage` | Save your place, method, Asr school, Hijri shift and display settings in the browser profile. | When you finish first run or change a setting. |
+| `storage` | Save your place and settings in the browser profile. | When you finish first run or change a setting. |
 | `geolocation` | Work out times for where you are when you choose **Use my location**. | Only after you press that button and grant permission. |
-| `alarms` | Wake the extension at prayer time for an alert. | When you turn on prayer alerts. Not on in this build. |
-| `notifications` | Show the prayer alert in the browser. | When you turn on prayer alerts. Not on in this build. |
-| `offscreen` | Play the adhan or the soft beep when an alert fires, because a service worker cannot play audio. | Only when an alert is due and you chose a sound. Not on in this build. |
 
-No host permissions. No content scripts. No access to tabs, history, bookmarks or page content.
+No host permissions. No content scripts. No access to tabs, history, bookmarks or page content. Alerts are not in this build, so the extension does not ask for alarm, notification or audio permission yet.
 
 ## Single purpose
 
@@ -118,9 +114,9 @@ At submission: English first. Add Arabic, Turkish and Indonesian once the UI has
 
 Short note in the submission form:
 
-> SajdaTime calculates prayer times locally with adhan-js. It makes no network requests, has no analytics and no ads. Location is used only after the user presses "Use my location" and is stored in local extension storage. `alarms`, `notifications` and `offscreen` are declared for the prayer alert feature, which is present in the manifest but not enabled in this build. The privacy policy explains local storage and the browser's own location service.
+> SajdaTime calculates prayer times locally with adhan-js. It makes no network requests, has no analytics and no ads. Location is used only after the user presses "Use my location" and is stored in local extension storage. If the user refuses location, the extension offers Makkah as a clearly labelled fallback. The privacy policy explains local storage and the browser's own location service.
 
-If the reviewer objects to permissions for a feature that is not enabled, either enable a minimal alert in a later build or remove the unused permissions from this build. Do not argue with the reviewer.
+This build asks only for `storage` and `geolocation`. Alarm, notification and audio permissions are added with the first working alert, not before.
 
 ## Before hitting Submit
 

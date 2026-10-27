@@ -12,15 +12,17 @@ A decision is added here in the same commit that makes it. Each entry says what 
 
 **Revisit only if:** Ali asks for shared code or one release process. That would be a product decision, not a cleanup.
 
-## D-002: High latitude uses the phone's Twilight Angle rule
+## D-002: High latitude uses the phone's Twilight Angle rule, and projects an impossible day
 
-**Decided:** for every method except Moonsighting Committee, set `highLatitudeRule = HighLatitudeRule.TwilightAngle`. Set `polarCircleResolution = AqrabYaum` for every method. Moonsighting Committee keeps its own seasonal rule.
+**Decided:** for every method except Moonsighting Committee, set `highLatitudeRule = HighLatitudeRule.TwilightAngle`. Set `polarCircleResolution = AqrabYaum` for the ordinary calculation. If the unresolved probe shows any of the six times does not exist, or the local day is not in order, compute the day once at 45 degrees (60 for Moonsighting Committee), keeping the user's longitude and hemisphere, and mark it approximate. Moonsighting Committee keeps its own seasonal rule.
 
 **Why:** the phone engine sets `HIGH_LATITUDE_RULE = TWILIGHT_ANGLE` and has shipped with it since before 1.5.0. The extension copies behaviour users already have. The plan asks for `HighLatitudeRule.recommended`, but in adhan-js that applies one seventh of the night as a floor even when the twilight angle exists. In London on 10 April it moves Fajr from 04:12 to about 04:50, which would make the popup disagree with the phone by around 38 minutes and break the London fixture this build pins. The plan's own consistency rule says the extension must give the same minute as the phone. Where those two lines conflict, the shipped phone behaviour wins for people who already use the app.
 
-**Evidence:** extension unit tests pin London 10 April 2026 at 04:12 and London 21 June 2026 at 02:31 and 23:27, matching the phone's shipped engine. A second probe with `PolarCircleResolution.Unresolved` marks Longyearbyen as polar without changing the six times.
+`AqrabYaum` alone was not enough. adhan-js returns finite but impossible values above the polar circle: on 21 December 2026 it puts Asr before Dhuhr at Tromso, and Asr after Maghrib at Longyearbyen. The hero card then names Maghrib as the next prayer while Asr is still to come. The phone's `isUsable` rejects such a whole day and projects it from a reference latitude. The extension now does the same, and clamps manual corrections so they cannot cross the six times either.
 
-**Revisit if:** the phone changes its high latitude rule, or a scholar Ali trusts shows this is wrong for a community he serves.
+**Evidence:** extension unit tests pin London 10 April 2026 at 04:12 and London 21 June 2026 at 02:31 and 23:27, matching the phone's shipped engine. Tromso and Longyearbyen on 21 December 2026, and McMurdo on 21 June 2026, are polar, finite and strictly ordered. A Dhuhr +30 and Asr -30 correction at 59.9 degrees cannot reverse the day.
+
+**Revisit if:** the phone changes its high latitude rule or its reference latitudes, or a scholar Ali trusts shows this is wrong for a community he serves.
 
 ## D-003: Turkey's Diyanet offsets are not added twice
 
@@ -44,17 +46,19 @@ A decision is added here in the same commit that makes it. Each entry says what 
 
 **Evidence:** `tests/unit/engine.test.ts`. Makkah Umm al-Qura 15 January 2026: 05:41, 07:01, 12:30, 15:38, 17:59, 19:29. Tehran Jafari 21 June 2026: 03:14, 04:49, 12:06, 15:55, 19:42, 20:44. London Muslim World League 10 April 2026: 04:12, 06:16, 13:03, 16:46, 19:49, 21:46. London midsummer: 02:31, 04:43, 13:03, 17:25, 21:22, 23:27.
 
+**Outside check:** `tests/unit/aladhan.test.ts` also records 13 Aladhan API results as a broad wiring check. They allow five minutes because Aladhan and adhan-js differ in rounding and method offsets. They are not golden values and never replace the phone fixtures.
+
 **Revisit if:** a user reports a time that differs from the phone by more than two minutes for the same method, madhab and place.
 
 ## D-005: First run asks for location, then saves the place
 
-**Decided:** first run offers one obvious action, **Use my location**. The popup asks the browser for one coarse fix, takes the time zone from the computer, takes a country hint from the browser language, suggests a method and saves the settings. There is no account and no city search yet.
+**Decided:** first run offers one obvious action, **Use my location**. The popup asks the browser for one coarse fix, takes the time zone from the computer, suggests a method and saves the settings. There is no account and no city search yet. If location is refused or unavailable, the error screen offers **Use Makkah for now** so the user is never left with no times at all.
 
-**Why:** a new user should see times in one step. Asking for a city before showing anything is a longer path to the same result. City search arrives with the settings screen, where changing the place belongs.
+**Why:** a new user should see times in one step. Asking for a city before showing anything is a longer path to the same result. Refusing location used to be a dead end; the Makkah button turns it into a usable, clearly labelled fallback until the settings screen can take a place. City search arrives with that screen.
 
-**Limits:** the place is called **My location**, the method comes from the language's region and can be wrong for a traveller. The settings screen will let the user change both. The suggestion is a starting point, never an authority.
+**Limits:** the place is called **My location**, or **Makkah** when the fallback is used. The suggested method is a starting point, never an authority; the language's region is no longer used as a country hint, so a traveller's suggestion is less specific. The user cannot change either yet.
 
-**Revisit when:** city search is built. The first-run flow should then offer **Use my location** and **Search for a city** on the same screen.
+**Revisit when:** city search is built. The first-run flow should then offer **Use my location** and **Search for a city** on the same screen, and the Makkah button should become a last resort rather than the only alternative.
 
 ## D-006: The privacy words describe what SajdaTime does, not what the browser does
 
@@ -82,11 +86,11 @@ A decision is added here in the same commit that makes it. Each entry says what 
 
 ## D-009: No host permissions and no content scripts
 
-**Decided:** the manifest asks for `alarms`, `notifications`, `storage`, `offscreen` and `geolocation`. Nothing else.
+**Decided:** the manifest asks for `storage` and `geolocation`. Nothing else. `alarms`, `notifications` and `offscreen` are deliberately absent until an alert actually works.
 
-**Why:** the extension never reads a page, never calls a server and never needs a tab. Every extra permission makes the install warning longer and the store review harder. A future feature that needs one must bring a written reason and Ali's agreement.
+**Why:** the extension never reads a page, never calls a server and never needs a tab. Every extra permission makes the install warning longer and the store review harder. Declaring notification and alarm permission for a feature that cannot fire asks the user to trust a promise the build does not keep. The review of 27 October 2026 found this, and the first build should ask only for what it uses.
 
-**Revisit only with:** a feature that genuinely cannot work without it, and a privacy policy change in the same release.
+**Revisit only with:** the first working alert, in the same change that uses the permission, the service worker and the settings screen. A future feature that needs a host permission must bring a written reason and Ali's agreement.
 
 ## D-010: The store copy is drafted early, published last
 
@@ -109,3 +113,29 @@ A decision is added here in the same commit that makes it. Each entry says what 
 **Decided:** any link Ali is meant to open is a Markdown link he can click, never a bare URL pasted as text.
 
 **Why:** Ali asked on 27 October 2026, "make the link clickable so I can click and get it done." He is not technical and acts from clicks, not copied addresses.
+
+## D-013: The popup follows a smaller viewport
+
+**Decided:** the popup is `width: 100%` with a `max-width` of 380 pixels, not a fixed 380 pixels.
+
+**Why:** browser zoom shrinks the layout viewport. At 150 percent the fixed width left a 380 pixel layout inside 253 pixels, so the labels stayed and every time was cut off on the right. A maximum keeps the intended size at normal zoom and lets the column shrink instead of clipping.
+
+**Evidence:** a Playwright test sets the viewport to 253 by 600 and asserts `scrollWidth === clientWidth` with the time values still visible.
+
+**Revisit if:** the popup grows a control that genuinely cannot shrink. Even then it may scroll, but it must not clip.
+
+## D-014: Coordinates are rounded to about one kilometre
+
+**Decided:** the place saved from the browser is rounded to two decimal places before it is stored.
+
+**Why:** PLAN.md asks for two places to be kinder to privacy. Six or seven decimal places describe a building; two describe a neighbourhood, which is all prayer times need.
+
+**Revisit if:** city search replaces the browser fix and stores a city centre instead.
+
+## D-015: The countdown is written as "9 h 23 m 59 s"
+
+**Decided:** the countdown uses spaced hour, minute and second units. It does not use the plan's `h:mm:ss`.
+
+**Why:** the spaced form is easier to read at a glance in a small popup, and it fits the available width. The plan's compact form saves space but reads like a timer on a machine, not a prayer time.
+
+**Revisit if:** a later layout gives the countdown a wider column and the shorter form becomes the calmer choice.

@@ -10,18 +10,18 @@ This is a separate product from the [SajdaTime Android app](https://github.com/a
 
 ## What works today
 
-- Prayer times for 13 calculation methods, including Jafari and Tehran.
-- Asr in the Hanafi or Shafi'i school.
+- Prayer times with 13 calculation methods in the engine, including Jafari and Tehran.
 - The next prayer with a countdown that updates every second.
 - Sunrise, the current prayer and the whole day at a glance.
 - The Hijri date from the Umm al-Qura calendar.
-- A first run that asks for location, then keeps the place on this computer.
+- A first run that asks for location, then keeps the place on this computer, with a clearly labelled Makkah fallback if location is refused.
 - Light and dark themes that follow the computer.
 - A popup that fits 380 by 600 pixels without scrolling.
 
 ## What is not built yet
 
-- A settings screen, city search, and changing the place after first run.
+- A settings screen, so the calculation method and Asr school cannot be chosen yet. They are selected for the user from the place.
+- City search, and changing the place after first run.
 - Prayer alerts, the countdown badge, and the offscreen audio page.
 - Ramadan notices, the suhoor timer, Eid notices and the timetable page.
 - Urdu, Arabic, Turkish and Indonesian, with right-to-left layout.
@@ -76,7 +76,7 @@ Read the full [privacy policy](docs/privacy.html).
 ## The rules this build follows
 
 - Manifest V3, TypeScript strict, Preact, adhan-js pinned to 4.4.6.
-- Permissions only: `alarms`, `notifications`, `storage`, `offscreen`, `geolocation`. No host permissions, no content scripts, no `tabs`, no remote code.
+- Permissions only: `storage`, `geolocation`. Alarm, notification and offscreen permissions arrive with the first working alert. No host permissions, no content scripts, no `tabs`, no remote code.
 - No Qibla. No network. No tracking.
 - The religious disclaimer is never softened or hidden. It arrives with the settings screen.
 - Quiet Glass: solid green pill buttons, white bold text, tabular numbers, nothing below 14 pixels.
