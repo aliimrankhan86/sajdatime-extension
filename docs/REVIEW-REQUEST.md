@@ -29,6 +29,8 @@ The previous pass found that Shia (Jafari and Tehran) days above about 60 degree
 
 The second review found that the Shia Maghrib pass caps its result at sunset plus `angle / 60` of the night, even on a summer day when the sun does reach 4 or 4.5 degrees. The phone has the same cap. Ali chose the true angle. The extension now uses the real angle whenever it lands after sunset and in an earlier minute than the method's Isha, and falls back to the Twilight Angle cap when the sun never reaches it or it would land on or after Isha. Oslo on 21 June now shows Jafari 23:35 and Tehran 23:46, not 23:05 and 23:07; Trondheim stays at 23:52 and 23:53; Tampere keeps the cap so Maghrib stays before Isha. The phone still caps and must make the same change in its next release, so the two products deliberately differ until then. That difference is recorded in D-002 and HANDOVER, and `tools/adhan-probe` prints both the true angle and the current phone cap.
 
+The exact change the phone needs is written up in [`PHONE-FOLLOW-UP.md`](PHONE-FOLLOW-UP.md). The phone repo is separate and Claude's to edit.
+
 ## What to run
 
 Node 24 and npm 11 were used. Chrome for Testing is needed because branded Chrome refuses an unpacked extension in this setup.
@@ -47,7 +49,7 @@ To look by hand, open `chrome://extensions`, enable Developer mode, choose **Loa
 
 ## What to judge
 
-1. **The Shia fix in the code.** Read `src/core/engine.ts` and `src/core/methods.ts` against the phone's `PrayerEngine.kt`. Check that the main day check sees sunset, that the second pass uses the same latitude, that the 4 and 4.5 degree values are right, and that nothing else uses the removed `maghribAngle`. Look for a remaining path where a Shia day is projected or falls back to sunset.
+1. **The Shia fix in the code.** Read `src/core/engine.ts` and `src/core/methods.ts` against the phone's `PrayerEngine.kt`. Check that the main day check sees sunset, that the second pass uses the same latitude, that the 4 and 4.5 degree values are right, and that nothing in the ordinary day uses a `maghribAngle`. Look for a remaining path where a Shia day is projected or falls back to sunset.
 2. **Design against the brief.** Quiet Glass tokens, 380 by 600 popup, spacing, type hierarchy, the solid green action button with bold white text, no two icon buttons side by side, a close control on every dismissable screen, times in tabular numerals, nothing below 14 pixels, targets at least 44 pixels. The plan's section 3 and section 6 are the written brief.
 3. **The Times screen in every state.** First open, next prayer today, next prayer tomorrow after Isha, a current prayer that is not the next one, sunrise as a quieter row, a polar estimate, a very long place name, 12-hour and 24-hour browser languages, 150 and 200 percent zoom, light and dark.
 4. **First run and Settings.** Whether the words are plain and true, whether the location flow is understandable without a manual, whether Settings preserves a deliberately chosen method when the place changes, and whether the disclaimer is intact and readable. The disclaimer must never be removed, softened or hidden.
