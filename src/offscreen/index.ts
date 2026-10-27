@@ -2,11 +2,16 @@ import { parseAlertMessage } from '../core/messages';
 
 let audio: HTMLAudioElement | null = null;
 
+function ended(): void {
+  void chrome.runtime.sendMessage({ type: 'sound-ended' }).catch(() => {});
+}
+
 function stop(): void {
   if (audio) {
     audio.pause();
     audio.currentTime = 0;
     audio = null;
+    ended();
   }
 }
 
@@ -14,8 +19,10 @@ function playFile(url: string): void {
   stop();
   const next = new Audio(url);
   audio = next;
+  next.addEventListener('ended', ended);
   void next.play().catch(() => {
     if (audio === next) audio = null;
+    ended();
   });
 }
 
@@ -43,7 +50,10 @@ function playBeep(): void {
   second.start(context.currentTime + 0.35);
   second.stop(context.currentTime + 0.95);
 
-  setTimeout(() => void context.close(), 1200);
+  setTimeout(() => {
+    void context.close();
+    ended();
+  }, 1200);
 }
 
 // The offscreen document answers only the worker. The popup talks to the worker, which

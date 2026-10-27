@@ -1,7 +1,7 @@
 import { createRequire } from 'node:module';
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
-import { launchExtension, seedSettings } from './extension';
+import { launchExtension, LONDON, seedSettings } from './extension';
 
 const axePath = createRequire(import.meta.url).resolve('axe-core/axe.min.js');
 
@@ -83,6 +83,26 @@ test('first run and its search results have no WCAG 2.2 AA violations', async ()
 
     await extension.page.getByRole('searchbox', { name: 'Or find a place' }).fill('London');
     await expect(extension.page.locator('.city-result').first()).toBeVisible();
+    expectNoViolations(await audit(extension.page));
+  } finally {
+    await extension.close();
+  }
+});
+
+test('Settings with the Alerts group open has no WCAG 2.2 AA violations', async () => {
+  const extension = await launchExtension();
+  try {
+    await extension.page.addInitScript({ path: axePath });
+    await seedSettings(extension, new Date('2026-10-27T11:00:00Z'), {
+      ...LONDON,
+      alerts: { ...LONDON.alerts, enabled: true },
+    });
+    await extension.page.getByRole('button', { name: 'Settings' }).click();
+    await expect(extension.page.getByRole('heading', { name: 'Alerts' })).toBeVisible();
+    await expect(extension.page.getByRole('heading', { name: 'Sound' })).toBeVisible();
+    expectNoViolations(await audit(extension.page));
+
+    await extension.page.emulateMedia({ colorScheme: 'dark' });
     expectNoViolations(await audit(extension.page));
   } finally {
     await extension.close();

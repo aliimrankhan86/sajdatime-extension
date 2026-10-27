@@ -6,7 +6,7 @@ import type { Prayer, Sect } from '../core/types';
 import { loadSettings } from '../settings/storage';
 import { SETTINGS_KEY, type AlertSound } from '../settings/types';
 
-const NOTIFICATION_ICON = 'icons/icon-128.png';
+const NOTIFICATION_ICON = chrome.runtime.getURL('icons/icon-128.png');
 const CLEAR_AFTER_MS = 60 * 1000;
 
 chrome.runtime.onInstalled.addListener(() => {
@@ -75,15 +75,21 @@ async function firePrayer(date: string, slot: Prayer): Promise<void> {
   const notificationId = `prayer:${date}:${slot}`;
   const placeName = settings.place.name.slice(0, 60);
   const locale = navigator.language || 'en-GB';
-  chrome.notifications.create(notificationId, {
-    type: 'basic',
-    iconUrl: NOTIFICATION_ICON,
-    title: `${PRAYER_NAMES[slot]}, ${formatClockTime(scheduled, settings.place.timeZone, locale)}`,
-    message: `It is time for ${PRAYER_NAMES[slot]} in ${placeName}.`,
-    silent: true,
-    requireInteraction: true,
-    ...(settings.alerts.sound === 'adhan' ? { buttons: [{ title: 'Stop sound' }] } : {}),
-  });
+  try {
+    await chrome.notifications.create(notificationId, {
+      type: 'basic',
+      iconUrl: NOTIFICATION_ICON,
+      title: `${PRAYER_NAMES[slot]}, ${formatClockTime(scheduled, settings.place.timeZone, locale)}`,
+      message: `It is time for ${PRAYER_NAMES[slot]} in ${placeName}.`,
+      silent: true,
+      requireInteraction: true,
+      ...(settings.alerts.sound === 'adhan' ? { buttons: [{ title: 'Stop sound' }] } : {}),
+    });
+  } catch {
+    // A fixed message only: the browser may refuse the icon or deny notifications.
+    console.error('Could not show the prayer alert.');
+    return;
+  }
   chrome.alarms.create(`clear:${notificationId}`, { when: Date.now() + CLEAR_AFTER_MS });
   await playSound(settings.alerts.sound, settings.sect);
 }
@@ -99,19 +105,27 @@ async function handleMessage(type: AlertMessageType): Promise<void> {
     case 'test-alert':
       await fireTestAlert();
       break;
+    case 'sound-ended':
+      // The offscreen page says a sound finished; the popup listens for this too.
+      break;
   }
 }
 
 async function fireTestAlert(): Promise<void> {
   const settings = await loadSettings();
   if (!settings) return;
+  try {
+    await chrome.notifications.create('test-alert', {
+      type: 'basic',
+      iconUrl: NOTIFICATION_ICON,
+      title: 'Test alert',
+      message: 'This is how a prayer alert looks.',
+    });
+  } catch {
+    console.error('Could not show the test alert.');
+    return;
+  }
   await playSound(settings.alerts.sound, settings.sect);
-  chrome.notifications.create('test-alert', {
-    type: 'basic',
-    iconUrl: NOTIFICATION_ICON,
-    title: 'Test alert',
-    message: 'This is how a prayer alert looks.',
-  });
 }
 
 async function playSound(sound: AlertSound, sect: Sect): Promise<void> {
@@ -138,14 +152,25 @@ async function ensureOffscreen(): Promise<void> {
 async function rebuildAlarms(): Promise<void> {
   const settings = await loadSettings();
   const expected = settings ? scheduledAlarms(settings, new Date()) : [];
-  const current = await chrome.alarms.getAll();
+  const current = (await chrome.alarms.getAll()).filter((alarm) => isOwnedAlarm(alarm.name));
   const expectedTimes = new Map(expected.map((alarm) => [alarm.name, alarm.when.getTime()] as const));
   const currentTimes = new Map(current.map((alarm) => [alarm.name, alarm.scheduledTime] as const));
   if (same(expectedTimes, currentTimes)) return;
-  await chrome.alarms.clearAll();
-  for (const alarm of expected) {
-    chrome.alarms.create(alarm.name, { when: alarm.when.getTime() });
+  // This worker owns only prayer: and refresh alarms. A clear:<id> alarm set by an
+  // alert must survive a rebuild, or the notification's requireInteraction keeps it
+  // pinned until the browser is restarted, so clear only owned names, never clearAll.
+  for (const alarm of current) {
+    if (!expectedTimes.has(alarm.name)) chrome.alarms.clear(alarm.name);
   }
+  for (const alarm of expected) {
+    if (currentTimes.get(alarm.name) !== alarm.when.getTime()) {
+      chrome.alarms.create(alarm.name, { when: alarm.when.getTime() });
+    }
+  }
+}
+
+function isOwnedAlarm(name: string): boolean {
+  return name === 'refresh' || name.startsWith('prayer:');
 }
 
 function same(left: Map<string, number>, right: Map<string, number>): boolean {

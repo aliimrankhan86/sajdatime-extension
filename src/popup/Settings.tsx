@@ -3,7 +3,7 @@ import { countryName } from '../core/cities';
 import { isMethodOfferedTo, isShiaMethod, methodsOfferedTo } from '../core/methods';
 import { suggestMethod } from '../core/suggestions';
 import { PRAYER_NAMES } from '../core/alerts';
-import { soundMessageType } from '../core/messages';
+import { parseAlertMessage, soundMessageType } from '../core/messages';
 import { PRAYERS, type MethodId, type Sect } from '../core/types';
 import { saveSettings } from '../settings/storage';
 import type { Settings as SettingsValue } from '../settings/types';
@@ -93,6 +93,20 @@ export function Settings({ settings, onClose, onSaved }: Props) {
 
   useEffect(() => {
     void chrome.notifications.getPermissionLevel().then((level) => setBlocked(level === 'denied'));
+  }, []);
+
+  useEffect(() => {
+    const onMessage = (message: unknown, sender: chrome.runtime.MessageSender | undefined) => {
+      const type = parseAlertMessage(
+        message,
+        sender,
+        chrome.runtime.id,
+        chrome.runtime.getURL('offscreen/index.html'),
+      );
+      if (type === 'sound-ended') setPlaying(false);
+    };
+    chrome.runtime.onMessage.addListener(onMessage);
+    return () => chrome.runtime.onMessage.removeListener(onMessage);
   }, []);
 
   useEffect(() => {

@@ -17,15 +17,15 @@ An independent review brief for this commit is in [`docs/REVIEW-REQUEST.md`](REV
 | Area | State | Evidence |
 | --- | --- | --- |
 | Manifest V3 extension | Loads in Chrome for Testing | Playwright launches it with `--load-extension=dist` and finds the popup |
-| Prayer engine | 13 methods, both Asr schools, polar projection and correction clamp, Shia Maghrib from the Twilight Angle cap exactly as the phone does it, so a normal Shia day above 60 degrees is not projected | `npm test`: 140 unit tests pass |
+| Prayer engine | 13 methods, both Asr schools, polar projection and correction clamp, Shia Maghrib from the Twilight Angle cap exactly as the phone does it, so a normal Shia day above 60 degrees is not projected | `npm test`: 141 unit tests pass |
 | Golden values | Six phone fixtures pinned, plus 13 broad Aladhan sanity fixtures | `tests/unit/engine.test.ts`, `tests/unit/aladhan.test.ts` |
 | Hijri calendar | Umm al-Qura, shift, Ramadan windows, Eids | `tests/unit/hijri.test.ts` |
 | Method suggestion | Country table and Shia rule | `tests/unit/suggestions.test.ts` |
 | City search | Offline GeoNames city list, search and pick; the most populous city within 15 kilometres names a place the browser located, with "Near" past 50 kilometres | `tests/unit/cities.test.ts`, `tests/unit/place.test.ts`, Playwright first-run test |
-| Popup | Place, Hijri date, next prayer, countdown, six times, a fixed 380 pixel width, the real toolbar popup measured at 380 by 600, 200 percent zoom, visible Settings button, explicit Next and Now pills | Playwright screenshots and 38 end-to-end tests |
+| Popup | Place, Hijri date, next prayer, countdown, six times, a fixed 380 pixel width, the real toolbar popup measured at 380 by 600, 200 percent zoom, visible Settings button, explicit Next and Now pills | Playwright screenshots and 47 end-to-end tests |
 | First run | Use my location names the town and confirms it before going on, city search, method suggestion from the country, save on Continue, show times | Playwright tests with a supplied geolocation fix |
 | Settings | Place change, School (Sunni or Shia), method, Asr school, Hijri shift, disclaimer, privacy link, keyboard focus and Escape | Playwright tests |
-| Alerts | Off by default; a background worker schedules one alarm per prayer plus a daily refresh, fires a notification, and plays the beep or the adhan through one offscreen page; five-minute late drop; Stop sound; test alert; blocked notice when the browser denies notifications | `tests/unit/alerts.test.ts`, `tests/unit/messages.test.ts`, `tests/e2e/alerts.test.ts` |
+| Alerts | Off by default; a background worker schedules one alarm per prayer plus a daily refresh, fires a notification, and plays the beep or the adhan through one offscreen page; five-minute late drop; Stop sound; test alert; blocked notice when the browser denies notifications; the Play button returns to Play when a sound ends; the worker owns only prayer and refresh alarms, so the 60 second self-clear survives a rebuild | `tests/unit/alerts.test.ts`, `tests/unit/messages.test.ts`, `tests/e2e/alerts.test.ts` |
 | Light and dark | Both themes from `tokens.css`, WCAG AA contrast pairs | `tests/unit/contrast.test.ts`, `docs/images/times-dark.png`, `docs/images/settings-dark.png` |
 | Accessibility | Keyboard focus moves into full screens and returns, every control has a 44 pixel target, axe finds no WCAG 2.2 AA violation | `tests/e2e/a11y.test.ts`, `tests/e2e/design.test.ts` |
 | No network | No request leaves the extension while it shows times | Playwright request listener |

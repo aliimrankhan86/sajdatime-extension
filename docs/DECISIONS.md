@@ -234,3 +234,11 @@ The badge and "time until the next prayer" reminders are deferred.
 **Why:** the privacy promise, written in `docs/BUILD-NEXT.md` and `docs/privacy.html`, is that the three new permissions do nothing until the user turns alerts on. Shipping off by default means an existing user upgrades with no new sound, no notification and no changed behaviour. There is no full first-run journey yet to explain the three permissions, so off by default is the honest state until that journey exists.
 
 **Revisit when:** the full first run exists. It can then offer alerts as part of onboarding rather than leaving the choice entirely to Settings.
+
+## D-026: The worker owns only prayer and refresh alarms, and sound-ending is a message
+
+**Decided:** the review of Step 2 found three bugs, now fixed. First, the notification icon URL was relative and resolved against `background/index.js`, so Chrome refused the image and showed nothing; both alert paths now use `chrome.runtime.getURL(...)` and await `notifications.create` with a fixed `console.error` on failure. Second, the beep never returned the Play button to Play; the offscreen page now sends a `sound-ended` message when a sound finishes, fails or is stopped, the popup accepts it only from the offscreen page and returns to Play, and the worker ignores it. Third, `rebuildAlarms` cleared every alarm on a settings change, which deleted the 60 second `clear:<id>` self-clear and left a pinned notification on screen; the worker now owns only `refresh` and `prayer:` names, compares and clears only those, never `clearAll`.
+
+**Why:** an alarm name is also the notification id and the self-clear id, so a blanket `clearAll` destroys another part's bookkeeping. Owning one prefix keeps the worker from touching alarms it did not create, and emitting a distinct `sound-ended` type keeps the popup in sync without the worker having to track playback. Each is a single fixed string, never a message field, so R4 still holds.
+
+**Revisit if:** a future feature needs its own alarm prefix or a second sound source that must also report its end.

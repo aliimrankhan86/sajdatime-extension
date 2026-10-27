@@ -1,8 +1,8 @@
 # Review request
 
-**Baseline:** [`aliimrankhan86/sajdatime-extension`](https://github.com/aliimrankhan86/sajdatime-extension) at commit `ca39f1a` on `main`, plus the Step 2 commit on top of it, which is the one to review. A commit cannot contain its own hash, so the hash named here is the commit the diff starts from, and Step 2 is the only commit after it. Step 2 of [`docs/BUILD-NEXT.md`](BUILD-NEXT.md) adds prayer alerts: the `alarms`, `notifications` and `offscreen` permissions, a background worker that schedules and fires them, one offscreen audio page, and a Settings Alerts group, off until the user turns them on.
+**Baseline:** [`aliimrankhan86/sajdatime-extension`](https://github.com/aliimrankhan86/sajdatime-extension) at commit `cf60111` on `main`, plus this revision commit on top of it, which is the one to review. `cf60111` is the Step 2 commit that added prayer alerts; a first review found three bugs and asked for the tests that should have caught them, and this commit fixes all three and adds those tests. Step 2 of [`docs/BUILD-NEXT.md`](BUILD-NEXT.md) adds prayer alerts: the `alarms`, `notifications` and `offscreen` permissions, a background worker that schedules and fires them, one offscreen audio page, and a Settings Alerts group, off until the user turns them on.
 
-**Previous reviews:** Step 1 (`ca39f1a`), on top of the security foundation commit, was judged READY with three P2 fixes applied. The School choice, the popup width fix and the Shia Maghrib rule are accepted; do not reopen them. Step 1 named a place the browser located, from the bundled city list and with no network, and confirmed it with a "Location found" panel. The security foundation is `docs/SECURITY.md` enforced by code. Both are history for this review.
+**Previous reviews:** Step 1 (`ca39f1a`), on top of the security foundation commit, was judged READY with three P2 fixes applied; do not reopen the School choice, the popup width fix or the Shia Maghrib rule. Step 2 (`cf60111`) was reviewed and judged NOT READY: a notification icon URL resolved against the worker script so no alert ever appeared (P0), the Play button never returned to Play after the beep ended (P1), and a settings rebuild cleared the 60 second self-clear alarm so a pinned notification never went away (P2). This commit fixes all three and adds the tests that should have caught them. The security foundation is `docs/SECURITY.md` enforced by code. All of these are history for this review.
 
 **Date:** 28 October 2026.
 **Reviewer:** Claude, Opus review pass.
@@ -21,7 +21,7 @@ This is Step 2 of [`docs/BUILD-NEXT.md`](BUILD-NEXT.md): prayer alerts.
 - **Three permissions arrive with a working alert.** The manifest now asks for `alarms`, `notifications` and `offscreen` on top of `storage` and `geolocation`, still with no host permissions and no content scripts. Each permission maps to one visible thing, recorded in D-024.
 - **A background worker schedules and fires.** `src/background/index.ts` reads the settings, schedules one alarm per prayer plus a daily refresh, drops an alert that is disabled, switched off for that prayer, or more than five minutes late, and fires a notification whose id equals the alarm name. On install, startup and settings change it rebuilds the set, and it recreates only when the scheduled set drifts. A "Stop sound" button and a 60 second self-clear end the sound.
 - **Sound plays through one offscreen page.** A service worker cannot play audio, so `src/offscreen/index.ts` plays the beep (Web Audio, two notes, no file) or the bundled adhan recordings, chosen by the stored sound and sect, never by a message. The worker creates the page only when a sound is due, with reason `AUDIO_PLAYBACK`.
-- **Messages are checked before anything runs.** `src/core/messages.ts` ignores any message whose sender is not the extension or whose URL is outside `chrome.runtime.getURL('')`, and switches only on the five fixed types, never on a message field used as a URL, path, alarm name or HTML. R4 and R11 test this.
+- **Messages are checked before anything runs.** `src/core/messages.ts` ignores any message whose sender is not the extension or whose URL is outside `chrome.runtime.getURL('')`, and switches only on the six fixed types, never on a message field used as a URL, path, alarm name or HTML. The offscreen page sends a `sound-ended` type when a sound finishes or is stopped so the popup's Play button returns to Play; the worker ignores it. R4 and R11 test this.
 - **Settings gains an Alerts group, off by default.** `alerts.enabled` is `false` and the sound is `beep`. A master switch, five per-prayer switches, three sound choices, a Play/Stop control, a test alert button, and a blocked notice when the browser denies notifications. The three adhan credits are in `THIRD-PARTY-NOTICES.txt` and the About credits, with the Shia recording's CC BY-SA 4.0 link.
 - **No network, still.** The wide R6 test now watches the whole context — popup, worker and offscreen — through Settings, Play, the test alert and "Use my location", and asserts every request starts `chrome-extension://`.
 
@@ -54,8 +54,8 @@ To look by hand, open `chrome://extensions`, enable Developer mode, choose **Loa
 
 ## Evidence in this commit
 
-`npm run check`: 12 unit files, 140 tests passed, strict typecheck passed, production build passed, then the bundle scan passed.
-`npm run test:e2e`: 38 tests passed.
+`npm run check`: 12 unit files, 141 tests passed, strict typecheck passed, production build passed, then the bundle scan passed.
+`npm run test:e2e`: 47 tests passed.
 
 | Test file | What it covers |
 | --- | --- |
@@ -71,10 +71,10 @@ To look by hand, open `chrome://extensions`, enable Developer mode, choose **Loa
 | `tools/check-bundle.mjs` | `docs/SECURITY.md` R3, R6, R7 and R8 over `dist/` and `src/` |
 | `tests/e2e/popup.test.ts` | Times, 200 percent zoom, countdown tick, 12-hour language, tomorrow Fajr, first run with the location confirmation, a stored name that is markup shown as text, Makkah fallback, Settings, city search, method persistence |
 | `tests/e2e/location-found.test.ts` | The confirmation in the Settings Location sheet with Done, and a city list aborted in the browser, which still saves My location |
-| `tests/e2e/alerts.test.ts` | The worker schedules prayer alarms when alerts turn on and clears them when off, the alert controls keep 44 pixel targets, and the wide R6 no network test through the alert and location flow |
+| `tests/e2e/alerts.test.ts` | The worker schedules prayer alarms when alerts turn on and clears them when off, a fired prayer shows a titled notification, Play returns to Play when the beep ends, the adhan runs through an offscreen page, a settings change never clears a pending clear alarm, the Alerts group and its five switches and sound choices, focus after a save, the test alert, the blocked notice, 44 pixel targets, and the wide R6 no network test |
 | `tests/e2e/audit.test.ts` | Asr school, method change, place change, dark link contrast, keyboard focus and Escape, focus after a save |
 | `tests/e2e/design.test.ts` | Now and Next pills, Next row has no `aria-current`, 44 pixel controls, 200 percent zoom, dark flat card, no network request |
-| `tests/e2e/a11y.test.ts` | axe 4.14, WCAG 2.2 AA tags, Times, Settings, Location, first run and the location found panel, light and dark |
+| `tests/e2e/a11y.test.ts` | axe 4.14, WCAG 2.2 AA tags, Times, Settings, Settings with the Alerts group open, Location, first run and the location found panel, light and dark |
 | `tests/e2e/school.test.ts` | School set, both reset directions, the keep case, focus after a save |
 | `tests/e2e/popup-width.test.ts` | The real action popup opens at 380 by 600 with the Settings button visible |
 | `tests/unit/contrast.test.ts` | 14 token pairs, including the hero gradient stops and the focus ring |
@@ -110,7 +110,7 @@ The 200 percent zoom Settings screenshot is deliberately tall. It shows the stac
 - A remaining recorded P2: the default method survives a place change if the user never chose one. Step 1 removed the cause for a place found by the browser, which now carries a real country. A place changed to a searched town still keeps the method.
 - A remaining recorded P2: the polar note does not name the latitude it borrowed.
 - No Edge run, no Windows run and no real screen reader run. These are stated limits.
-- `tests/e2e/popup-width.test.ts` runs headful, because `chrome.action.openPopup()` never surfaces a measurable target under headless Chrome. On a machine without a display, only that test cannot run; the other 37 run headless.
+- `tests/e2e/popup-width.test.ts` runs headful, because `chrome.action.openPopup()` never surfaces a measurable target under headless Chrome. On a machine without a display, only that test cannot run; the other 46 run headless.
 - Zoom is tested at 200 percent only. Above about 210 percent, 380 CSS pixels at that zoom is more than the 800 pixel width Chrome allows an action popup, so the page may need sideways scrolling. This is a stated limit, not a layout change.
 - No GitHub Actions workflow. This Mac's `gh` login lacks the `workflow` scope. Local checks are the evidence.
 - The real browser geolocation bubble is mocked in the tests because the extension origin cannot be granted a permission from Playwright. The notification permission level is read from the browser, so the blocked notice is shown only when the browser reports denied.

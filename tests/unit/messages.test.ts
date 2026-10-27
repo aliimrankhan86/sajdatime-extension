@@ -4,6 +4,8 @@ import { parseAlertMessage, soundMessageType } from '../../src/core/messages';
 const SELF = 'abcdefghijklmnopabcdefghijklmnop';
 const BASE = `chrome-extension://${SELF}/`;
 const SENDER = { id: SELF, url: `${BASE}popup/index.html` };
+const OFFSCREEN_PREFIX = `${BASE}offscreen/index.html`;
+const OFFSCREEN_SENDER = { id: SELF, url: OFFSCREEN_PREFIX };
 
 describe('parseAlertMessage', () => {
   it('accepts a known type from an extension page', () => {
@@ -45,6 +47,13 @@ describe('parseAlertMessage', () => {
     expect(parseAlertMessage('play-beep', SENDER, SELF, BASE)).toBeNull();
     expect(parseAlertMessage(null, SENDER, SELF, BASE)).toBeNull();
     expect(parseAlertMessage({}, SENDER, SELF, BASE)).toBeNull();
+  });
+
+  it('accepts sound-ended only from the offscreen page', () => {
+    expect(parseAlertMessage({ type: 'sound-ended' }, OFFSCREEN_SENDER, SELF, OFFSCREEN_PREFIX)).toBe(
+      'sound-ended',
+    );
+    expect(parseAlertMessage({ type: 'sound-ended' }, SENDER, SELF, OFFSCREEN_PREFIX)).toBeNull();
   });
 });
 

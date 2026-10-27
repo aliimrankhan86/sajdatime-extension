@@ -6,6 +6,7 @@ export type AlertMessageType =
   | 'play-adhan-sunni'
   | 'play-adhan-shia'
   | 'stop'
+  | 'sound-ended'
   | 'test-alert';
 
 const MESSAGE_TYPES: readonly AlertMessageType[] = [
@@ -13,6 +14,7 @@ const MESSAGE_TYPES: readonly AlertMessageType[] = [
   'play-adhan-sunni',
   'play-adhan-shia',
   'stop',
+  'sound-ended',
   'test-alert',
 ];
 
