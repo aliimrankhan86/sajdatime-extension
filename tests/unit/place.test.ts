@@ -1,6 +1,7 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import type { City } from '../../src/core/cities';
-import { placeFromBrowser } from '../../src/settings/place';
+import { parseCityData, type City } from '../../src/core/cities';
+import { cityForLocation, placeFromBrowser } from '../../src/settings/place';
 
 const LEEDS: City = {
   name: 'Leeds',
@@ -52,5 +53,52 @@ describe('a place from the browser', () => {
       timeZone: 'Europe/London',
       countryCode: 'ZZ',
     });
+  });
+});
+
+/** The list that actually ships, so these tests fail if the file or its format drifts. */
+function bundledCities(): City[] {
+  const file = readFileSync(new URL('../../public/data/cities.json', import.meta.url), 'utf8');
+  return parseCityData(JSON.parse(file));
+}
+
+describe('the city a located point is named after', () => {
+  const bundled = bundledCities();
+
+  it('names Paris for its centre, not one of its arrondissements', () => {
+    expect(cityForLocation(48.8566, 2.3522, bundled)?.name).toBe('Paris');
+  });
+
+  it('names Dubai for its centre, not a district of it', () => {
+    expect(cityForLocation(25.2048, 55.2708, bundled)?.name).toBe('Dubai');
+  });
+
+  it('still names London', () => {
+    expect(cityForLocation(51.5074, -0.1278, bundled)?.name).toBe('London');
+  });
+
+  it('still names Leeds', () => {
+    expect(cityForLocation(53.8, -1.55, bundled)?.name).toBe('Leeds');
+  });
+
+  it('keeps the nearest city when nothing is within 15 kilometres', () => {
+    const far: City = {
+      name: 'Far',
+      countryCode: 'GB',
+      latitude: 1,
+      longitude: 0,
+      timeZone: 'UTC',
+      population: 1_000,
+    };
+    const farther: City = {
+      name: 'Farther',
+      countryCode: 'GB',
+      latitude: 2,
+      longitude: 0,
+      timeZone: 'UTC',
+      population: 2_000,
+    };
+    // One degree of latitude is about 111 kilometres, so neither is within the radius.
+    expect(cityForLocation(0, 0, [farther, far])?.name).toBe('Far');
   });
 });

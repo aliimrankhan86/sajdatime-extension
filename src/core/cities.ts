@@ -200,6 +200,30 @@ export function nearestCity(
   return nearest;
 }
 
+/**
+ * The most populous city within a radius of a point. Used to name a located place by the
+ * whole city rather than by a district or arrondissement of it, which the plain nearest
+ * pass would pick because it sits closer to the centre. Returns null when none is within.
+ */
+export function largestCityWithin(
+  latitude: number,
+  longitude: number,
+  cities: readonly City[],
+  radiusKm: number,
+): City | null {
+  let best: City | null = null;
+  let bestPopulation = -1;
+  for (const city of cities) {
+    if (distanceKm(latitude, longitude, city.latitude, city.longitude) <= radiusKm) {
+      if (city.population > bestPopulation) {
+        bestPopulation = city.population;
+        best = city;
+      }
+    }
+  }
+  return best;
+}
+
 /** A readable country name, falling back to the code if the browser cannot name it. */
 export function countryName(countryCode: string, locale: string): string {
   try {

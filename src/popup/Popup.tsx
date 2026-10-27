@@ -141,19 +141,16 @@ function FirstRun({ onSaved }: { onSaved: (settings: Settings) => void }) {
     setBusy(true);
     navigator.geolocation.getCurrentPosition(
       (position) => {
+        // placeFromGeolocation never rejects: when the city list will not load it falls
+        // back to "My location" itself, so there is no error branch to show here.
         placeFromGeolocation(
           position.coords.latitude,
           position.coords.longitude,
           Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
-        )
-          .then((place) => {
-            setBusy(false);
-            setFound(place);
-          })
-          .catch(() => {
-            setBusy(false);
-            setError('We could not read your location. Allow location for this browser, then try again.');
-          });
+        ).then((place) => {
+          setBusy(false);
+          setFound(place);
+        });
       },
       () => {
         setBusy(false);

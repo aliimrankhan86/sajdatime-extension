@@ -17,13 +17,13 @@ An independent review brief for this commit is in [`docs/REVIEW-REQUEST.md`](REV
 | Area | State | Evidence |
 | --- | --- | --- |
 | Manifest V3 extension | Loads in Chrome for Testing | Playwright launches it with `--load-extension=dist` and finds the popup |
-| Prayer engine | 13 methods, both Asr schools, polar projection and correction clamp, Shia Maghrib from the Twilight Angle cap exactly as the phone does it, so a normal Shia day above 60 degrees is not projected | `npm test`: 105 unit tests pass |
+| Prayer engine | 13 methods, both Asr schools, polar projection and correction clamp, Shia Maghrib from the Twilight Angle cap exactly as the phone does it, so a normal Shia day above 60 degrees is not projected | `npm test`: 110 unit tests pass |
 | Golden values | Six phone fixtures pinned, plus 13 broad Aladhan sanity fixtures | `tests/unit/engine.test.ts`, `tests/unit/aladhan.test.ts` |
 | Hijri calendar | Umm al-Qura, shift, Ramadan windows, Eids | `tests/unit/hijri.test.ts` |
 | Method suggestion | Country table and Shia rule | `tests/unit/suggestions.test.ts` |
-| City search | Offline GeoNames city list, search and pick; the nearest city names a place the browser located, with "Near" past 50 kilometres | `tests/unit/cities.test.ts`, `tests/unit/place.test.ts`, Playwright first-run test |
-| Popup | Place, Hijri date, next prayer, countdown, six times, a fixed 380 pixel width, the real toolbar popup measured at 380 by 600, 200 percent zoom, visible Settings button, explicit Next and Now pills | Playwright screenshots and 34 end-to-end tests |
-| First run | Use my location names the nearest town and confirms it before going on, city search, method suggestion from the country, save on Continue, show times | Playwright tests with a supplied geolocation fix |
+| City search | Offline GeoNames city list, search and pick; the most populous city within 15 kilometres names a place the browser located, with "Near" past 50 kilometres | `tests/unit/cities.test.ts`, `tests/unit/place.test.ts`, Playwright first-run test |
+| Popup | Place, Hijri date, next prayer, countdown, six times, a fixed 380 pixel width, the real toolbar popup measured at 380 by 600, 200 percent zoom, visible Settings button, explicit Next and Now pills | Playwright screenshots and 35 end-to-end tests |
+| First run | Use my location names the town and confirms it before going on, city search, method suggestion from the country, save on Continue, show times | Playwright tests with a supplied geolocation fix |
 | Settings | Place change, School (Sunni or Shia), method, Asr school, Hijri shift, disclaimer, privacy link, keyboard focus and Escape | Playwright tests |
 | Light and dark | Both themes from `tokens.css`, WCAG AA contrast pairs | `tests/unit/contrast.test.ts`, `docs/images/times-dark.png`, `docs/images/settings-dark.png` |
 | Accessibility | Keyboard focus moves into full screens and returns, every control has a 44 pixel target, axe finds no WCAG 2.2 AA violation | `tests/e2e/a11y.test.ts`, `tests/e2e/design.test.ts` |
@@ -36,13 +36,13 @@ Commands actually run on 27 October 2026:
 
 ```text
 npm run typecheck    pass
-npm test             10 files, 105 tests passed
+npm test             10 files, 110 tests passed
 npm run build        pass, dist/manifest.json and the popup bundle written
-npm run test:e2e     34 tests passed
+npm run test:e2e     35 tests passed
 node tools/check-bundle.mjs  pass, 3 bundle files and the source clean
 ```
 
-The 34 end-to-end tests are six Settings and state tests, six design and responsive tests, four axe tests, eleven original popup tests, two location confirmation tests, four School tests and one real action popup measurement. They run in Chrome for Testing at:
+The 35 end-to-end tests are six Settings and state tests, six design and responsive tests, four axe tests, eleven original popup tests, three location confirmation tests, four School tests and one real action popup measurement. They run in Chrome for Testing at:
 
 ```text
 /Users/aliimrankhan/Library/Caches/ms-playwright/chromium-1223/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing

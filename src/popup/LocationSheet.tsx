@@ -27,11 +27,12 @@ export function LocationSheet({ current, onClose, onSaved }: Props) {
     const onKey = (event: KeyboardEvent) => {
       if (event.key !== 'Escape') return;
       event.preventDefault();
-      onClose();
+      if (found) onSaved(found);
+      else onClose();
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [onClose]);
+  }, [found, onClose, onSaved]);
 
   function useMyLocation() {
     setError(null);
@@ -42,19 +43,16 @@ export function LocationSheet({ current, onClose, onSaved }: Props) {
     setBusy(true);
     navigator.geolocation.getCurrentPosition(
       (position) => {
+        // placeFromGeolocation never rejects: when the city list will not load it falls
+        // back to "My location" itself, so there is no error branch to show here.
         placeFromGeolocation(
           position.coords.latitude,
           position.coords.longitude,
           Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
-        )
-          .then((place) => {
-            setBusy(false);
-            setFound(place);
-          })
-          .catch(() => {
-            setBusy(false);
-            setError('We could not read your location. Allow location for this browser, then try again, or find a place below.');
-          });
+        ).then((place) => {
+          setBusy(false);
+          setFound(place);
+        });
       },
       () => {
         setBusy(false);
@@ -64,8 +62,8 @@ export function LocationSheet({ current, onClose, onSaved }: Props) {
     );
   }
 
-  // Done saves and closes back to Settings. The header stays, so the close control and
-  // Escape still work while the confirmation is showing.
+  // Done saves and closes back to Settings. The header's close control and Escape commit
+  // the found place the same way, so the confirmation cannot be thrown away by accident.
   if (found) {
     return (
       <main class="sheet">
@@ -74,7 +72,12 @@ export function LocationSheet({ current, onClose, onSaved }: Props) {
           <h1 class="sheet-title" ref={title} tabIndex={-1}>
             Location
           </h1>
-          <button class="icon-button" type="button" aria-label="Close location" onClick={onClose}>
+          <button
+            class="icon-button"
+            type="button"
+            aria-label="Close location"
+            onClick={() => onSaved(found)}
+          >
             ×
           </button>
         </header>

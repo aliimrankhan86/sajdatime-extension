@@ -65,6 +65,45 @@ test('the Location sheet confirms the town and Done goes back to Settings', asyn
   }
 });
 
+test('pressing Close while the confirmation is showing saves the found place', async () => {
+  const extension = await launchExtension();
+  try {
+    await seedSettings(extension);
+    await mockPosition(extension.page);
+    await extension.page.reload();
+    await expect(extension.page.locator('.place')).toHaveText('London');
+
+    await extension.page.getByRole('button', { name: 'Settings' }).click();
+    await extension.page.getByRole('button', { name: 'Change' }).click();
+    await expect(extension.page.getByRole('heading', { name: 'Location' })).toBeVisible();
+
+    await extension.page.getByRole('button', { name: 'Use my location' }).click();
+    const panel = extension.page.getByRole('status');
+    await expect(panel.getByRole('heading', { name: 'Location found' })).toBeVisible();
+    await expect(panel).toContainText('Leeds, United Kingdom');
+
+    // Close commits the place the panel just confirmed, instead of discarding it.
+    await extension.page.getByRole('button', { name: 'Close location' }).click();
+    await expect(extension.page.getByRole('heading', { name: 'Settings' })).toBeVisible();
+    await expect(extension.page.locator('.setting-title')).toHaveText('Leeds');
+
+    const stored = await extension.page.evaluate(async () =>
+      chrome.storage.local.get('sajdatime.settings.v1'),
+    );
+    expect(stored['sajdatime.settings.v1']).toMatchObject({
+      place: {
+        name: 'Leeds',
+        countryCode: 'GB',
+        latitude: 53.8,
+        longitude: -1.55,
+        timeZone: 'Europe/London',
+      },
+    });
+  } finally {
+    await extension.close();
+  }
+});
+
 test('a city list that will not load still saves My location and goes on', async () => {
   const extension = await launchExtension();
   try {

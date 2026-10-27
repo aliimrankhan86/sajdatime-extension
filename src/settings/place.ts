@@ -1,4 +1,11 @@
-import { distanceKm, loadCities, nearestCity, roundCoordinate, type City } from '../core/cities';
+import {
+  distanceKm,
+  largestCityWithin,
+  loadCities,
+  nearestCity,
+  roundCoordinate,
+  type City,
+} from '../core/cities';
 import type { Place } from './types';
 
 /** Makkah, used only when someone asks for it or cannot find their own place. */
@@ -15,6 +22,30 @@ export const MAKKAH: Place = {
  * "Near <town>" and the header does not claim they are in the town centre.
  */
 export const NEAR_DISTANCE_KM = 50;
+
+/**
+ * Within this distance a located point is named by the whole city rather than by a
+ * district or arrondissement of it. The plain nearest pass over the list finds "Paris 04
+ * Hôtel-de-Ville" or "Dubai International Financial Centre", which is not what the user
+ * means by Paris or Dubai.
+ */
+export const CITY_RADIUS_KM = 15;
+
+/**
+ * The city that names a located point: the most populous within {@link CITY_RADIUS_KM},
+ * else the nearest. The nearest is kept when nothing sits inside the radius, so the
+ * "Near" rule in {@link placeFromBrowser} still applies out in the countryside.
+ */
+export function cityForLocation(
+  latitude: number,
+  longitude: number,
+  cities: readonly City[],
+): City | null {
+  return (
+    largestCityWithin(latitude, longitude, cities, CITY_RADIUS_KM) ??
+    nearestCity(latitude, longitude, cities)
+  );
+}
 
 /** A searched town. The country drives the first calculation method suggestion. */
 export function placeFromCity(city: City): Place {
@@ -69,6 +100,6 @@ export async function placeFromGeolocation(
   timeZone: string,
 ): Promise<Place> {
   const cities = await loadCities().catch(() => null);
-  const city = cities ? nearestCity(latitude, longitude, cities) : null;
+  const city = cities ? cityForLocation(latitude, longitude, cities) : null;
   return placeFromBrowser(latitude, longitude, timeZone, city);
 }

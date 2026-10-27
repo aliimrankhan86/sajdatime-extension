@@ -209,3 +209,13 @@ The Shia Maghrib is not an exception to the phone's behaviour. The phone keeps i
 **Evidence:** the manifest test fails when `"tabs"` is added to `permissions` or the policy is dropped (three assertions red, shown before this commit). The scan fails with six named violations when `localStorage`, `eval`, `document.write`, a remote URL, `console.log` and `onMessageExternal` are appended to a built file. Both pass on the shipped tree. `npm audit --omit=dev` reports 0 vulnerabilities and no runtime dependency was added.
 
 **Revisit if:** a later step needs another permission. That is allowed, by adding it to the manifest, to the test, and to this log in the same commit.
+
+## D-023: A located point is named by the most populous city within 15 km
+
+**Decided:** "Use my location" names the point by the most populous bundled city within 15 kilometres; when none is within 15 km it keeps the nearest city and the existing "Near" rule. On the "Location found" panel, the close control and Escape commit the place exactly as Done does, instead of discarding it. The dead `.catch` on `placeFromGeolocation` is removed.
+
+**Why:** the plain nearest pass named central Paris "Paris 04 Hôtel-de-Ville" and central Dubai "Dubai International Financial Centre", because an arrondissement or district sits closer to the centre than the city row itself, and a person in Paris means Paris. Fifteen kilometres keeps the whole city while still falling back to the nearest town (and "Near") out in the countryside. Close now commits because the panel has just told the user "Your prayer times are now for this place", and a close that threw that away would contradict the sentence on the screen. The `.catch` was unreachable: `placeFromGeolocation` already falls back to "My location" when the list will not load, so the branch could never run, and its "could not read your location" wording was wrong even if it did, because the position had been read.
+
+**Evidence:** `tests/unit/place.test.ts` pins Paris, Dubai, London and Leeds against the shipped list, and the nearest fallback when nothing is within 15 km. `tests/e2e/location-found.test.ts` drives the Settings sheet, presses Close and asserts the stored place is Leeds. Each new test was shown failing before the fix.
+
+**Revisit if:** a place needs a neighbourhood rather than the whole city, or 15 km names the wrong town at the edge of a conurbation.
