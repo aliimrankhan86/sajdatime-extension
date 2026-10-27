@@ -1,7 +1,7 @@
 # Review request
 
-**Baseline:** [`aliimrankhan86/sajdatime-extension`](https://github.com/aliimrankhan86/sajdatime-extension) at commit `ebcc4e0` on `main`.
-**Previous reviews:** `fab4abb`, code at `c3f39e5`; then `eeac1ad`, which fixed the three P1s from the first pass; then `cb92544`, which did the P2s. This commit applies Ali's ruling on the open P1 and uses the true Shia Maghrib angle.
+**Baseline:** [`aliimrankhan86/sajdatime-extension`](https://github.com/aliimrankhan86/sajdatime-extension) at commit `40be55b` on `main`.
+**Previous reviews:** `fab4abb`, code at `c3f39e5`; then `eeac1ad`, which fixed the three P1s from the first pass; then `cb92544`, which did the P2s; then `ebcc4e0`, which applied Ali's ruling on the open P1. This commit adds the before-Isha boundary the third review asked for, and the Singapore and probe rounding fixes.
 **Date:** 27 October 2026.
 **Reviewer:** Claude, Opus review pass.
 **Owner:** Ali. He presses Submit, Publish, Merge, payment and consent. Do not ask him for credentials.
