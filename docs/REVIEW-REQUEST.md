@@ -1,6 +1,6 @@
 # Review request
 
-**Baseline:** [`aliimrankhan86/sajdatime-extension`](https://github.com/aliimrankhan86/sajdatime-extension) at commit `c7320e3` on `main`.
+**Baseline:** [`aliimrankhan86/sajdatime-extension`](https://github.com/aliimrankhan86/sajdatime-extension) at commit `515731e` on `main`. Shia Maghrib code last changed in `f964ee8`; `515731e` only corrected the notes.
 **Previous reviews:** `fab4abb`; then `eeac1ad`, which fixed the three P1s from the first pass; then `cb92544`, which did the P2s; then `ebcc4e0`, which applied Ali's ruling on the open P1; then the true-angle build and its third-pass fixes; then `f964ee8`, which reversed the true-angle ruling and was judged READY with two P2 fixes to the notes. This commit applies those two P2 fixes and makes the Shia Maghrib match the phone everywhere except the two small differences listed in `DECISIONS.md`.
 **Date:** 27 October 2026.
 **Reviewer:** Claude, Opus review pass.
