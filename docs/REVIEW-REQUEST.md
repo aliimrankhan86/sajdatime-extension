@@ -1,7 +1,7 @@
 # Review request
 
-**Baseline:** [`aliimrankhan86/sajdatime-extension`](https://github.com/aliimrankhan86/sajdatime-extension) at commit `515731e` on `main`. Shia Maghrib code last changed in `f964ee8`; `515731e` only corrected the notes.
-**Previous reviews:** `fab4abb`; then `eeac1ad`, which fixed the three P1s from the first pass; then `cb92544`, which did the P2s; then `ebcc4e0`, which applied Ali's ruling on the open P1; then the true-angle build and its third-pass fixes; then `f964ee8`, which reversed the true-angle ruling and was judged READY with two P2 fixes to the notes. This commit applies those two P2 fixes and makes the Shia Maghrib match the phone everywhere except the two small differences listed in `DECISIONS.md`.
+**Baseline:** [`aliimrankhan86/sajdatime-extension`](https://github.com/aliimrankhan86/sajdatime-extension) at commit `7de9d3f` on `main`. This commit adds the School choice and fixes the real popup width.
+**Previous reviews:** `fab4abb`; then `eeac1ad`, which fixed the three P1s from the first pass; then `cb92544`, which did the P2s; then `ebcc4e0`, which applied Ali's ruling on the open P1; then the true-angle build and its third-pass fixes; then `f964ee8`, which reversed the true-angle ruling and was judged READY with two P2 fixes to the notes; then `515731e`, which applied those two note fixes. This commit adds the School choice and fixes the real popup width.
 **Date:** 27 October 2026.
 **Reviewer:** Claude, Opus review pass.
 **Owner:** Ali. He presses Submit, Publish, Merge, payment and consent. Do not ask him for credentials.
@@ -14,38 +14,31 @@ There is no account, no ad, no analytics, no host permission, no content script 
 
 ## What this fix commit changed
 
-The previous build used the raw true angle for the Shia (Jafari and Tehran) Maghrib
-whenever the sun reached it before Isha. The review measured that angle jumping about
-45 minutes between neighbouring days, landing one minute before Isha, and putting Jafari
-after Tehran at Anchorage. This commit reverts to the Twilight Angle cap the phone
-ships, so the two products agree everywhere except the two small differences listed in `DECISIONS.md`.
+The previous build offered every calculation method to every user, so a Shia user had
+no way to limit the list to Jafari and Tehran, and the popup opened about 150 pixels
+wide in a real Chrome action popup. This commit adds a School choice and fixes the width.
 
-- **Shia Maghrib is the cap.** `src/core/engine.ts` reads Jafari (4 degrees) and Tehran
-  (4.5 degrees) Maghrib from a separate Isha-only pass with the Twilight Angle rule,
-  exactly as the phone does: the true twilight when the sun reaches it early, and sunset
-  plus `angle / 60` of the night otherwise. The true-angle probe and its before-Isha
-  guard are gone. The main day check still sees sunset, so a normal Shia day above 60
-  degrees is not projected.
-- **Regression evidence.** Unit tests pin Oslo, Trondheim, Tampere, Manchester and
-  Anchorage to the phone's Java probe values, and a sweep from 50 to 66 degrees across
-  all of 2026 asserts Maghrib before Isha, Jafari no later than Tehran, and a daily
-  Maghrib move of at most 10 minutes.
-- **Docs.** `DECISIONS.md` D-002 records the reversal and the measured faults of the
-  true angle. `HANDOVER.md`, this file and the probe README no longer describe a "Shia
-  difference from the phone". `docs/PHONE-FOLLOW-UP.md` is deleted: there is no longer a
-  phone change to hand over.
+- **School row.** Settings now has a School group, Sunni and Shia, with the hint "This
+  sets which calculation methods are offered." Shia is offered Jafari and Tehran only;
+  Sunni every other method. Changing school keeps the current method when the new school
+  offers it, and otherwise resets to the country's suggestion in the same single save.
+  Mirrors the phone's `CalcMethod.offeredTo` and `SettingsRepository.setSect`.
+- **Popup width.** `html` and `body` now have a fixed 380 pixel width with
+  `max-width: 100vw`. The previous `width: 100%` on the body collapsed to the document's
+  intrinsic width in a real popup, which Chrome sizes to fit the content.
+- **Docs.** `DECISIONS.md` D-020 records the School split. `HANDOVER.md` records the
+  lesson that the tests only ever ran the popup as a tab, so a real-popup width bug got
+  through.
 
-## The reversal, made
+## Why the width bug got through
 
-The true-angle ruling from the previous round is reversed. The measured faults that
-ended it: Tampere, Jafari jumped from 00:04 on 9 June to 23:25 on 12 June, about 45
-minutes across neighbouring days; Anchorage, Jafari on 21 June landed at 00:47, one
-minute before Isha at 00:48; and Anchorage, Jafari came after Tehran (00:47 against
-00:04), which is impossible in the sky. The true angle also matched no standard
-reference and would have moved Maghrib for existing users. The Twilight Angle cap the
-phone ships is smooth and is what Aladhan gives with its default angle-based setting,
-so the extension now matches the phone everywhere except the two small differences listed in `DECISIONS.md`. The full reasoning and the rejected
-option are recorded in `DECISIONS.md` D-002.
+Every end-to-end test opens the popup as a 380 by 600 tab (`tests/e2e/extension.ts`), so
+a real Chrome action popup sizing itself to the document's intrinsic width was never
+exercised. `chrome.action.openPopup()` was tried: it resolves under Playwright but opens
+no page the harness can measure. The new `tests/e2e/popup-width.test.ts` reproduces the
+root cause by forcing the `html` element to `width: fit-content` and asserting the body
+still reports 380 pixels. It fails against the old `width: 100%` body at 283.67 pixels
+and passes now. The real popup still deserves a manual look in a real Chrome profile.
 
 ## What to run
 
@@ -65,7 +58,7 @@ To look by hand, open `chrome://extensions`, enable Developer mode, choose **Loa
 
 ## What to judge
 
-1. **The Shia fix in the code.** Read `src/core/engine.ts` and `src/core/methods.ts` against the phone's `PrayerEngine.kt`. Check that the main day check sees sunset, that the second pass uses the same latitude, that the 4 and 4.5 degree values are right, and that nothing in the ordinary day uses a `maghribAngle`. Look for a remaining path where a Shia day is projected or falls back to sunset.
+1. **The School choice in the code.** Read `src/core/methods.ts` and `src/popup/Settings.tsx` against the phone's `CalcMethod.offeredTo` and `SettingsRepository.setSect`. Check that the list and the setter both use the one `isMethodOfferedTo`, that changing school resets to `suggestMethod(...).suggested` only when the current method is no longer offered, and that the reset and the sect write are one save. Look for a path where the list and the saved method can disagree.
 2. **Design against the brief.** Quiet Glass tokens, 380 by 600 popup, spacing, type hierarchy, the solid green action button with bold white text, no two icon buttons side by side, a close control on every dismissable screen, times in tabular numerals, nothing below 14 pixels, targets at least 44 pixels. The plan's section 3 and section 6 are the written brief.
 3. **The Times screen in every state.** First open, next prayer today, next prayer tomorrow after Isha, a current prayer that is not the next one, sunrise as a quieter row, a polar estimate, a very long place name, 12-hour and 24-hour browser languages, 150 and 200 percent zoom, light and dark.
 4. **First run and Settings.** Whether the words are plain and true, whether the location flow is understandable without a manual, whether Settings preserves a deliberately chosen method when the place changes, and whether the disclaimer is intact and readable. The disclaimer must never be removed, softened or hidden.
@@ -76,17 +69,20 @@ To look by hand, open `chrome://extensions`, enable Developer mode, choose **Loa
 
 ## Evidence in this commit
 
-`npm run check`: 7 unit files, 85 tests passed, strict typecheck passed, production build passed.
-`npm run test:e2e`: 25 tests passed.
+`npm run check`: 8 unit files, 89 tests passed, strict typecheck passed, production build passed.
+`npm run test:e2e`: 30 tests passed.
 
 | Test file | What it covers |
 | --- | --- |
 | `tests/unit/engine.test.ts` | Phone fixtures, including the five high-latitude Shia cases, polar projection and correction clamp |
 | `tests/unit/aladhan.test.ts` | 13 broad independent sanity fixtures |
+| `tests/unit/methods.test.ts` | The Sunni and Shia method split and the offered list |
 | `tests/e2e/popup.test.ts` | Times, 253 pixel viewport, countdown tick, 12-hour language, tomorrow Fajr, first run wording, Makkah fallback, Settings, city search, method persistence |
 | `tests/e2e/audit.test.ts` | Asr school, method change, place change, dark link contrast, keyboard focus and Escape, focus after a save |
 | `tests/e2e/design.test.ts` | Now and Next pills, Next row has no `aria-current`, 44 pixel controls, 190 pixel reflow, dark flat card, no network request |
 | `tests/e2e/a11y.test.ts` | axe 4.14, WCAG 2.2 AA tags, Times, Settings, Location and first run, light and dark |
+| `tests/e2e/school.test.ts` | School set, both reset directions, the keep case, focus after a save |
+| `tests/e2e/popup-width.test.ts` | Body stays 380 pixels when the document is sized to its content |
 | `tests/unit/contrast.test.ts` | 14 token pairs, including the hero gradient stops and the focus ring |
 
 ## Screenshots
@@ -116,6 +112,7 @@ The 190 pixel Settings screenshot is deliberately tall. It shows the stacked sch
 - A remaining recorded P2: the default method survives a place change if the user never chose one.
 - A remaining recorded P2: the polar note does not name the latitude it borrowed.
 - No Edge run, no Windows run and no real screen reader run. These are stated limits.
+- The real action popup width is not asserted in the suite: `chrome.action.openPopup()` opens no page Playwright can measure. The width is covered by a fit-content regression test instead, and the real popup deserves a manual look.
 - No GitHub Actions workflow. This Mac's `gh` login lacks the `workflow` scope. Local checks are the evidence.
 - The real browser geolocation bubble is mocked in the tests because the extension origin cannot be granted a permission from Playwright.
 - The store listing, privacy URL and zip are not final.
