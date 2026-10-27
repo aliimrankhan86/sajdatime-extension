@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { launchExtension, seedSettings } from './extension';
+import { countdownLineCount, undersizedControls } from './measures';
 
 test('shows the place, the next prayer and all six times', async () => {
   const extension = await launchExtension();
@@ -23,18 +24,23 @@ test('shows the place, the next prayer and all six times', async () => {
   }
 });
 
-test('does not clip the time column when browser zoom shrinks the viewport', async () => {
-  const extension = await launchExtension();
+test('does not clip the time column at 200 percent zoom', async () => {
+  const extension = await launchExtension('en-GB', { deviceScaleFactor: 2 });
   try {
     await seedSettings(extension);
-    await extension.page.setViewportSize({ width: 253, height: 600 });
+
+    // Chrome zooms a popup by enlarging its window and keeping 380 CSS pixels, so
+    // this test sets deviceScaleFactor 2 rather than shrinking the viewport. The time
+    // column must not clip, the countdown must stay on one line, and every control
+    // must keep its 44 CSS pixel target.
     const sizes = await extension.page.evaluate(() => ({
       scroll: document.documentElement.scrollWidth,
       client: document.documentElement.clientWidth,
     }));
     expect(sizes.scroll).toBe(sizes.client);
     await expect(extension.page.locator('[data-slot="fajr"] .time-value')).toBeVisible();
-    await extension.page.screenshot({ path: 'docs/images/zoom-253.png' });
+    expect(await extension.page.evaluate(countdownLineCount)).toBe(1);
+    expect(await undersizedControls(extension.page)).toEqual([]);
   } finally {
     await extension.close();
   }

@@ -1,35 +1,6 @@
 import { expect, test } from '@playwright/test';
-import type { Page } from '@playwright/test';
 import { launchExtension, seedSettings } from './extension';
-
-async function undersizedControls(page: Page) {
-  return page.evaluate(() => {
-    const nodes = Array.from(document.querySelectorAll('button, summary, select, input'));
-    return nodes
-      .filter((node) => {
-        const element = node as HTMLElement;
-        const style = getComputedStyle(element);
-        const rect = element.getBoundingClientRect();
-        return (
-          style.display !== 'none' &&
-          style.visibility !== 'hidden' &&
-          rect.width > 0 &&
-          rect.height > 0
-        );
-      })
-      .map((node) => {
-        const element = node as HTMLElement;
-        const rect = element.getBoundingClientRect();
-        return {
-          tag: element.tagName.toLowerCase(),
-          text: (element.innerText || element.getAttribute('aria-label') || '').trim().slice(0, 40),
-          width: Math.round(rect.width),
-          height: Math.round(rect.height),
-        };
-      })
-      .filter((control) => control.width < 44 || control.height < 44);
-  });
-}
+import { countdownLineCount, undersizedControls } from './measures';
 
 test('shows a Now pill on the current prayer and a Next pill on the next', async () => {
   const extension = await launchExtension();
@@ -79,16 +50,21 @@ test('every control on every screen has a 44px target', async () => {
 });
 
 test('keeps the popup readable at 200 percent zoom', async () => {
-  const extension = await launchExtension();
+  const extension = await launchExtension('en-GB', { deviceScaleFactor: 2 });
   try {
     await seedSettings(extension, new Date('2026-10-27T16:00:00Z'));
-    await extension.page.setViewportSize({ width: 190, height: 600 });
 
+    // A real browser zoom keeps the CSS viewport at 380 by 600 and doubles the
+    // device pixels, so this test sets deviceScaleFactor 2 instead of shrinking the
+    // viewport. Nothing may clip, the countdown must stay on one line, and every
+    // control must keep its 44 CSS pixel target.
     const widths = await extension.page.evaluate(() => ({
       scroll: document.documentElement.scrollWidth,
       client: document.documentElement.clientWidth,
     }));
     expect(widths.scroll).toBeLessThanOrEqual(widths.client);
+    expect(await extension.page.evaluate(countdownLineCount)).toBe(1);
+    expect(await undersizedControls(extension.page)).toEqual([]);
 
     const outside = await extension.page.evaluate(() =>
       Array.from(document.querySelectorAll('.hero, .next-card, .time-row, .footer'))
@@ -99,7 +75,7 @@ test('keeps the popup readable at 200 percent zoom', async () => {
         .filter((rect) => rect.left < -0.5 || rect.right > window.innerWidth + 0.5),
     );
     expect(outside).toEqual([]);
-    await extension.page.screenshot({ path: 'docs/images/zoom-190.png', fullPage: true });
+    await extension.page.screenshot({ path: 'docs/images/zoom-200.png', fullPage: true });
 
     await extension.page.getByRole('button', { name: 'Settings' }).click();
     const settingsWidths = await extension.page.evaluate(() => ({
@@ -107,7 +83,8 @@ test('keeps the popup readable at 200 percent zoom', async () => {
       client: document.documentElement.clientWidth,
     }));
     expect(settingsWidths.scroll).toBeLessThanOrEqual(settingsWidths.client);
-    await extension.page.screenshot({ path: 'docs/images/settings-zoom-190.png', fullPage: true });
+    expect(await undersizedControls(extension.page)).toEqual([]);
+    await extension.page.screenshot({ path: 'docs/images/settings-zoom-200.png', fullPage: true });
   } finally {
     await extension.close();
   }

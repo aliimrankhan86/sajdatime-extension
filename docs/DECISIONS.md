@@ -120,13 +120,13 @@ The Shia Maghrib is not an exception to the phone's behaviour. The phone keeps i
 
 **Why:** Ali asked on 27 October 2026, "make the link clickable so I can click and get it done." He is not technical and acts from clicks, not copied addresses.
 
-## D-013: The popup follows a smaller viewport
+## D-013: The popup has a fixed 380 pixel width, and zoom is a real browser zoom
 
-**Decided:** the popup is `width: 100%` with a `max-width` of 380 pixels, not a fixed 380 pixels.
+**Decided:** the `body` is a fixed 380 pixels wide with no `max-width`, and `html` carries no width rule. Zoom is tested with `deviceScaleFactor: 2` on a 380 by 600 viewport, not by shrinking the viewport.
 
-**Why:** browser zoom shrinks the layout viewport. At 150 percent the fixed width left a 380 pixel layout inside 253 pixels, so the labels stayed and every time was cut off on the right. A maximum keeps the intended size at normal zoom and lets the column shrink instead of clipping.
+**Why:** the earlier rulings were wrong. `width: 100%` with `max-width: 380px` collapsed the real action popup to about 147 pixels, because Chrome sizes an action popup to the document's intrinsic width. The follow-up `width: 380px` with `max-width: 100vw` collapsed it to about 25 pixels, because Chrome measures the popup while its viewport is still tiny. A fixed width on the body is the only value that holds in the real popup. The zoom emulation was wrong too: Chrome zooms a popup by enlarging the window and keeping 380 CSS pixels, so shrinking the viewport tested a state that never happens.
 
-**Evidence:** a Playwright test sets the viewport to 253 by 600 and asserts `scrollWidth === clientWidth` with the time values still visible.
+**Evidence:** `tests/e2e/popup-width.test.ts` opens the real toolbar popup in headful Chrome for Testing over a remote debugging port and reads `window.innerWidth`, `innerHeight` and the Settings button position from the DevTools protocol. It fails against the two earlier CSS states at 147 and 25 pixels. `tests/e2e/design.test.ts` and `tests/e2e/popup.test.ts` set `deviceScaleFactor: 2` and check that nothing clips, the countdown stays on one line and every control keeps a 44 CSS pixel target.
 
 **Revisit if:** the popup grows a control that genuinely cannot shrink. Even then it may scroll, but it must not clip.
 

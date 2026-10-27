@@ -8,7 +8,7 @@ import { join, resolve } from 'node:path';
  * still cached. Find either one without pinning this machine's username or version, so
  * the suite also runs on another computer.
  */
-function findChromium(): string | undefined {
+export function findChromium(): string | undefined {
   const fromEnv = process.env.SAJATIME_CHROME;
   if (fromEnv) return fromEnv;
 
@@ -59,7 +59,14 @@ export interface Extension {
   close: () => Promise<void>;
 }
 
-export async function launchExtension(locale = 'en-GB'): Promise<Extension> {
+export interface LaunchOptions {
+  deviceScaleFactor?: number;
+}
+
+export async function launchExtension(
+  locale = 'en-GB',
+  options: LaunchOptions = {},
+): Promise<Extension> {
   const dist = resolve('dist');
   const profile = mkdtempSync(join(tmpdir(), 'sajdatime-e2e-'));
   const executablePath = findChromium();
@@ -68,6 +75,7 @@ export async function launchExtension(locale = 'en-GB'): Promise<Extension> {
     headless: true,
     locale,
     viewport: { width: 380, height: 600 },
+    ...(options.deviceScaleFactor ? { deviceScaleFactor: options.deviceScaleFactor } : {}),
     args: [`--disable-extensions-except=${dist}`, `--load-extension=${dist}`],
   });
 

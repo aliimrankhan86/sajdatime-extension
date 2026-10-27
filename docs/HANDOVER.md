@@ -22,7 +22,7 @@ An independent review brief for this commit is in [`docs/REVIEW-REQUEST.md`](REV
 | Hijri calendar | Umm al-Qura, shift, Ramadan windows, Eids | `tests/unit/hijri.test.ts` |
 | Method suggestion | Country table and Shia rule | `tests/unit/suggestions.test.ts` |
 | City search | Offline GeoNames city list, search and pick | `tests/unit/cities.test.ts`, Playwright first-run test |
-| Popup | Place, Hijri date, next prayer, countdown, six times, a fixed 380 pixel width, 190 and 253 pixel viewports, visible Settings button, explicit Next and Now pills | Playwright screenshots and 30 end-to-end tests |
+| Popup | Place, Hijri date, next prayer, countdown, six times, a fixed 380 pixel width, the real toolbar popup measured at 380 by 600, 200 percent zoom, visible Settings button, explicit Next and Now pills | Playwright screenshots and 30 end-to-end tests |
 | First run | Location, city search, method suggestion, save, show times | Playwright tests with a supplied geolocation fix |
 | Settings | Place change, School (Sunni or Shia), method, Asr school, Hijri shift, disclaimer, privacy link, keyboard focus and Escape | Playwright tests |
 | Light and dark | Both themes from `tokens.css`, WCAG AA contrast pairs | `tests/unit/contrast.test.ts`, `docs/images/times-dark.png`, `docs/images/settings-dark.png` |
@@ -40,7 +40,7 @@ npm run build        pass, dist/manifest.json and the popup bundle written
 npm run test:e2e     30 tests passed
 ```
 
-The 30 end-to-end tests are six Settings and state tests, six design and responsive tests, three axe tests, ten original popup tests, four School tests and one popup-width test. They run in Chrome for Testing at:
+The 30 end-to-end tests are six Settings and state tests, six design and responsive tests, three axe tests, ten original popup tests, four School tests and one real action popup measurement. They run in Chrome for Testing at:
 
 ```text
 /Users/aliimrankhan/Library/Caches/ms-playwright/chromium-1223/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing
@@ -62,8 +62,8 @@ That path is one example of where Playwright keeps Chrome for Testing. `tests/e2
 ## Known gaps in what was tested
 
 - The real browser permission bubble for geolocation is not automated. The end-to-end test supplies a known fix through `navigator.geolocation` and checks that the extension saves it. The banner and the real prompt still need a manual look.
-- The zoom tests run the popup as a 380 pixel tab at 253 by 600 (150 percent) and 190 by 600 (200 percent). They prove no horizontal scroll and no control outside the viewport, but they are a layout emulation, not a real browser zoom. Sizes a user could get from a resized window, and Windows display scaling, are not tested yet.
-- **Lesson, 27 October 2026: the popup was only ever tested as a 380 pixel tab, so the real action popup opening at about 150 pixels went unnoticed.** `chrome.action.openPopup()` resolves under Playwright but opens no page the harness can measure, so the real width still cannot be asserted in the suite. The fix gives the `html` and `body` elements a fixed 380 pixel width, and `tests/e2e/popup-width.test.ts` reproduces the root cause (the document sized to its content) instead. The real popup still deserves a manual look in a real Chrome profile.
+- The zoom tests used to fake 150 and 200 percent zoom by shrinking the viewport to 253 and 190 pixels. Chrome does not shrink a popup's viewport on zoom; it enlarges the window and keeps 380 CSS pixels. Both zoom tests now set `deviceScaleFactor: 2` on a 380 by 600 viewport and check that nothing clips, the countdown stays on one line and every control keeps its 44 CSS pixel target. Sizes a user could get from a resized window, and Windows display scaling, are not tested yet.
+- **Lesson, 27 October 2026: `max-width: 100vw` on a popup collapses it, and only a real-popup measurement catches it.** While Chrome sizes an action popup its viewport starts tiny, so `100vw` shrinks the body to match. The first width fix (`width: 100%` with `max-width: 380px`) opened the real popup at about 147 pixels, and the second (`width: 380px` with `max-width: 100vw`) at about 25 pixels, neither of which any tab-based test could see. `tests/e2e/popup-width.test.ts` now opens the real toolbar popup in headful Chrome for Testing over a remote debugging port and reads the window size, the body width and the Settings button straight from the DevTools protocol. It fails against both earlier CSS states, so it cannot pass for the wrong reason. A tab is not a popup.
 - No screen reader was run against the popup. axe reports no WCAG 2.2 AA violation on Times, first run, Settings and Location in light and dark, but axe cannot judge reading order, announcement quality or whether a real screen reader makes sense of the page.
 - Windows, Edge and a real user's Chrome profile are not tested. The suite runs on macOS with Chrome for Testing. Edge gets a manual load and a short check later.
 - The first run uses the computer's time zone when it reads the browser's location. A city chosen by name uses the city's own time zone.

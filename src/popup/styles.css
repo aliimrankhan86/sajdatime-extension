@@ -8,14 +8,8 @@ body {
   padding: 0;
 }
 
-html {
-  width: 380px;
-  max-width: 100vw;
-}
-
 body {
   width: 380px;
-  max-width: 100vw;
   min-height: 600px;
   background: var(--paper);
   color: var(--ink);
