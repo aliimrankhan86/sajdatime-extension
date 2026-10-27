@@ -298,14 +298,14 @@ export function Settings({ settings, onClose, onSaved }: Props) {
           class="link"
           href="https://aliimrankhan86.github.io/sajdatime-extension/privacy.html"
           target="_blank"
-          rel="noreferrer"
+          rel="noopener noreferrer"
         >
           Privacy policy
         </a>
         <p class="field-hint">SajdaTime 0.1.0</p>
         <p class="field-hint">
           City data from{' '}
-          <a class="link" href="https://www.geonames.org/" target="_blank" rel="noreferrer">
+          <a class="link" href="https://www.geonames.org/" target="_blank" rel="noopener noreferrer">
             GeoNames
           </a>
           , CC BY 4.0.

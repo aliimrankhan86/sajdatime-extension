@@ -1,7 +1,7 @@
 # Review request
 
 **Baseline:** [`aliimrankhan86/sajdatime-extension`](https://github.com/aliimrankhan86/sajdatime-extension) at commit `6647c96` on `main`, plus the Step 1 commit on top of it, which is the one to review. A commit cannot contain its own hash, so the hash named here is the commit the diff starts from, and Step 1 is the only commit after it. Step 1 of [`docs/BUILD-NEXT.md`](BUILD-NEXT.md) names a place the browser located, from the bundled city list and with no network, and confirms it with a "Location found" panel before the user goes on.
-**Previous reviews:** `fab4abb`; then `eeac1ad`, which fixed the three P1s from the first pass; then `cb92544`, which did the P2s; then `ebcc4e0`, which applied Ali's ruling on the open P1; then the true-angle build and its third-pass fixes; then `f964ee8`, which reversed the true-angle ruling and was judged READY with two P2 fixes to the notes; then `515731e`, which applied those two note fixes; then `7de9d3f`, which added the School choice and the first popup width fix and was judged NOT READY with one P1: the real popup now opened 25 pixels wide; then `5c29e83` and `9f9ec0d`, which fixed that P1 and were judged READY with two P2s: the screenshots dirty the checkout and zoom above 210 percent is untested. This commit applies both P2s. The School choice is unchanged and accepted; do not reopen it.
+**Previous reviews:** `fab4abb`; then `eeac1ad`, which fixed the three P1s from the first pass; then `cb92544`, which did the P2s; then `ebcc4e0`, which applied Ali's ruling on the open P1; then the true-angle build and its third-pass fixes; then `f964ee8`, which reversed the true-angle ruling and was judged READY with two P2 fixes to the notes; then `515731e`, which applied those two note fixes; then `7de9d3f`, which added the School choice and the first popup width fix and was judged NOT READY with one P1: the real popup now opened 25 pixels wide; then `5c29e83` and `9f9ec0d`, which fixed that P1 and were judged READY with two P2s: the screenshots dirty the checkout and zoom above 210 percent is untested. This commit applies both P2s. The School choice is unchanged and accepted; do not reopen it. The two commits under review now are Step 1 of `docs/BUILD-NEXT.md` and, on top of it, the security foundation that `docs/SECURITY.md` asks the first step to add.
 **Date:** 27 October 2026.
 **Reviewer:** Claude, Opus review pass.
 **Owner:** Ali. He presses Submit, Publish, Merge, payment and consent. Do not ask him for credentials.
@@ -23,6 +23,18 @@ This is Step 1 of [`docs/BUILD-NEXT.md`](BUILD-NEXT.md): "Use my location" names
 - **A searched town does not show the panel.** Only "Use my location" does. A searched town already says which town was chosen.
 - **Saving moved to the button, not to the position.** Saving earlier fires the storage watcher, and the popup would swap to Times and destroy the panel before anyone read it.
 - **The mark is on every screen, including Location.** `src/popup/Brand.tsx` is now the one place the launcher mark and the word mark are drawn. It is used by the first run, Times, Settings and both Location states, so the Settings Location sheet and its confirmation carry the mark that used to appear only on the other screens.
+
+### The security commit on top
+
+`docs/SECURITY.md` arrived on `main` while Step 1 was being built, and it says the next started step also adds the checks every later step depends on. They are in their own commit so they can be read apart from Step 1.
+
+- **The manifest is locked (R1, R2).** `tests/unit/manifest.test.ts` asserts the exact top level key set, the exact permissions (`storage` and `geolocation`), the exact content security policy, and that no host permission, content script, web accessible resource, external messaging key or `optional_permissions` exists. Any addition fails the build until the test is changed on purpose, with a decision in `DECISIONS.md`.
+- **The build is scanned (R3, R6, R7, R8).** `tools/check-bundle.mjs` runs at the end of `npm run check`, after the build. It fails on `eval`, `new Function`, `document.write`, `importScripts`, external messaging, `console.log`, `storage.sync`, `localStorage`, `sessionStorage`, `indexedDB`, the HTML insertion family in `src/`, and any URL outside the four link allowlist entries. The three `www.w3.org` XML namespace names are allowed because Preact writes them into elements as identifiers, never as requests.
+- **Links open safely (R6).** Both About links now carry `rel="noopener noreferrer"`.
+- **Keys cannot be committed (R10).** `.gitignore` now covers `*.pem` and `*.crx` beside the existing `.env*` and `dist/`.
+- **Stored names are measured (R8).** `isSettings` rejects a stored place name longer than 200 characters, so damaged storage returns to the first run instead of rendering it. `tests/unit/settings.test.ts` pins 201 rejected and 200 accepted.
+- **Text is text (R7).** A new end to end test stores a place named `<img src=x onerror=alert(1)>` and asserts it renders as those exact characters, with no `img` element inside the place and no dialog.
+- **Deferred on purpose.** `SECURITY.md` says the sender checked message handler tests (R4), the wide no network test (R6) and the alarm name parser (R11) arrive with Step 2, which adds the messages and alarms they protect. This commit does not pretend to have them.
 
 ### What the two commits before it changed
 
@@ -51,7 +63,7 @@ npm run check
 npm run test:e2e
 ```
 
-`npm run check` runs strict TypeScript, Vitest and a production build. `npm run test:e2e` builds `dist` and drives the loaded extension with Playwright. It finds Chrome for Testing through `SAJATIME_CHROME` or Playwright's cache. If neither exists, set `SAJATIME_CHROME` to a Chrome for Testing binary.
+`npm run check` runs strict TypeScript, Vitest, a production build and then `tools/check-bundle.mjs`, the `docs/SECURITY.md` bundle scan. `npm run test:e2e` builds `dist` and drives the loaded extension with Playwright. It finds Chrome for Testing through `SAJATIME_CHROME` or Playwright's cache. If neither exists, set `SAJATIME_CHROME` to a Chrome for Testing binary.
 
 To look by hand, open `chrome://extensions`, enable Developer mode, choose **Load unpacked** and pick `dist/`. The popup is 380 by 600. Settings is the green button in the header.
 
@@ -62,23 +74,26 @@ To look by hand, open `chrome://extensions`, enable Developer mode, choose **Loa
 3. **The Times screen in every state.** First open, next prayer today, next prayer tomorrow after Isha, a current prayer that is not the next one, sunrise as a quieter row, a polar estimate, a very long place name, 12-hour and 24-hour browser languages, 200 percent zoom, light and dark.
 4. **First run and Settings.** Whether the words are plain and true, whether the location flow is understandable without a manual, whether Settings preserves a deliberately chosen method when the place changes, and whether the disclaimer is intact and readable. The disclaimer must never be removed, softened or hidden.
 5. **Accessibility.** axe is not a screen reader. Check the tab order, the heading focus, Escape, the `aria-current` value, the live city hint and whether the visible pills match what is announced. Check the new `aria-disabled` controls still behave for keyboard and pointer, and that focus does not move during a save.
-6. **Correctness and privacy in the code.** The engine mirrors the phone's high-latitude rule, the projection to the signed reference latitude, the Ramadan Isha adjustment, manual corrections last and the ascending clamp. The manifest should still ask only for `storage` and `geolocation`. There should be no `fetch` to a remote host, no remote code and no content script.
+6. **Correctness and privacy in the code.** The engine mirrors the phone's high-latitude rule, the projection to the signed reference latitude, the Ramadan Isha adjustment, manual corrections last and the ascending clamp. The manifest should still ask only for `storage` and `geolocation`, with the strict content security policy that `tests/unit/manifest.test.ts` asserts. There should be no `fetch` to a remote host, no remote code and no content script, and `tools/check-bundle.mjs` is the scan that fails the build if one appears.
 7. **Test quality.** Look for tests that only assert the code's own output, tests that pass for the wrong reason, and state that is not covered. The engine fixtures are the phone's values, not Aladhan's, except the broad sanity fixtures. The high-latitude Shia values were produced with the phone's Java adhan library, not by running the extension.
 8. **Documentation accuracy.** If a claim in `HANDOVER.md` is not true of this commit, that is a finding.
 
 ## Evidence in this commit
 
-`npm run check`: 9 unit files, 99 tests passed, strict typecheck passed, production build passed.
-`npm run test:e2e`: 33 tests passed.
+`npm run check`: 10 unit files, 105 tests passed, strict typecheck passed, production build passed, then the bundle scan passed.
+`npm run test:e2e`: 34 tests passed.
 
 | Test file | What it covers |
 | --- | --- |
 | `tests/unit/engine.test.ts` | Phone fixtures, including the five high-latitude Shia cases, polar projection and correction clamp |
 | `tests/unit/aladhan.test.ts` | 13 broad independent sanity fixtures |
 | `tests/unit/methods.test.ts` | The Sunni and Shia method split and the offered list |
+| `tests/unit/settings.test.ts` | Validators: unknown method, coordinates outside the world, unknown time zone, a place name over 200 characters |
+| `tests/unit/manifest.test.ts` | The manifest lock: exact keys, exact permissions, the content security policy, no route from a web page |
+| `tools/check-bundle.mjs` | `docs/SECURITY.md` R3, R6, R7 and R8 over `dist/` and `src/` |
 | `tests/unit/cities.test.ts` | City file parsing, search, country names, the nearest city for Leeds and Karachi, and great circle distance |
 | `tests/unit/place.test.ts` | A place from a browser fix: the city name and country with the browser coordinates, "Near" past 50 kilometres, and the fallback when there is no city |
-| `tests/e2e/popup.test.ts` | Times, 200 percent zoom, countdown tick, 12-hour language, tomorrow Fajr, first run with the location confirmation, Makkah fallback, Settings, city search, method persistence |
+| `tests/e2e/popup.test.ts` | Times, 200 percent zoom, countdown tick, 12-hour language, tomorrow Fajr, first run with the location confirmation, a stored name that is markup shown as text, Makkah fallback, Settings, city search, method persistence |
 | `tests/e2e/location-found.test.ts` | The confirmation in the Settings Location sheet with Done, and a city list aborted in the browser, which still saves My location |
 | `tests/e2e/audit.test.ts` | Asr school, method change, place change, dark link contrast, keyboard focus and Escape, focus after a save |
 | `tests/e2e/design.test.ts` | Now and Next pills, Next row has no `aria-current`, 44 pixel controls, 200 percent zoom, dark flat card, no network request |

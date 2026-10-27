@@ -24,6 +24,39 @@ test('shows the place, the next prayer and all six times', async () => {
   }
 });
 
+// docs/SECURITY.md R7. The stored name comes from the bundled city list or from the user,
+// and it is never trusted as markup: it must render as those exact characters.
+test('a stored place name is shown as text, never as markup', async () => {
+  const extension = await launchExtension();
+  try {
+    const name = '<img src=x onerror=alert(1)>';
+    const dialogs: string[] = [];
+    extension.page.on('dialog', (dialog) => {
+      dialogs.push(dialog.message());
+      void dialog.dismiss();
+    });
+    await extension.page.evaluate(async (place) => {
+      await chrome.storage.local.set({
+        'sajdatime.settings.v1': {
+          version: 1,
+          place,
+          sect: 'sunni',
+          method: 'moonsighting',
+          madhab: 'hanafi',
+          hijriOffsetDays: 0,
+        },
+      });
+    }, { name, latitude: 53.8, longitude: -1.55, timeZone: 'Europe/London', countryCode: 'GB' });
+    await extension.page.reload();
+    await expect(extension.page.locator('.place')).toHaveText(name);
+    await expect(extension.page.locator('.place img')).toHaveCount(0);
+    await expect(extension.page.locator('img[src="x"]')).toHaveCount(0);
+    expect(dialogs).toEqual([]);
+  } finally {
+    await extension.close();
+  }
+});
+
 test('does not clip the time column at 200 percent zoom', async () => {
   const extension = await launchExtension('en-GB', { deviceScaleFactor: 2 });
   try {

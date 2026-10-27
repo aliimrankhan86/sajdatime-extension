@@ -12,4 +12,6 @@ playwright-report/
 tmp-*.mjs
 
 artifacts/
+*.pem
+*.crx
 .npmrc

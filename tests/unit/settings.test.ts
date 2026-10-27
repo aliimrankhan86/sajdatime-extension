@@ -39,6 +39,11 @@ describe('stored settings', () => {
     ).toBe(false);
   });
 
+  it('rejects a place name longer than 200 characters', () => {
+    expect(isSettings({ ...LONDON, place: { ...LONDON.place, name: 'a'.repeat(201) } })).toBe(false);
+    expect(isSettings({ ...LONDON, place: { ...LONDON.place, name: 'a'.repeat(200) } })).toBe(true);
+  });
+
   it('rejects a time zone the browser does not know', () => {
     expect(
       isSettings({

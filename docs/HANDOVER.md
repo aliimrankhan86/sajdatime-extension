@@ -17,17 +17,18 @@ An independent review brief for this commit is in [`docs/REVIEW-REQUEST.md`](REV
 | Area | State | Evidence |
 | --- | --- | --- |
 | Manifest V3 extension | Loads in Chrome for Testing | Playwright launches it with `--load-extension=dist` and finds the popup |
-| Prayer engine | 13 methods, both Asr schools, polar projection and correction clamp, Shia Maghrib from the Twilight Angle cap exactly as the phone does it, so a normal Shia day above 60 degrees is not projected | `npm test`: 99 unit tests pass |
+| Prayer engine | 13 methods, both Asr schools, polar projection and correction clamp, Shia Maghrib from the Twilight Angle cap exactly as the phone does it, so a normal Shia day above 60 degrees is not projected | `npm test`: 105 unit tests pass |
 | Golden values | Six phone fixtures pinned, plus 13 broad Aladhan sanity fixtures | `tests/unit/engine.test.ts`, `tests/unit/aladhan.test.ts` |
 | Hijri calendar | Umm al-Qura, shift, Ramadan windows, Eids | `tests/unit/hijri.test.ts` |
 | Method suggestion | Country table and Shia rule | `tests/unit/suggestions.test.ts` |
 | City search | Offline GeoNames city list, search and pick; the nearest city names a place the browser located, with "Near" past 50 kilometres | `tests/unit/cities.test.ts`, `tests/unit/place.test.ts`, Playwright first-run test |
-| Popup | Place, Hijri date, next prayer, countdown, six times, a fixed 380 pixel width, the real toolbar popup measured at 380 by 600, 200 percent zoom, visible Settings button, explicit Next and Now pills | Playwright screenshots and 33 end-to-end tests |
+| Popup | Place, Hijri date, next prayer, countdown, six times, a fixed 380 pixel width, the real toolbar popup measured at 380 by 600, 200 percent zoom, visible Settings button, explicit Next and Now pills | Playwright screenshots and 34 end-to-end tests |
 | First run | Use my location names the nearest town and confirms it before going on, city search, method suggestion from the country, save on Continue, show times | Playwright tests with a supplied geolocation fix |
 | Settings | Place change, School (Sunni or Shia), method, Asr school, Hijri shift, disclaimer, privacy link, keyboard focus and Escape | Playwright tests |
 | Light and dark | Both themes from `tokens.css`, WCAG AA contrast pairs | `tests/unit/contrast.test.ts`, `docs/images/times-dark.png`, `docs/images/settings-dark.png` |
 | Accessibility | Keyboard focus moves into full screens and returns, every control has a 44 pixel target, axe finds no WCAG 2.2 AA violation | `tests/e2e/a11y.test.ts`, `tests/e2e/design.test.ts` |
 | No network | No request leaves the extension while it shows times | Playwright request listener |
+| Security | Manifest locked to `storage` and `geolocation` with a strict content security policy, no `eval`, no remote URL, no HTML insertion, no `console.log` in the bundle, every new tab link `noopener noreferrer` | `tests/unit/manifest.test.ts`, `tools/check-bundle.mjs` |
 | Build | Production bundle in `dist/` | `npm run build` |
 | TypeScript | Strict, no errors | `npm run typecheck` |
 
@@ -35,12 +36,13 @@ Commands actually run on 27 October 2026:
 
 ```text
 npm run typecheck    pass
-npm test             9 files, 99 tests passed
+npm test             10 files, 105 tests passed
 npm run build        pass, dist/manifest.json and the popup bundle written
-npm run test:e2e     33 tests passed
+npm run test:e2e     34 tests passed
+node tools/check-bundle.mjs  pass, 3 bundle files and the source clean
 ```
 
-The 33 end-to-end tests are six Settings and state tests, six design and responsive tests, four axe tests, ten original popup tests, two location confirmation tests, four School tests and one real action popup measurement. They run in Chrome for Testing at:
+The 34 end-to-end tests are six Settings and state tests, six design and responsive tests, four axe tests, eleven original popup tests, two location confirmation tests, four School tests and one real action popup measurement. They run in Chrome for Testing at:
 
 ```text
 /Users/aliimrankhan/Library/Caches/ms-playwright/chromium-1223/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing
@@ -57,6 +59,7 @@ That path is one example of where Playwright keeps Chrome for Testing. `tests/e2
 - Urdu, Arabic, Turkish and Indonesian, with right-to-left layout and the Arabic Western-digit rule.
 - Store screenshots, the final listing, and the zipped builds. Review screenshots exist in `docs/images/` but are not the store set.
 - A second browser test for Edge. Playwright cannot load an extension into Edge, so Edge gets a manual load and a short check later.
+- The rest of the security checks that need Step 2's code: the sender checked message handler tests (`SECURITY.md` R4), the wide no network test across the worker and the offscreen page (R6), and the alarm name parser tests (R11). `docs/SECURITY.md` says when each arrives, and every step's report carries its checklist.
 - An automated GitHub Actions workflow. The file exists locally at `.github/workflows/ci.yml` but is not in the repository: this Mac's GitHub login lacks the `workflow` scope, and the keyring refused the refresh. The local checks above are the evidence for now. After `gh auth refresh -s workflow` succeeds in a normal Terminal, remove the path from `.git/info/exclude`, commit the workflow and push it. Do not claim CI is green before it has actually run.
 
 ## Known gaps in what was tested
@@ -84,7 +87,7 @@ Read `docs/DECISIONS.md`. The five that matter most:
 1. This is a separate product from the phone. Do not copy the phone's release notes or store listing into this repo.
 2. High latitude uses `TwilightAngle`, not `recommended`. The plan's line about `recommended` is older than the phone behaviour and would break the London fixtures.
 3. Golden values are the phone engine's values, not the Aladhan numbers in the phone's test file.
-4. No network requests. No host permissions. The privacy words must stay true. The manifest asks only for `storage` and `geolocation` until an alert exists.
+4. No network requests. No host permissions. The privacy words must stay true. The manifest asks only for `storage` and `geolocation` until an alert exists, and `tests/unit/manifest.test.ts` fails the build if anything else appears, including a weaker content security policy.
 5. City data is bundled and fetched from the extension, never from the internet. It is GeoNames `cities5000` under CC BY 4.0.
 
 ## Next step

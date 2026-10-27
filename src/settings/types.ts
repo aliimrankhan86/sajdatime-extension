@@ -36,6 +36,9 @@ export function isSettings(value: unknown): value is Settings {
   return (
     candidate.version === 1 &&
     typeof place.name === 'string' &&
+    // docs/SECURITY.md R8: the longest bundled name is far under this, so anything longer
+    // is damaged storage and the popup returns to the first run instead of rendering it.
+    place.name.length <= 200 &&
     Number.isFinite(place.latitude) &&
     Math.abs(place.latitude) <= 90 &&
     Number.isFinite(place.longitude) &&
