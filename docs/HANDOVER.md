@@ -50,6 +50,7 @@ That path is machine-specific. Change it in `tests/e2e/extension.ts` if the brow
 - Urdu, Arabic, Turkish and Indonesian, with right-to-left layout and the Arabic Western-digit rule.
 - Store screenshots, the final listing, the hosted privacy URL and the zipped builds.
 - A second browser test for Edge. Playwright cannot load an extension into Edge, so Edge gets a manual load and a short check later.
+- An automated GitHub Actions workflow. The file exists locally at `.github/workflows/ci.yml` but is not in the repository: this Mac's GitHub login lacks the `workflow` scope, and the keyring refused the refresh. The local checks above are the evidence for now. After `gh auth refresh -s workflow` succeeds in a normal Terminal, remove the path from `.git/info/exclude`, commit the workflow and push it. Do not claim CI is green before it has actually run.
 
 ## Known gaps in what was tested
 
