@@ -111,25 +111,39 @@ function isUsable(times: PrayerTimes): boolean {
 /**
  * The Shia Maghrib is the evening twilight at 4 degrees (Jafari) or 4.5 degrees
  * (Tehran). adhan's own `maghribAngle` would also change what `isUsable` sees, so the
- * phone keeps the main calculation at sunset and reads this angle from a second,
- * Isha-only run. The result must be computed at the same latitude as the day, including
- * the borrowed polar latitude, or the two halves would describe different places.
+ * main calculation stays at sunset and this angle is read from a separate run. The
+ * result must be computed at the same latitude as the day, including the borrowed polar
+ * latitude, or the two halves would describe different places.
+ *
+ * The true angle wins whenever the sun reaches it. Only when it never does, as at
+ * Trondheim in midsummer, fall back to the Twilight Angle cap at sunset plus a portion
+ * of the night. The phone still caps in both cases; this is a deliberate difference
+ * recorded in D-002 until the phone follows.
  */
 function shiaMaghrib(
   coordinates: AdhanCoordinates,
   date: Date,
   method: MethodId,
+  sunset: Date,
 ): Date | null {
   const angle = method === 'jafari' ? 4 : method === 'tehran' ? 4.5 : null;
   if (angle === null) return null;
 
-  const params = new CalculationParameters('Other', 0, angle);
-  params.madhab = AdhanMadhab.Shafi;
-  params.highLatitudeRule = HighLatitudeRule.TwilightAngle;
-
   try {
-    const probe = new PrayerTimes(coordinates, date, params);
-    return valid(probe.isha) ? probe.isha : null;
+    // A long Isha interval keeps adhan's own maghrib guard out of the way, so this
+    // probe returns the true angle even when the Twilight Angle cap would be earlier.
+    const trueParams = new CalculationParameters('Other', 0, 0, 24 * 60);
+    trueParams.maghribAngle = angle;
+    const trueProbe = new PrayerTimes(coordinates, date, trueParams);
+    if (valid(trueProbe.maghrib) && trueProbe.maghrib.getTime() > sunset.getTime()) {
+      return trueProbe.maghrib;
+    }
+
+    const capParams = new CalculationParameters('Other', 0, angle);
+    capParams.madhab = AdhanMadhab.Shafi;
+    capParams.highLatitudeRule = HighLatitudeRule.TwilightAngle;
+    const capProbe = new PrayerTimes(coordinates, date, capParams);
+    return valid(capProbe.isha) ? capProbe.isha : null;
   } catch {
     return null;
   }
@@ -209,7 +223,12 @@ export function computeDay(
   }
 
   if (isShiaMethod(prefs.method)) {
-    const maghrib = shiaMaghrib(baseCoordinates, dateAtLocalNoon, prefs.method);
+    const maghrib = shiaMaghrib(
+      baseCoordinates,
+      dateAtLocalNoon,
+      prefs.method,
+      baseTimes.maghrib,
+    );
     if (maghrib) baseTimes.maghrib = maghrib;
   }
 

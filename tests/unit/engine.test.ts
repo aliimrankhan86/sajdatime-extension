@@ -74,15 +74,16 @@ describe('computeDay', () => {
   it('keeps a normal Shia day usable above 60 degrees in summer', () => {
     // The Shia Maghrib sits after sunset, so the solar day must be judged against sunset
     // itself. Before this fix Oslo on midsummer was wrongly projected to 45 degrees and
-    // showed Sunrise 05:30 with a false "cannot be worked out" note.
+    // showed Sunrise 05:30 with a false "cannot be worked out" note. The sun does reach
+    // 4 degrees here, so the true angle is used rather than the Twilight Angle cap.
     const jafari = computeDay(OSLO, '2026-06-21', prefs({ method: 'jafari', timeZone: 'Europe/Oslo' }));
     const tehran = computeDay(OSLO, '2026-06-21', prefs({ method: 'tehran', timeZone: 'Europe/Oslo' }));
 
     expect(jafari.isPolar).toBe(false);
     expect(tehran.isPolar).toBe(false);
     expect(clock(jafari.times.sunrise, 'Europe/Oslo')).toBe('03:54');
-    expect(clock(jafari.times.maghrib, 'Europe/Oslo')).toBe('23:05');
-    expect(clock(tehran.times.maghrib, 'Europe/Oslo')).toBe('23:07');
+    expect(clock(jafari.times.maghrib, 'Europe/Oslo')).toBe('23:35');
+    expect(clock(tehran.times.maghrib, 'Europe/Oslo')).toBe('23:46');
   });
 
   it('uses the phone Shia Maghrib when the sun never reaches the angle', () => {

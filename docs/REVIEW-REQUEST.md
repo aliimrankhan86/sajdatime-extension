@@ -24,9 +24,9 @@ The previous pass found that Shia (Jafari and Tehran) days above about 60 degree
 - **Smaller P2s.** The Next row no longer carries `aria-current`; row text has spaces so a screen reader does not hear "AsrNow14:12"; a long place name wraps; city search says "Top 6 places" only when a seventh match exists; the Vite module preload polyfill is off so the bundle has no injected `fetch` helper.
 - **Second-pass P2s.** The keyboard focus test now waits for the heading before pressing, so it no longer races Preact's focus effect. Times are truncated to the whole minute after corrections and the order clamp, matching the phone. At 200 percent zoom the Hijri minus and plus stack instead of sitting side by side. `CLAUDE.md` no longer lists permissions the manifest does not use, the plan points at D-002 instead of the superseded `maghribAngle` build, and the Java probe that produced the Oslo and Trondheim values is committed under `tools/adhan-probe`.
 
-## Open P1 from the second review
+## P1-A decision, made
 
-The second review found that the Shia Maghrib pass caps its result at sunset plus `angle / 60` of the night, even on a summer day when the sun does reach 4 or 4.5 degrees. The phone has the same cap. Above about 52 degrees north this makes the shown Maghrib early: Oslo on 21 June shows 23:05, when the sun is about 2.26 degrees down, rather than the true 4 degree moment near 23:36. This is recorded in D-002 and HANDOVER. It is not changed here because it is religious content and must stay in step with the phone. **Ali has to choose:** use the true angle whenever the sun reaches it, or keep the cap and describe it plainly. Do not treat the current time as confirmed correct for the UK and Scandinavia until he does.
+The second review found that the Shia Maghrib pass caps its result at sunset plus `angle / 60` of the night, even on a summer day when the sun does reach 4 or 4.5 degrees. The phone has the same cap. Ali chose the true angle. The extension now uses the real angle whenever it lands after sunset, and falls back to the Twilight Angle cap only when the sun never reaches it. Oslo on 21 June now shows Jafari 23:35 and Tehran 23:46, not 23:05 and 23:07; Trondheim stays at 23:52 and 23:53. The phone still caps and must make the same change in its next release, so the two products deliberately differ until then. That difference is recorded in D-002 and HANDOVER, and `tools/adhan-probe` prints both the true angle and the current phone cap.
 
 ## What to run
 
@@ -96,7 +96,7 @@ The 190 pixel Settings screenshot is deliberately tall. It shows the stacked sch
 - A remaining recorded P2: after midnight the Isha row still shows tonight's time with a "Now" pill.
 - A remaining recorded P2: the default method survives a place change if the user never chose one.
 - A remaining recorded P2: the polar note does not name the latitude it borrowed.
-- **Open P1, inherited from the phone:** the Shia Maghrib cap above about 52 degrees north in summer, described above. This is waiting on Ali, not on code.
+- **Shia Maghrib difference from the phone, until the phone follows:** the extension uses the true angle above about 52 degrees north; the phone still caps. This is Ali's decision and is not a defect.
 - No Edge run, no Windows run and no real screen reader run. These are stated limits.
 - No GitHub Actions workflow. This Mac's `gh` login lacks the `workflow` scope. Local checks are the evidence.
 - The real browser geolocation bubble is mocked in the tests because the extension origin cannot be granted a permission from Playwright.

@@ -5,6 +5,8 @@ import com.batoulapps.adhan.HighLatitudeRule;
 import com.batoulapps.adhan.Madhab;
 import com.batoulapps.adhan.PrayerTimes;
 import com.batoulapps.adhan.data.DateComponents;
+import com.batoulapps.adhan.data.TimeComponents;
+import com.batoulapps.adhan.internal.SolarTime;
 
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -38,8 +40,21 @@ public final class AdhanProbe {
     System.out.println(item.name());
     System.out.println("  sunrise " + format(base.sunrise, zone));
     System.out.println("  sunset  " + format(base.maghrib, zone));
-    System.out.println("  maghrib " + format(shiaMaghrib(coordinates, item.date(), 4.0), zone) + " (Jafari pass)");
-    System.out.println("  maghrib " + format(shiaMaghrib(coordinates, item.date(), 4.5), zone) + " (Tehran pass)");
+    System.out.println("  true 4/4.5 " + text(trueAngle(coordinates, item.date(), 4.0), zone) + " (Jafari)");
+    System.out.println("  true 4/4.5 " + text(trueAngle(coordinates, item.date(), 4.5), zone) + " (Tehran)");
+    System.out.println("  phone cap " + format(shiaMaghrib(coordinates, item.date(), 4.0), zone) + " (Jafari)");
+    System.out.println("  phone cap " + format(shiaMaghrib(coordinates, item.date(), 4.5), zone) + " (Tehran)");
+  }
+
+  private static Date trueAngle(Coordinates coordinates, DateComponents date, double angle) {
+    SolarTime solar = new SolarTime(date, coordinates);
+    double value = solar.hourAngle(-angle, true);
+    if (Double.isNaN(value)) return null;
+    return TimeComponents.fromDouble(value).dateComponents(date);
+  }
+
+  private static String text(Date value, ZoneId zone) {
+    return value == null ? "not reached" : format(value, zone);
   }
 
   private static Date shiaMaghrib(Coordinates coordinates, DateComponents date, double angle) {
