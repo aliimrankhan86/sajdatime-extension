@@ -26,6 +26,7 @@
     "@playwright/test": "^1.56.1",
     "@types/chrome": "^0.1.31",
     "@types/node": "^24.7.2",
+    "axe-core": "^4.14.0",
     "typescript": "^5.9.3",
     "vite": "^7.1.9",
     "vitest": "^3.2.4"

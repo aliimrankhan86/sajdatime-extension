@@ -39,5 +39,36 @@ describe('token contrast', () => {
     it(`keeps the brand text readable on the page in ${scheme}`, () => {
       expect(ratio(token(block, 'primary'), token(block, 'paper'))).toBeGreaterThanOrEqual(4.5);
     });
+
+    it(`keeps body and secondary text readable in ${scheme}`, () => {
+      for (const background of ['paper', 'surface', 'surface-soft']) {
+        expect(ratio(token(block, 'ink'), token(block, background))).toBeGreaterThanOrEqual(4.5);
+        expect(ratio(token(block, 'ink-muted'), token(block, background))).toBeGreaterThanOrEqual(4.5);
+      }
+      expect(
+        ratio(token(block, 'ink-muted'), token(block, 'warning-surface')),
+      ).toBeGreaterThanOrEqual(4.5);
+      expect(ratio(token(block, 'ink'), token(block, 'primary-soft'))).toBeGreaterThanOrEqual(4.5);
+    });
+
+    it(`keeps links readable in ${scheme}`, () => {
+      expect(ratio(token(block, 'primary'), token(block, 'surface'))).toBeGreaterThanOrEqual(4.5);
+      expect(ratio(token(block, 'primary'), token(block, 'surface-soft'))).toBeGreaterThanOrEqual(4.5);
+    });
+
+    it(`keeps the hero date readable over every gradient stop in ${scheme}`, () => {
+      for (const stop of ['hero-a', 'hero-b', 'hero-c']) {
+        expect(ratio(token(block, 'ink-hero-muted'), token(block, stop))).toBeGreaterThanOrEqual(4.5);
+      }
+    });
+
+    it(`keeps warnings readable in ${scheme}`, () => {
+      expect(ratio(token(block, 'warning'), token(block, 'warning-surface'))).toBeGreaterThanOrEqual(4.5);
+    });
+
+    it(`keeps the focus ring visible against the page in ${scheme}`, () => {
+      expect(ratio(token(block, 'focus'), token(block, 'paper'))).toBeGreaterThanOrEqual(3);
+      expect(ratio(token(block, 'focus'), token(block, 'surface'))).toBeGreaterThanOrEqual(3);
+    });
   }
 });

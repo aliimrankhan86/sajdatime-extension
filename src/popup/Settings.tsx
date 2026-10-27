@@ -1,4 +1,4 @@
-import { useState } from 'preact/hooks';
+import { useEffect, useRef, useState } from 'preact/hooks';
 import { countryName } from '../core/cities';
 import { METHOD_IDS, isShiaMethod } from '../core/methods';
 import { suggestMethod } from '../core/suggestions';
@@ -34,6 +34,30 @@ export function Settings({ settings, onClose, onSaved }: Props) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const locale = navigator.language || 'en-GB';
+  const title = useRef<HTMLHeadingElement>(null);
+  const wasChangingPlace = useRef(false);
+
+  useEffect(() => {
+    title.current?.focus();
+  }, []);
+
+  useEffect(() => {
+    if (changingPlace) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      event.preventDefault();
+      onClose();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [changingPlace, onClose]);
+
+  useEffect(() => {
+    if (wasChangingPlace.current && !changingPlace) {
+      document.querySelector<HTMLButtonElement>('.compact-button')?.focus();
+    }
+    wasChangingPlace.current = changingPlace;
+  }, [changingPlace]);
 
   function update(patch: Partial<Omit<SettingsValue, 'version'>>) {
     setError(null);
@@ -69,7 +93,9 @@ export function Settings({ settings, onClose, onSaved }: Props) {
   return (
     <main class="sheet">
       <header class="sheet-head">
-        <h1 class="sheet-title">Settings</h1>
+        <h1 class="sheet-title" ref={title} tabIndex={-1}>
+          Settings
+        </h1>
         <button class="icon-button" type="button" aria-label="Close settings" onClick={onClose}>
           ×
         </button>

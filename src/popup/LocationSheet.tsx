@@ -1,4 +1,4 @@
-import { useState } from 'preact/hooks';
+import { useEffect, useRef, useState } from 'preact/hooks';
 import { countryName } from '../core/cities';
 import { MAKKAH, placeFromBrowser, placeFromCity } from '../settings/place';
 import type { Place } from '../settings/types';
@@ -14,6 +14,21 @@ export function LocationSheet({ current, onClose, onSaved }: Props) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const locale = navigator.language || 'en-GB';
+  const title = useRef<HTMLHeadingElement>(null);
+
+  useEffect(() => {
+    title.current?.focus();
+  }, []);
+
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      event.preventDefault();
+      onClose();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
 
   function useMyLocation() {
     setError(null);
@@ -43,7 +58,9 @@ export function LocationSheet({ current, onClose, onSaved }: Props) {
   return (
     <main class="sheet">
       <header class="sheet-head">
-        <h1 class="sheet-title">Location</h1>
+        <h1 class="sheet-title" ref={title} tabIndex={-1}>
+          Location
+        </h1>
         <button class="icon-button" type="button" aria-label="Close location" onClick={onClose}>
           ×
         </button>

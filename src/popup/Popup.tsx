@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'preact/hooks';
+import { useEffect, useRef, useState } from 'preact/hooks';
 import {
   SLOTS,
   computeDay,
@@ -65,6 +65,16 @@ function formatCountdown(target: Date, now: Date): string {
 export function Popup() {
   const [settings, setSettings] = useState<Settings | null | undefined>(undefined);
   const [screen, setScreen] = useState<'times' | 'settings'>('times');
+  const previousScreen = useRef(screen);
+
+  // A full screen replaces Settings, so the button that opened it is unmounted.
+  // Put focus back when it returns, instead of dropping the keyboard user on <body>.
+  useEffect(() => {
+    if (previousScreen.current === 'settings' && screen === 'times') {
+      document.querySelector<HTMLButtonElement>('.header-button')?.focus();
+    }
+    previousScreen.current = screen;
+  }, [screen]);
 
   useEffect(() => {
     let alive = true;
@@ -329,9 +339,13 @@ function Times({
               key={slot}
               data-slot={slot}
               data-testid={`time-${slot}`}
-              aria-current={isNext ? 'true' : undefined}
+              aria-current={isNext ? 'true' : isNow ? 'time' : undefined}
             >
-              <span class="time-label">{LABELS[slot]}</span>
+              <span class="time-label">
+                {LABELS[slot]}
+                {isNext ? <span class="state-pill next-pill">Next</span> : null}
+                {isNow ? <span class="state-pill now-pill">Now</span> : null}
+              </span>
               <span class="time-value">{clock.format(day.times[slot])}</span>
             </li>
           );

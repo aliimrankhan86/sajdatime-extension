@@ -5,6 +5,7 @@
   --surface-soft: #eef2ed;
   --ink: #1b1f1d;
   --ink-muted: #5f6963;
+  --ink-hero-muted: #4b554f;
   --primary: #0b5a43;
   --primary-strong: #17805a;
   --primary-hover: #094b38;
@@ -28,6 +29,7 @@
     --surface-soft: #1b2a23;
     --ink: #f1f5f2;
     --ink-muted: #aab7ae;
+    --ink-hero-muted: #d6dfd9;
     --primary: #7fd1b0;
     --primary-strong: #17805a;
     --primary-hover: #146b4a;

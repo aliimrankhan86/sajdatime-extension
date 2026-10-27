@@ -15,15 +15,17 @@ The Chrome Web Store developer account is open. The Edge Partner Center account 
 | Area | State | Evidence |
 | --- | --- | --- |
 | Manifest V3 extension | Loads in Chrome for Testing | Playwright launches it with `--load-extension=dist` and finds the popup |
-| Prayer engine | 13 methods, both Asr schools, polar projection and correction clamp | `npm test`: 70 unit tests pass |
+| Prayer engine | 13 methods, both Asr schools, polar projection and correction clamp | `npm test`: 80 unit tests pass |
 | Golden values | Four phone fixtures pinned, plus 13 broad Aladhan sanity fixtures | `tests/unit/engine.test.ts`, `tests/unit/aladhan.test.ts` |
 | Hijri calendar | Umm al-Qura, shift, Ramadan windows, Eids | `tests/unit/hijri.test.ts` |
 | Method suggestion | Country table and Shia rule | `tests/unit/suggestions.test.ts` |
 | City search | Offline GeoNames city list, search and pick | `tests/unit/cities.test.ts`, Playwright first-run test |
-| Popup | Place, Hijri date, next prayer, countdown, six times, 253 pixel viewport, visible Settings button | Playwright screenshots and ten end-to-end tests |
+| Popup | Place, Hijri date, next prayer, countdown, six times, 190 and 253 pixel viewports, visible Settings button, explicit Next and Now pills | Playwright screenshots and 23 end-to-end tests |
 | First run | Location, city search, method suggestion, save, show times | Playwright tests with a supplied geolocation fix |
-| Settings | Place change, method, Asr school, Hijri shift, disclaimer, privacy link | Playwright tests |
-| Light and dark | Both themes from `tokens.css` | Screenshots in `docs/images/` |
+| Settings | Place change, method, Asr school, Hijri shift, disclaimer, privacy link, keyboard focus and Escape | Playwright tests |
+| Light and dark | Both themes from `tokens.css`, WCAG AA contrast pairs | `tests/unit/contrast.test.ts`, `docs/images/times-dark.png`, `docs/images/settings-dark.png` |
+| Accessibility | Keyboard focus moves into full screens and returns, every control has a 44 pixel target, axe finds no WCAG 2.2 AA violation | `tests/e2e/a11y.test.ts`, `tests/e2e/design.test.ts` |
+| No network | No request leaves the extension while it shows times | Playwright request listener |
 | Build | Production bundle in `dist/` | `npm run build` |
 | TypeScript | Strict, no errors | `npm run typecheck` |
 
@@ -31,12 +33,12 @@ Commands actually run on 27 October 2026:
 
 ```text
 npm run typecheck    pass
-npm test             7 files, 70 tests passed
+npm test             7 files, 80 tests passed
 npm run build        pass, dist/manifest.json and the popup bundle written
-npm run test:e2e     10 tests passed
+npm run test:e2e     23 tests passed
 ```
 
-The end-to-end suite uses Chrome for Testing at:
+The 23 end-to-end tests are five Settings and state tests, five design and responsive tests, three axe tests and ten original popup tests. They run in Chrome for Testing at:
 
 ```text
 /Users/aliimrankhan/Library/Caches/ms-playwright/chromium-1223/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing
@@ -44,26 +46,30 @@ The end-to-end suite uses Chrome for Testing at:
 
 That path is machine-specific. Change it in `tests/e2e/extension.ts` if the browser moves.
 
+
 ## What is not built
 
 - The full first run journey: the school and madhab steps, a language choice and the six-step sequence in the plan.
 - Prayer alerts, the countdown badge, offscreen audio and the late-alarm rule.
 - Ramadan notices, the suhoor timer, Eid notices and the timetable page.
 - Urdu, Arabic, Turkish and Indonesian, with right-to-left layout and the Arabic Western-digit rule.
-- Store screenshots, the final listing, and the zipped builds. Two early screenshots exist in `docs/images/` but are not the store set.
+- Store screenshots, the final listing, and the zipped builds. Review screenshots exist in `docs/images/` but are not the store set.
 - A second browser test for Edge. Playwright cannot load an extension into Edge, so Edge gets a manual load and a short check later.
 - An automated GitHub Actions workflow. The file exists locally at `.github/workflows/ci.yml` but is not in the repository: this Mac's GitHub login lacks the `workflow` scope, and the keyring refused the refresh. The local checks above are the evidence for now. After `gh auth refresh -s workflow` succeeds in a normal Terminal, remove the path from `.git/info/exclude`, commit the workflow and push it. Do not claim CI is green before it has actually run.
 
 ## Known gaps in what was tested
 
 - The real browser permission bubble for geolocation is not automated. The end-to-end test supplies a known fix through `navigator.geolocation` and checks that the extension saves it. The banner and the real prompt still need a manual look.
-- The popup was tested at 380 by 600 and at 253 by 600, which is what 150 percent browser zoom gives. 200 percent zoom and other window sizes are not tested yet.
+- The popup was tested at 380 by 600, 253 by 600 (150 percent zoom) and 190 by 600 (200 percent zoom). The 190 pixel test proves no horizontal scroll and no control outside the viewport, but it is a layout emulation, not a real browser zoom. Sizes a user could get from a resized window, and Windows display scaling, are not tested yet.
+- No screen reader was run against the popup. axe reports no WCAG 2.2 AA violation on Times, first run, Settings and Location in light and dark, but axe cannot judge reading order, announcement quality or whether a real screen reader makes sense of the page.
+- Windows, Edge and a real user's Chrome profile are not tested. The suite runs on macOS with Chrome for Testing. Edge gets a manual load and a short check later.
 - The first run uses the computer's time zone when it reads the browser's location. A city chosen by name uses the city's own time zone.
 - City search matches Latin names only. Urdu and Arabic names, local regions and a "near" label for remote places are not built.
 - Only English exists. No language switcher, no right-to-left test.
-- No accessibility audit yet. The markup uses real buttons and labels, but axe and a screen reader have not run.
 - The service worker is nearly empty by design. Do not treat its presence as proof that alarms work.
 - The Settings screen has a disclaimer and place, method, Asr school and Hijri shift. It does not yet have language, theme, alert choice or the full About page.
+- The screenshots are review evidence, not the final store set. `docs/store/` still has placeholders.
+
 
 ## Decisions that must not be undone by accident
 

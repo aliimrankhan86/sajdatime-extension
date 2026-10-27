@@ -52,11 +52,12 @@ export function CitySearch({ onPick, disabled = false }: Props) {
         disabled={disabled}
         autocomplete="off"
         spellcheck={false}
-        aria-controls="city-results"
+        aria-controls={results.length > 0 ? 'city-results' : undefined}
+        aria-describedby="city-hint"
         onFocus={ensureLoaded}
         onInput={(event) => change(event.currentTarget.value)}
       />
-      <p class="field-hint" id="city-hint" aria-live="polite">
+      <p class="field-hint" id="city-hint" role="status">
         {trimmed.length === 1
           ? 'Type one more letter.'
           : error
@@ -85,11 +86,7 @@ export function CitySearch({ onPick, disabled = false }: Props) {
             </li>
           ))}
         </ul>
-      ) : (
-        <p class="sr-only" role="status">
-          {loading ? 'Loading places.' : ''}
-        </p>
-      )}
+      ) : null}
     </div>
   );
 }
