@@ -10,6 +10,8 @@ This brief turns three requests into four steps: 1, 2, 3a and 3b. Each step is o
 
 ## Rules for every step
 
+- **Security.** Follow `docs/SECURITY.md` on every step and paste its checklist in every report. A FAIL there means the step is not finished.
+
 - **Words.** Use the exact English words written in this brief or in the `PLAN.md` section it points to. Do not write, shorten or "improve" any text a user sees. If a screen needs a word this brief does not give, stop and ask; do not invent one. No hyphens or em dashes in user text.
 - **Design.** Quiet Glass tokens from `src/popup/styles.css` only, no new hex values. Every action is a solid green button with bold white text. Every control at least 44 pixels. Nothing below 14 pixels. Light and dark.
 - **Privacy.** No network request, no remote code, no content script, no analytics. Only the permissions this brief adds.
