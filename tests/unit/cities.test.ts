@@ -1,5 +1,14 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { countryName, parseCityData, roundCoordinate, searchCities, type City } from '../../src/core/cities';
+import {
+  countryName,
+  distanceKm,
+  nearestCity,
+  parseCityData,
+  roundCoordinate,
+  searchCities,
+  type City,
+} from '../../src/core/cities';
 
 const city = (
   name: string,
@@ -102,5 +111,47 @@ describe('country names', () => {
 
   it('falls back to the code', () => {
     expect(countryName('ZZ', 'en-GB')).toBe('Unknown Region');
+  });
+});
+
+/** The list that actually ships, so these tests fail if the file or its format drifts. */
+function bundledCities(): City[] {
+  const file = readFileSync(new URL('../../public/data/cities.json', import.meta.url), 'utf8');
+  return parseCityData(JSON.parse(file));
+}
+
+describe('nearest city', () => {
+  const bundled = bundledCities();
+
+  it('names Leeds for a position in Leeds', () => {
+    const nearest = nearestCity(53.8, -1.55, bundled);
+    expect(nearest?.name).toBe('Leeds');
+    expect(nearest?.countryCode).toBe('GB');
+  });
+
+  it('names a city in the right country for a position in Karachi', () => {
+    expect(nearestCity(24.86, 67.01, bundled)?.countryCode).toBe('PK');
+  });
+
+  it('picks the closer of two cities', () => {
+    const near = city('Nearby', 'GB', 51.5, -0.1, 1_000);
+    const far = city('Faraway', 'GB', 40, -3, 2_000);
+    expect(nearestCity(51.51, -0.12, [far, near])?.name).toBe('Nearby');
+  });
+
+  it('returns nothing for an empty list', () => {
+    expect(nearestCity(51.5, -0.13, [])).toBeNull();
+  });
+});
+
+describe('great circle distance', () => {
+  it('measures one degree of latitude as about 111 kilometres', () => {
+    expect(distanceKm(0, 0, 1, 0)).toBeCloseTo(111.19, 0);
+  });
+
+  it('measures London to Leeds as about 270 kilometres', () => {
+    const distance = distanceKm(51.5074, -0.1278, 53.8, -1.55);
+    expect(distance).toBeGreaterThan(260);
+    expect(distance).toBeLessThan(280);
   });
 });

@@ -189,3 +189,13 @@ The Shia Maghrib is not an exception to the phone's behaviour. The phone keeps i
 **Evidence:** `src/core/methods.ts` holds one `isMethodOfferedTo` used by both the Settings method list and the School setter, so the two cannot disagree. `tests/unit/methods.test.ts` pins the split; `tests/e2e/school.test.ts` covers both reset directions, the keep case and focus after a save.
 
 **Revisit if:** a method spans both schools, or a scholar Ali trusts asks for a different split.
+
+## D-021: "Use my location" names the place from the bundled list and confirms it
+
+**Decided:** "Use my location" names the place from the bundled city list, offline, and confirms it with a "Location found" panel. The coordinates stay the browser's. Rejected: reverse geocoding through any online service (breaks the no-network rule).
+
+**Why:** the header said "My location" with the country `ZZ`, so nothing told the user the fix had worked and the suggestion fell back to Muslim World League even in Pakistan or Saudi Arabia, where the country is what picks the method. The GeoNames list is already bundled for search and carries the town's country, so the name and the country cost nothing: no new permission, no request, no geocoder whose answers depend on the network. The coordinates deliberately stay the browser's, because the times must be for where the user is and not for the centre of the nearest town; past 50 kilometres the name says "Near <town>" so the header does not claim a street. The panel exists because a silent save gave no moment to notice a wrong name before the times appeared.
+
+**Evidence:** `tests/unit/cities.test.ts` pins the nearest city for Leeds and for Karachi and the distance between them; `tests/unit/place.test.ts` pins the kept city name and country, the browser coordinates and time zone, the 50 kilometre line in both directions, and the fallback when there is no city. `tests/e2e/popup.test.ts` drives the first run with a Leeds fix, the panel words, focus on Continue, and the saved `GB` and UK method; `tests/e2e/location-found.test.ts` drives the Settings sheet with Done and a city list aborted in the browser; `tests/e2e/a11y.test.ts` runs axe on the panel in light and dark. Every one of them was shown failing before the change.
+
+**Revisit if:** a step needs the user's own neighbourhood rather than the nearest town, or a local-script name is wanted. Both need a bundled list with those names, not a network call.

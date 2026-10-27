@@ -84,7 +84,7 @@ test('does not mark today for tomorrow Fajr', async () => {
   }
 });
 
-test('first run asks for location, then saves the place', async () => {
+test('first run asks for location, then saves the town it found', async () => {
   const extension = await launchExtension();
   try {
     await extension.page.evaluate(async () => chrome.storage.local.clear());
@@ -96,30 +96,48 @@ test('first run asks for location, then saves the place', async () => {
 
     // The browser's own permission bubble cannot be driven from Playwright for an
     // extension origin, so this test supplies a known fix and checks what we do with it.
+    // It is Leeds, not London, because the bundled list names Leeds and the country lets
+    // the first run suggest a method.
     await extension.page.addInitScript(() => {
       Object.defineProperty(navigator, 'geolocation', {
         configurable: true,
         value: {
           getCurrentPosition: (ok: (position: unknown) => void) =>
-            ok({ coords: { latitude: 51.5074, longitude: -0.1278 } }),
+            ok({ coords: { latitude: 53.8, longitude: -1.55 } }),
         },
       });
     });
     await extension.page.clock.install({ time: new Date('2026-10-27T11:00:00Z') });
     await extension.page.reload();
     await extension.page.getByRole('button', { name: 'Use my location' }).click();
+
+    // The confirmation takes the place of the location controls, and focus moves onto
+    // its one button so a keyboard user is already where the next press belongs.
+    const panel = extension.page.getByRole('status');
+    await expect(panel.getByRole('heading', { name: 'Location found' })).toBeVisible();
+    await expect(panel).toContainText('Leeds, United Kingdom');
+    await expect(panel).toContainText('Your prayer times are now for this place.');
+    const goOn = panel.getByRole('button', { name: 'Continue' });
+    await expect(goOn).toBeFocused();
+    await screenshot(extension.page, 'docs/images/location-found-light.png');
+
+    await goOn.click();
     await extension.page.waitForSelector('.next-card', { timeout: 20_000 });
-    await expect(extension.page.locator('.place')).toHaveText('My location');
+    await expect(extension.page.locator('.place')).toHaveText('Leeds');
     await expect(extension.page.locator('.time-row')).toHaveCount(6);
-    await expect(extension.page.locator('.next-name')).toHaveText('Dhuhr');
-    await expect(extension.page.locator('[data-slot="fajr"] .time-value')).toHaveText('04:53');
 
     const stored = await extension.page.evaluate(async () =>
       chrome.storage.local.get('sajdatime.settings.v1'),
     );
     expect(stored['sajdatime.settings.v1']).toMatchObject({
-      method: 'mwl',
-      place: { countryCode: 'ZZ', latitude: 51.51, longitude: -0.13 },
+      method: 'moonsighting',
+      place: {
+        name: 'Leeds',
+        countryCode: 'GB',
+        latitude: 53.8,
+        longitude: -1.55,
+        timeZone: 'Europe/London',
+      },
     });
   } finally {
     await extension.close();
@@ -194,6 +212,9 @@ test('first run lets someone find a town by name', async () => {
     await expect(extension.page.locator('.place')).toHaveText('London');
     await expect(extension.page.locator('.time-row')).toHaveCount(6);
     await expect(extension.page.getByRole('button', { name: 'Settings' })).toBeVisible();
+
+    // Searching by name never shows the confirmation: the user already chose the town.
+    await expect(extension.page.getByRole('status')).toHaveCount(0);
   } finally {
     await extension.close();
   }

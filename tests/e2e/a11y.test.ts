@@ -88,3 +88,29 @@ test('first run and its search results have no WCAG 2.2 AA violations', async ()
     await extension.close();
   }
 });
+
+test('the location found panel has no WCAG 2.2 AA violations', async () => {
+  const extension = await launchExtension();
+  try {
+    await extension.page.evaluate(async () => chrome.storage.local.clear());
+    await extension.page.addInitScript({ path: axePath });
+    await extension.page.addInitScript(() => {
+      Object.defineProperty(navigator, 'geolocation', {
+        configurable: true,
+        value: {
+          getCurrentPosition: (ok: (position: unknown) => void) =>
+            ok({ coords: { latitude: 53.8, longitude: -1.55 } }),
+        },
+      });
+    });
+    await extension.page.reload();
+    await extension.page.getByRole('button', { name: 'Use my location' }).click();
+    await expect(extension.page.getByRole('status')).toContainText('Leeds, United Kingdom');
+    expectNoViolations(await audit(extension.page));
+
+    await extension.page.emulateMedia({ colorScheme: 'dark' });
+    expectNoViolations(await audit(extension.page));
+  } finally {
+    await extension.close();
+  }
+});

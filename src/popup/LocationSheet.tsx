@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { countryName } from '../core/cities';
-import { MAKKAH, placeFromBrowser, placeFromCity } from '../settings/place';
+import { MAKKAH, placeFromCity, placeFromGeolocation } from '../settings/place';
 import type { Place } from '../settings/types';
+import { Brand } from './Brand';
 import { CitySearch } from './CitySearch';
+import { LocationFound } from './LocationFound';
 
 interface Props {
   current: Place | null;
@@ -13,6 +15,7 @@ interface Props {
 export function LocationSheet({ current, onClose, onSaved }: Props) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [found, setFound] = useState<Place | null>(null);
   const locale = navigator.language || 'en-GB';
   const title = useRef<HTMLHeadingElement>(null);
 
@@ -39,13 +42,19 @@ export function LocationSheet({ current, onClose, onSaved }: Props) {
     setBusy(true);
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        const place = placeFromBrowser(
+        placeFromGeolocation(
           position.coords.latitude,
           position.coords.longitude,
           Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
-        );
-        setBusy(false);
-        onSaved(place);
+        )
+          .then((place) => {
+            setBusy(false);
+            setFound(place);
+          })
+          .catch(() => {
+            setBusy(false);
+            setError('We could not read your location. Allow location for this browser, then try again, or find a place below.');
+          });
       },
       () => {
         setBusy(false);
@@ -55,8 +64,28 @@ export function LocationSheet({ current, onClose, onSaved }: Props) {
     );
   }
 
+  // Done saves and closes back to Settings. The header stays, so the close control and
+  // Escape still work while the confirmation is showing.
+  if (found) {
+    return (
+      <main class="sheet">
+        <Brand />
+        <header class="sheet-head">
+          <h1 class="sheet-title" ref={title} tabIndex={-1}>
+            Location
+          </h1>
+          <button class="icon-button" type="button" aria-label="Close location" onClick={onClose}>
+            ×
+          </button>
+        </header>
+        <LocationFound place={found} action="Done" onAction={() => onSaved(found)} />
+      </main>
+    );
+  }
+
   return (
     <main class="sheet">
+      <Brand />
       <header class="sheet-head">
         <h1 class="sheet-title" ref={title} tabIndex={-1}>
           Location

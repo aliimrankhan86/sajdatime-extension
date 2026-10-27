@@ -1,6 +1,6 @@
 # Review request
 
-**Baseline:** [`aliimrankhan86/sajdatime-extension`](https://github.com/aliimrankhan86/sajdatime-extension) at commit `27d37b0` on `main`. This commit applies the two P2 fixes from the READY review: the screenshots are written only when `SAJDATIME_SCREENSHOTS=1`, so a plain test run leaves the checkout clean, and zoom above 210 percent is recorded as a stated limit.
+**Baseline:** [`aliimrankhan86/sajdatime-extension`](https://github.com/aliimrankhan86/sajdatime-extension) at commit `6647c96` on `main`, plus the Step 1 commit on top of it, which is the one to review. A commit cannot contain its own hash, so the hash named here is the commit the diff starts from, and Step 1 is the only commit after it. Step 1 of [`docs/BUILD-NEXT.md`](BUILD-NEXT.md) names a place the browser located, from the bundled city list and with no network, and confirms it with a "Location found" panel before the user goes on.
 **Previous reviews:** `fab4abb`; then `eeac1ad`, which fixed the three P1s from the first pass; then `cb92544`, which did the P2s; then `ebcc4e0`, which applied Ali's ruling on the open P1; then the true-angle build and its third-pass fixes; then `f964ee8`, which reversed the true-angle ruling and was judged READY with two P2 fixes to the notes; then `515731e`, which applied those two note fixes; then `7de9d3f`, which added the School choice and the first popup width fix and was judged NOT READY with one P1: the real popup now opened 25 pixels wide; then `5c29e83` and `9f9ec0d`, which fixed that P1 and were judged READY with two P2s: the screenshots dirty the checkout and zoom above 210 percent is untested. This commit applies both P2s. The School choice is unchanged and accepted; do not reopen it.
 **Date:** 27 October 2026.
 **Reviewer:** Claude, Opus review pass.
@@ -14,14 +14,21 @@ There is no account, no ad, no analytics, no host permission, no content script 
 
 ## What this commit changed
 
-This commit applies the two P2 fixes from the READY review of `5c29e83`. The popup width fix from that commit stands unchanged.
+This is Step 1 of [`docs/BUILD-NEXT.md`](BUILD-NEXT.md): "Use my location" names the place and says so before going on.
 
-- **Screenshots are opt in.** `tests/e2e/extension.ts` exposes a `screenshot` helper that does nothing unless `SAJDATIME_SCREENSHOTS=1` is set, so a plain `npm run test:e2e` leaves the checkout clean. Refresh the images deliberately and commit them.
-- **Zoom above 210 percent is a stated limit.** No layout change. Above about 210 percent the 380 pixel popup needs more than the 800 pixel width Chrome allows an action popup, so the page may need sideways scrolling. It is listed in the known gaps.
+- **The place is named offline.** `nearestCity` in `src/core/cities.ts` picks the closest row of the bundled `public/data/cities.json` by great circle distance. The list is still loaded only after the browser returns a position, exactly as the city search loads it. `placeFromBrowser` in `src/settings/place.ts` takes that city and uses its name and country, while the coordinates and the time zone stay the browser's, rounded as before, because the times are for where the user is and not for the town centre. Past 50 kilometres the name becomes "Near <town>".
+- **A confirmation replaces the location buttons.** A green tick, **Location found**, **Leeds, United Kingdom**, **Your prayer times are now for this place.**, and one solid button: **Continue** on first run, **Done** in the Settings Location sheet. `src/popup/LocationFound.tsx` is the one panel both screens use. The whole panel is a `role="status"` region and keyboard focus moves to its button.
+- **The country now drives the first-run method.** A located place is saved with a real country code, so `suggestMethod` suggests for GB, PK or SA instead of falling back to Muslim World League everywhere. That removes the cause of the recorded P2 "the default method survives a place change" for located users.
+- **A city list that will not load still works.** The place stays "My location" with `ZZ` and the user goes on, which is today's behaviour.
+- **A searched town does not show the panel.** Only "Use my location" does. A searched town already says which town was chosen.
+- **Saving moved to the button, not to the position.** Saving earlier fires the storage watcher, and the popup would swap to Times and destroy the panel before anyone read it.
+- **The mark is on every screen, including Location.** `src/popup/Brand.tsx` is now the one place the launcher mark and the word mark are drawn. It is used by the first run, Times, Settings and both Location states, so the Settings Location sheet and its confirmation carry the mark that used to appear only on the other screens.
 
-### What the previous commit changed
+### What the two commits before it changed
 
-The previous commit (`7de9d3f`) set the body to `width: 380px` with `max-width: 100vw`. That collapsed the real action popup to 25 pixels, because Chrome sizes an action popup while its viewport is still tiny, so `100vw` shrank the body to match. The earlier `width: 100%` body collapsed it to 147 pixels. The School choice from that commit is unchanged and accepted.
+`873198b` put the phone app's logo in the popup header. `27d37b0` applied the two P2 fixes from the READY review of `5c29e83`: screenshots are written only when `SAJDATIME_SCREENSHOTS=1`, so a plain test run leaves the checkout clean, and zoom above 210 percent is recorded as a stated limit.
+
+`7de9d3f` set the body to `width: 380px` with `max-width: 100vw`. That collapsed the real action popup to 25 pixels, because Chrome sizes an action popup while its viewport is still tiny, so `100vw` shrank the body to match. The earlier `width: 100%` body collapsed it to 147 pixels. The School choice from that commit is unchanged and accepted.
 
 - **Popup width.** The `html` width rule is gone and the body is a fixed 380 pixels with no `max-width`, the only value that holds in a real popup.
 - **Real popup measurement.** `tests/e2e/popup-width.test.ts` now opens the real toolbar popup in headful Chrome for Testing over a remote debugging port and reads the window, body width and Settings button from the DevTools protocol. It fails at 147 pixels against the `width: 100%` body and at 25 pixels against the `max-width: 100vw` body, so it cannot pass for the wrong reason.
@@ -50,7 +57,7 @@ To look by hand, open `chrome://extensions`, enable Developer mode, choose **Loa
 
 ## What to judge
 
-1. **The popup width fix and its test.** Read `src/popup/styles.css` and confirm the `html` width rule and the body `max-width` are gone, leaving a fixed 380 pixel body with no maximum. Check that `tests/e2e/popup-width.test.ts` opens the real toolbar popup over the DevTools protocol, not a tab, and that its four assertions could not pass for the wrong reason. Check the two zoom tests set `deviceScaleFactor: 2` and assert no clipping, a single-line countdown and 44 pixel controls. The School choice from the earlier commit is accepted; do not reopen it.
+1. **The location step and its confirmation.** Read `nearestCity` and `placeFromBrowser` and confirm the naming is offline, that the coordinates and the time zone are still the browser's, that 50 kilometres is where "Near" starts, and that a city list which will not load still saves "My location" with `ZZ`. Read `src/popup/LocationFound.tsx` and confirm the words from the brief, one solid button, `role="status"` and focus on the button. Check that `tests/e2e/popup.test.ts` now proves Leeds, `GB` and the UK method, that `tests/e2e/location-found.test.ts` covers the sheet and the aborted city list, and that every new test was shown failing before the change. The popup width fix, the School choice and the Shia Maghrib rule are accepted; do not reopen them.
 2. **Design against the brief.** Quiet Glass tokens, 380 by 600 popup, spacing, type hierarchy, the solid green action button with bold white text, no two icon buttons side by side, a close control on every dismissable screen, times in tabular numerals, nothing below 14 pixels, targets at least 44 pixels. The plan's section 3 and section 6 are the written brief.
 3. **The Times screen in every state.** First open, next prayer today, next prayer tomorrow after Isha, a current prayer that is not the next one, sunrise as a quieter row, a polar estimate, a very long place name, 12-hour and 24-hour browser languages, 200 percent zoom, light and dark.
 4. **First run and Settings.** Whether the words are plain and true, whether the location flow is understandable without a manual, whether Settings preserves a deliberately chosen method when the place changes, and whether the disclaimer is intact and readable. The disclaimer must never be removed, softened or hidden.
@@ -61,18 +68,21 @@ To look by hand, open `chrome://extensions`, enable Developer mode, choose **Loa
 
 ## Evidence in this commit
 
-`npm run check`: 8 unit files, 89 tests passed, strict typecheck passed, production build passed.
-`npm run test:e2e`: 30 tests passed.
+`npm run check`: 9 unit files, 99 tests passed, strict typecheck passed, production build passed.
+`npm run test:e2e`: 33 tests passed.
 
 | Test file | What it covers |
 | --- | --- |
 | `tests/unit/engine.test.ts` | Phone fixtures, including the five high-latitude Shia cases, polar projection and correction clamp |
 | `tests/unit/aladhan.test.ts` | 13 broad independent sanity fixtures |
 | `tests/unit/methods.test.ts` | The Sunni and Shia method split and the offered list |
-| `tests/e2e/popup.test.ts` | Times, 200 percent zoom, countdown tick, 12-hour language, tomorrow Fajr, first run wording, Makkah fallback, Settings, city search, method persistence |
+| `tests/unit/cities.test.ts` | City file parsing, search, country names, the nearest city for Leeds and Karachi, and great circle distance |
+| `tests/unit/place.test.ts` | A place from a browser fix: the city name and country with the browser coordinates, "Near" past 50 kilometres, and the fallback when there is no city |
+| `tests/e2e/popup.test.ts` | Times, 200 percent zoom, countdown tick, 12-hour language, tomorrow Fajr, first run with the location confirmation, Makkah fallback, Settings, city search, method persistence |
+| `tests/e2e/location-found.test.ts` | The confirmation in the Settings Location sheet with Done, and a city list aborted in the browser, which still saves My location |
 | `tests/e2e/audit.test.ts` | Asr school, method change, place change, dark link contrast, keyboard focus and Escape, focus after a save |
 | `tests/e2e/design.test.ts` | Now and Next pills, Next row has no `aria-current`, 44 pixel controls, 200 percent zoom, dark flat card, no network request |
-| `tests/e2e/a11y.test.ts` | axe 4.14, WCAG 2.2 AA tags, Times, Settings, Location and first run, light and dark |
+| `tests/e2e/a11y.test.ts` | axe 4.14, WCAG 2.2 AA tags, Times, Settings, Location, first run and the location found panel, light and dark |
 | `tests/e2e/school.test.ts` | School set, both reset directions, the keep case, focus after a save |
 | `tests/e2e/popup-width.test.ts` | The real action popup opens at 380 by 600 with the Settings button visible |
 | `tests/unit/contrast.test.ts` | 14 token pairs, including the hero gradient stops and the focus ring |
@@ -86,6 +96,8 @@ These are review evidence at 380 by 600, not the final store set. They are refre
 ![Settings, light](images/settings-light.png)
 ![Settings, dark](images/settings-dark.png)
 ![First run, light](images/first-run-light.png)
+![Location found, first run](images/location-found-light.png)
+![Location found in the Settings sheet](images/location-found-settings-light.png)
 ![Times at 200 percent zoom](images/zoom-200.png)
 ![Settings at 200 percent zoom](images/settings-zoom-200.png)
 
@@ -98,9 +110,10 @@ The 200 percent zoom Settings screenshot is deliberately tall. It shows the stac
 - The full first run is not built. There is one location step and a city search. The school, madhab, language and six-step sequence are later milestones. The first-run pick always starts Sunni and suggests a method from the country.
 - No alarms, badge, notifications, offscreen audio, Ramadan notices, suhoor, Eid, PDF timetable, Qibla or full About page.
 - English only. No language switcher and no right-to-left layout yet. A remaining recorded P2: an Arabic browser shows Arabic meridian words beside the English labels. The digits are not yet forced to Latin.
-- City search matches Latin names only.
+- City search matches Latin names only. The nearest-city label for a located place is the same Latin name from the same file, so a town whose only name is Urdu or Arabic is shown in Latin or omitted.
+- A located place is named by the nearest city, not by the town the user is in. Someone between towns sees the nearest town's name, or "Near" and that town past 50 kilometres, and the header says that name rather than a street address.
 - A remaining recorded P2: after midnight the Isha row still shows tonight's time with a "Now" pill.
-- A remaining recorded P2: the default method survives a place change if the user never chose one.
+- A remaining recorded P2: the default method survives a place change if the user never chose one. Step 1 removed the cause for a place found by the browser, which now carries a real country. A place changed to a searched town still keeps the method.
 - A remaining recorded P2: the polar note does not name the latitude it borrowed.
 - No Edge run, no Windows run and no real screen reader run. These are stated limits.
 - `tests/e2e/popup-width.test.ts` runs headful, because `chrome.action.openPopup()` never surfaces a measurable target under headless Chrome. On a machine without a display, only that test cannot run; the other 29 run headless.

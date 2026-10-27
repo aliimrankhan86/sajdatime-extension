@@ -157,6 +157,49 @@ export function searchCities(
   return found.slice(0, limit).map((item) => item.city);
 }
 
+const EARTH_RADIUS_KM = 6371;
+
+/** Great circle distance between two points, by the haversine formula. */
+export function distanceKm(
+  latitudeA: number,
+  longitudeA: number,
+  latitudeB: number,
+  longitudeB: number,
+): number {
+  const toRadians = (degrees: number): number => (degrees * Math.PI) / 180;
+  const deltaLatitude = toRadians(latitudeB - latitudeA);
+  const deltaLongitude = toRadians(longitudeB - longitudeA);
+  const a =
+    Math.sin(deltaLatitude / 2) ** 2 +
+    Math.cos(toRadians(latitudeA)) *
+      Math.cos(toRadians(latitudeB)) *
+      Math.sin(deltaLongitude / 2) ** 2;
+  return 2 * EARTH_RADIUS_KM * Math.asin(Math.min(1, Math.sqrt(a)));
+}
+
+/**
+ * The city nearest a point, so a located place can be named without a network.
+ *
+ * One linear pass over seventy thousand rows takes a few milliseconds and needs no
+ * index to keep in step with the bundled file, which only changes when it is rebuilt.
+ */
+export function nearestCity(
+  latitude: number,
+  longitude: number,
+  cities: readonly City[],
+): City | null {
+  let nearest: City | null = null;
+  let nearestDistance = Infinity;
+  for (const city of cities) {
+    const distance = distanceKm(latitude, longitude, city.latitude, city.longitude);
+    if (distance < nearestDistance) {
+      nearestDistance = distance;
+      nearest = city;
+    }
+  }
+  return nearest;
+}
+
 /** A readable country name, falling back to the code if the browser cannot name it. */
 export function countryName(countryCode: string, locale: string): string {
   try {

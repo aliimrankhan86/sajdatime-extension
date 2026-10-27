@@ -13,10 +13,12 @@ import {
 } from '../core';
 import type { City } from '../core/cities';
 import { firstSettings } from '../settings/create';
-import { MAKKAH, placeFromBrowser, placeFromCity } from '../settings/place';
+import { MAKKAH, placeFromCity, placeFromGeolocation } from '../settings/place';
 import { clearSettings, loadSettings, saveSettings, watchSettings } from '../settings/storage';
-import type { Settings } from '../settings/types';
+import type { Place, Settings } from '../settings/types';
 import { CitySearch } from './CitySearch';
+import { Brand } from './Brand';
+import { LocationFound } from './LocationFound';
 import { Settings as SettingsScreen } from './Settings';
 
 const HIJRI_MONTHS = [
@@ -128,6 +130,7 @@ export function Popup() {
 function FirstRun({ onSaved }: { onSaved: (settings: Settings) => void }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [found, setFound] = useState<Place | null>(null);
 
   function useMyLocation() {
     setError(null);
@@ -138,20 +141,18 @@ function FirstRun({ onSaved }: { onSaved: (settings: Settings) => void }) {
     setBusy(true);
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        const place = placeFromBrowser(
+        placeFromGeolocation(
           position.coords.latitude,
           position.coords.longitude,
           Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
-        );
-        const next = firstSettings(place);
-        saveSettings(next)
-          .then(() => {
+        )
+          .then((place) => {
             setBusy(false);
-            onSaved(next);
+            setFound(place);
           })
           .catch(() => {
             setBusy(false);
-            setError('Your place could not be saved. Try again.');
+            setError('We could not read your location. Allow location for this browser, then try again.');
           });
       },
       () => {
@@ -160,6 +161,27 @@ function FirstRun({ onSaved }: { onSaved: (settings: Settings) => void }) {
       },
       { enableHighAccuracy: false, timeout: 15_000, maximumAge: 600_000 },
     );
+  }
+
+  /**
+   * The panel's Continue. The place is saved here rather than when the position arrives,
+   * because saving earlier would switch the popup to Times before the user has read the
+   * confirmation or pressed anything.
+   */
+  function continueWithFound() {
+    if (!found) return;
+    setError(null);
+    setBusy(true);
+    const next = firstSettings(found);
+    saveSettings(next)
+      .then(() => {
+        setBusy(false);
+        onSaved(next);
+      })
+      .catch(() => {
+        setBusy(false);
+        setError('Your place could not be saved. Try again.');
+      });
   }
 
   function useCity(city: City) {
@@ -192,12 +214,26 @@ function FirstRun({ onSaved }: { onSaved: (settings: Settings) => void }) {
       });
   }
 
+  // The location controls are replaced by the confirmation, so there is one thing to read
+  // and one thing to press. Searching by name never comes through here.
+  if (found) {
+    return (
+      <main class="welcome">
+        <Brand />
+        <h1 class="welcome-title">Prayer times, quietly in your browser.</h1>
+        <LocationFound place={found} action="Continue" onAction={continueWithFound} />
+        {error ? (
+          <p class="error" role="alert">
+            {error}
+          </p>
+        ) : null}
+      </main>
+    );
+  }
+
   return (
     <main class="welcome">
-      <p class="brand">
-            <img class="brand-logo" src="/icons/icon-128.png" alt="" width="48" height="48" />
-            SajdaTime
-          </p>
+      <Brand />
       <h1 class="welcome-title">Prayer times, quietly in your browser.</h1>
       <p class="welcome-lead">
         Fajr to Isha, a calm countdown, and the Hijri date. Worked out on your computer.
@@ -290,10 +326,7 @@ function Times({
     <main>
       <header class="hero">
         <div class="hero-top">
-          <p class="brand">
-            <img class="brand-logo" src="/icons/icon-128.png" alt="" width="48" height="48" />
-            SajdaTime
-          </p>
+          <Brand />
           <button class="header-button" type="button" onClick={onOpenSettings}>
             Settings
           </button>

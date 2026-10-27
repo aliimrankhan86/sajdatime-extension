@@ -6,7 +6,7 @@ This file says what is true now. It is written for the next person or AI who ope
 
 ## Where this is
 
-The repository was empty on 27 October 2026. It now has a working scaffold, a tested prayer engine, a Times popup, city search and a Settings screen. It is **not in any store**. Version 0.1.0 in the manifest is a development version.
+The repository was empty on 27 October 2026. It now has a working scaffold, a tested prayer engine, a Times popup, city search, a Settings screen, a location step that names the town it found and confirms it, and one brand mark on every screen including both Location states. It is **not in any store**. Version 0.1.0 in the manifest is a development version.
 
 The Chrome Web Store developer account is open. The Edge Partner Center account is not. Ali opens accounts and presses Submit. Nobody else handles his credentials or payment.
 
@@ -17,13 +17,13 @@ An independent review brief for this commit is in [`docs/REVIEW-REQUEST.md`](REV
 | Area | State | Evidence |
 | --- | --- | --- |
 | Manifest V3 extension | Loads in Chrome for Testing | Playwright launches it with `--load-extension=dist` and finds the popup |
-| Prayer engine | 13 methods, both Asr schools, polar projection and correction clamp, Shia Maghrib from the Twilight Angle cap exactly as the phone does it, so a normal Shia day above 60 degrees is not projected | `npm test`: 89 unit tests pass |
+| Prayer engine | 13 methods, both Asr schools, polar projection and correction clamp, Shia Maghrib from the Twilight Angle cap exactly as the phone does it, so a normal Shia day above 60 degrees is not projected | `npm test`: 99 unit tests pass |
 | Golden values | Six phone fixtures pinned, plus 13 broad Aladhan sanity fixtures | `tests/unit/engine.test.ts`, `tests/unit/aladhan.test.ts` |
 | Hijri calendar | Umm al-Qura, shift, Ramadan windows, Eids | `tests/unit/hijri.test.ts` |
 | Method suggestion | Country table and Shia rule | `tests/unit/suggestions.test.ts` |
-| City search | Offline GeoNames city list, search and pick | `tests/unit/cities.test.ts`, Playwright first-run test |
-| Popup | Place, Hijri date, next prayer, countdown, six times, a fixed 380 pixel width, the real toolbar popup measured at 380 by 600, 200 percent zoom, visible Settings button, explicit Next and Now pills | Playwright screenshots and 30 end-to-end tests |
-| First run | Location, city search, method suggestion, save, show times | Playwright tests with a supplied geolocation fix |
+| City search | Offline GeoNames city list, search and pick; the nearest city names a place the browser located, with "Near" past 50 kilometres | `tests/unit/cities.test.ts`, `tests/unit/place.test.ts`, Playwright first-run test |
+| Popup | Place, Hijri date, next prayer, countdown, six times, a fixed 380 pixel width, the real toolbar popup measured at 380 by 600, 200 percent zoom, visible Settings button, explicit Next and Now pills | Playwright screenshots and 33 end-to-end tests |
+| First run | Use my location names the nearest town and confirms it before going on, city search, method suggestion from the country, save on Continue, show times | Playwright tests with a supplied geolocation fix |
 | Settings | Place change, School (Sunni or Shia), method, Asr school, Hijri shift, disclaimer, privacy link, keyboard focus and Escape | Playwright tests |
 | Light and dark | Both themes from `tokens.css`, WCAG AA contrast pairs | `tests/unit/contrast.test.ts`, `docs/images/times-dark.png`, `docs/images/settings-dark.png` |
 | Accessibility | Keyboard focus moves into full screens and returns, every control has a 44 pixel target, axe finds no WCAG 2.2 AA violation | `tests/e2e/a11y.test.ts`, `tests/e2e/design.test.ts` |
@@ -35,12 +35,12 @@ Commands actually run on 27 October 2026:
 
 ```text
 npm run typecheck    pass
-npm test             8 files, 89 tests passed
+npm test             9 files, 99 tests passed
 npm run build        pass, dist/manifest.json and the popup bundle written
-npm run test:e2e     30 tests passed
+npm run test:e2e     33 tests passed
 ```
 
-The 30 end-to-end tests are six Settings and state tests, six design and responsive tests, three axe tests, ten original popup tests, four School tests and one real action popup measurement. They run in Chrome for Testing at:
+The 33 end-to-end tests are six Settings and state tests, six design and responsive tests, four axe tests, ten original popup tests, two location confirmation tests, four School tests and one real action popup measurement. They run in Chrome for Testing at:
 
 ```text
 /Users/aliimrankhan/Library/Caches/ms-playwright/chromium-1223/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing
@@ -68,12 +68,12 @@ That path is one example of where Playwright keeps Chrome for Testing. `tests/e2
 - No screen reader was run against the popup. axe reports no WCAG 2.2 AA violation on Times, first run, Settings and Location in light and dark, but axe cannot judge reading order, announcement quality or whether a real screen reader makes sense of the page.
 - Windows, Edge and a real user's Chrome profile are not tested. The suite runs on macOS with Chrome for Testing. Edge gets a manual load and a short check later.
 - The first run uses the computer's time zone when it reads the browser's location. A city chosen by name uses the city's own time zone.
-- City search matches Latin names only. Urdu and Arabic names, local regions and a "near" label for remote places are not built.
+- City search matches Latin names only, and a place found by the browser is named by the nearest Latin city name in the same file. Urdu and Arabic names, local regions and a street address are not built.
 - Only English exists. No language switcher, no right-to-left test.
 - The service worker is nearly empty by design. Do not treat its presence as proof that alarms work.
 - The Settings screen has a disclaimer and place, method, Asr school and Hijri shift. It does not yet have language, theme, alert choice or the full About page.
 - The screenshots are review evidence, not the final store set. `docs/store/` still has placeholders.
-- The review also flagged, left for later: the Isha row shows tonight's time with a "Now" pill in the small hours; the default method survives a place change when the user never chose it; an Arabic browser shows Arabic meridian words beside English labels; and the polar note does not name the latitude it borrowed. Each is a known, recorded P2, not a hidden defect.
+- The review also flagged, left for later: the Isha row shows tonight's time with a "Now" pill in the small hours; the default method survives a place change when the user never chose it; an Arabic browser shows Arabic meridian words beside English labels; and the polar note does not name the latitude it borrowed. Each is a known, recorded P2, not a hidden defect. Step 1 removed the cause of the method one for a place found by the browser, which now carries a real country, so the method is suggested for the country the user is in rather than the unknown country fallback. A place changed to a searched town still keeps the method.
 - **Shia Maghrib, decided 27 October 2026: the Twilight Angle cap, matching the phone.** The separate Isha-only pass caps Jafari (4 degrees) and Tehran (4.5 degrees) Maghrib at sunset plus `angle / 60` of the night, returning the true twilight when the sun reaches it early. An earlier same-day ruling chose the raw true angle; it was reversed after the review measured it jumping about 45 minutes between neighbouring days, landing one minute before Isha, and putting Jafari after Tehran at Anchorage. The cap the phone ships is smooth, so the two products now agree everywhere except the two small differences listed in `docs/DECISIONS.md`. `tools/adhan-probe` prints the phone's values, and `tests/unit/engine.test.ts` pins Oslo, Trondheim, Tampere, Manchester and Anchorage against them.
 
 
@@ -89,11 +89,12 @@ Read `docs/DECISIONS.md`. The five that matter most:
 
 ## Next step
 
-The next milestone is the full first-run journey and the rest of Settings in `docs/PLAN.md`:
+Step 1 of [`docs/BUILD-NEXT.md`](BUILD-NEXT.md) is built and waiting for review. The brief builds the other three steps one at a time, with a review between each:
 
-- Add the school and madhab steps, a language choice and the six-step sequence to the first run.
-- Add language, theme and alert choice to Settings once an alert exists.
-- Keep the Times popup unchanged while those screens are built.
+- Step 2: prayer alerts, from Settings to the sound. `alarms`, `notifications` and `offscreen` arrive together with the service worker and the Settings screen that uses them, as `DECISIONS.md` D-009 requires. Alerts stay off until the user turns them on.
+- Step 3a: Ramadan labels, shown automatically every year.
+- Step 3b: the Ramadan notice, Eid and the iftar alert.
+- After the brief, the rest of the first-run journey and Settings in `docs/PLAN.md`: the school and madhab steps, a language choice and the six-step sequence. Keep the Times popup unchanged while those screens are built.
 - Add the store screenshots and the final listing, then hand Ali the submission checks.
 
 Do not start alarms or the badge until the settings can save an alert choice. The worker should be written once, against a stable settings shape.

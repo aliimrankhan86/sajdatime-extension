@@ -419,6 +419,47 @@ button {
   border-bottom: 0;
 }
 
+/* What "Use my location" answers with, before the user goes on. */
+
+.location-found {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+}
+
+.location-found-icon {
+  width: 32px;
+  height: 32px;
+  color: var(--primary);
+}
+
+.location-found-title {
+  margin: 0;
+  font-size: 22px;
+  line-height: 1.15;
+}
+
+.location-found-place {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.location-found-note {
+  margin: 0;
+  color: var(--ink-muted);
+  font-size: 14px;
+}
+
+.location-found .action {
+  margin-top: 6px;
+}
+
 .city-result:hover {
   background: var(--primary-soft);
 }
