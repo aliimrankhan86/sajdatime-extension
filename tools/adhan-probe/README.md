@@ -22,14 +22,13 @@ Expected on 21 June 2026, Europe/Oslo:
 
 | Place | Sunrise | Sunset | True Jafari | True Tehran | Phone cap, Jafari / Tehran |
 | --- | --- | --- | --- | --- | --- |
-| Oslo | 03:54 | 22:44 | 23:35 | 23:45 | 23:05 / 23:07 |
+| Oslo | 03:54 | 22:44 | 23:35 | 23:46 | 23:05 / 23:07 |
 | Trondheim | 03:02 | 23:38 | not reached | not reached | 23:52 / 23:53 |
 
-The extension pins Oslo Jafari 23:35 and Tehran 23:46. Jafari matches the Java
-probe. Tehran is one minute later because adhan-js and adhan-java round the last
-seconds differently; D-004 records that difference. Trondheim never reaches
-either angle, so both products fall back to the Twilight Angle cap and the
-fixtures stay 23:52 and 23:53.
+The extension pins Oslo Jafari 23:35 and Tehran 23:46. The probe rounds with
+`CalendarUtil.roundedMinute`, the same rounding the phone's `PrayerTimes` uses,
+so both products agree to the minute. Trondheim never reaches either angle, so
+both fall back to the Twilight Angle cap and the fixtures stay 23:52 and 23:53.
 
 Those are the numbers pinned in `tests/unit/engine.test.ts`. If they drift, the
 extension and this probe have diverged. Do not adjust a fixture to make the

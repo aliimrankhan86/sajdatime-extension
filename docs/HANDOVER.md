@@ -17,7 +17,7 @@ An independent review brief for this commit is in [`docs/REVIEW-REQUEST.md`](REV
 | Area | State | Evidence |
 | --- | --- | --- |
 | Manifest V3 extension | Loads in Chrome for Testing | Playwright launches it with `--load-extension=dist` and finds the popup |
-| Prayer engine | 13 methods, both Asr schools, polar projection and correction clamp, Shia Maghrib from a separate Twilight Angle pass so a normal Shia day above 60 degrees is not projected | `npm test`: 83 unit tests pass |
+| Prayer engine | 13 methods, both Asr schools, polar projection and correction clamp, Shia Maghrib from the true angle before Isha with a Twilight Angle cap as fallback, so a normal Shia day above 60 degrees is not projected | `npm test`: 87 unit tests pass |
 | Golden values | Six phone fixtures pinned, plus 13 broad Aladhan sanity fixtures | `tests/unit/engine.test.ts`, `tests/unit/aladhan.test.ts` |
 | Hijri calendar | Umm al-Qura, shift, Ramadan windows, Eids | `tests/unit/hijri.test.ts` |
 | Method suggestion | Country table and Shia rule | `tests/unit/suggestions.test.ts` |
@@ -35,7 +35,7 @@ Commands actually run on 27 October 2026:
 
 ```text
 npm run typecheck    pass
-npm test             7 files, 83 tests passed
+npm test             7 files, 87 tests passed
 npm run build        pass, dist/manifest.json and the popup bundle written
 npm run test:e2e     25 tests passed
 ```

@@ -23,10 +23,11 @@ The previous pass found that Shia (Jafari and Tehran) days above about 60 degree
 - **Settings focus.** Controls no longer use native `disabled` while saving. They use `aria-disabled` plus a save guard, so focus stays on the pressed control after a save. A new test presses Enter on Hanafi and on the Hijri stepper and asserts focus.
 - **Smaller P2s.** The Next row no longer carries `aria-current`; row text has spaces so a screen reader does not hear "AsrNow14:12"; a long place name wraps; city search says "Top 6 places" only when a seventh match exists; the Vite module preload polyfill is off so the bundle has no injected `fetch` helper.
 - **Second-pass P2s.** The keyboard focus test now waits for the heading before pressing, so it no longer races Preact's focus effect. Times are truncated to the whole minute after corrections and the order clamp, matching the phone. At 200 percent zoom the Hijri minus and plus stack instead of sitting side by side. `CLAUDE.md` no longer lists permissions the manifest does not use, the plan points at D-002 instead of the superseded `maghribAngle` build, and the Java probe that produced the Oslo and Trondheim values is committed under `tools/adhan-probe`.
+- **Third-pass fixes.** The true angle is now rejected when it would land in the same minute as Isha or later, so the order clamp never collapses Maghrib and Isha onto one minute; a sweep from 55 to 66 degrees keeps them apart all summer. Singapore uses nearest-minute rounding like adhan-java instead of `Rounding.Up`, and the probe rounds through `CalendarUtil.roundedMinute` so its true Tehran value matches the extension. `D-002` and `D-004` were corrected for these, and the two stale doc lines were fixed.
 
 ## P1-A decision, made
 
-The second review found that the Shia Maghrib pass caps its result at sunset plus `angle / 60` of the night, even on a summer day when the sun does reach 4 or 4.5 degrees. The phone has the same cap. Ali chose the true angle. The extension now uses the real angle whenever it lands after sunset, and falls back to the Twilight Angle cap only when the sun never reaches it. Oslo on 21 June now shows Jafari 23:35 and Tehran 23:46, not 23:05 and 23:07; Trondheim stays at 23:52 and 23:53. The phone still caps and must make the same change in its next release, so the two products deliberately differ until then. That difference is recorded in D-002 and HANDOVER, and `tools/adhan-probe` prints both the true angle and the current phone cap.
+The second review found that the Shia Maghrib pass caps its result at sunset plus `angle / 60` of the night, even on a summer day when the sun does reach 4 or 4.5 degrees. The phone has the same cap. Ali chose the true angle. The extension now uses the real angle whenever it lands after sunset and in an earlier minute than the method's Isha, and falls back to the Twilight Angle cap when the sun never reaches it or it would land on or after Isha. Oslo on 21 June now shows Jafari 23:35 and Tehran 23:46, not 23:05 and 23:07; Trondheim stays at 23:52 and 23:53; Tampere keeps the cap so Maghrib stays before Isha. The phone still caps and must make the same change in its next release, so the two products deliberately differ until then. That difference is recorded in D-002 and HANDOVER, and `tools/adhan-probe` prints both the true angle and the current phone cap.
 
 ## What to run
 
@@ -57,7 +58,7 @@ To look by hand, open `chrome://extensions`, enable Developer mode, choose **Loa
 
 ## Evidence in this commit
 
-`npm run check`: 7 unit files, 83 tests passed, strict typecheck passed, production build passed.
+`npm run check`: 7 unit files, 87 tests passed, strict typecheck passed, production build passed.
 `npm run test:e2e`: 25 tests passed.
 
 | Test file | What it covers |

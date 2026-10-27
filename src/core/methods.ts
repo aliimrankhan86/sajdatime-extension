@@ -4,6 +4,7 @@ import {
   HighLatitudeRule,
   Madhab as AdhanMadhab,
   PolarCircleResolution,
+  Rounding,
 } from 'adhan';
 import type { Madhab, MethodId } from './types';
 
@@ -86,6 +87,10 @@ export function parametersFor(method: MethodId, madhab: Madhab): CalculationPara
   // A place inside the polar circle must never produce an invalid time. The Times
   // screen still says the sun does not rise or set there today.
   params.polarCircleResolution = PolarCircleResolution.AqrabYaum;
+
+  // adhan-java rounds every method to the nearest minute, but adhan-js sets Rounding.Up
+  // for Singapore. Force nearest so the two libraries agree. See DECISIONS D-004.
+  params.rounding = Rounding.Nearest;
 
   if (method !== 'moonsighting') {
     params.highLatitudeRule = HighLatitudeRule.TwilightAngle;

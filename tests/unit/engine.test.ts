@@ -14,6 +14,8 @@ const TEHRAN = { latitude: 35.6892, longitude: 51.389 };
 const LONDON = { latitude: 51.5074, longitude: -0.1278 };
 const OSLO = { latitude: 59.9139, longitude: 10.7522 };
 const TRONDHEIM = { latitude: 63.4305, longitude: 10.3951 };
+const TAMPERE = { latitude: 61.4978, longitude: 23.761 };
+const ANCHORAGE = { latitude: 61.2181, longitude: -149.9003 };
 
 function prefs(overrides: Partial<CalculationPrefs>): CalculationPrefs {
   return {
@@ -105,12 +107,81 @@ describe('computeDay', () => {
     expect(clock(tehran.times.maghrib, 'Europe/Oslo')).toBe('23:53');
   });
 
+  it('keeps the Shia Maghrib strictly before Isha when the true angle is late', () => {
+    // Between about 60.5 and 70 degrees north the sun reaches 4 or 4.5 degrees near solar
+    // midnight, after the method's Isha. Without the before-Isha guard the order clamp
+    // would move Isha onto Maghrib and show the same minute twice. The guard falls back
+    // to the Twilight Angle cap, which is always earlier than Isha.
+    const tampereJafari = computeDay(
+      TAMPERE,
+      '2026-06-21',
+      prefs({ method: 'jafari', timeZone: 'Europe/Helsinki' }),
+    );
+    expect(clock(tampereJafari.times.maghrib, 'Europe/Helsinki')).toBe('23:30');
+    expect(clock(tampereJafari.times.isha, 'Europe/Helsinki')).toBe('00:15');
+
+    const tampereTehran = computeDay(
+      TAMPERE,
+      '2026-06-21',
+      prefs({ method: 'tehran', timeZone: 'Europe/Helsinki' }),
+    );
+    expect(clock(tampereTehran.times.maghrib, 'Europe/Helsinki')).toBe('23:32');
+    expect(clock(tampereTehran.times.isha, 'Europe/Helsinki')).toBe('00:15');
+
+    const trondheim = computeDay(
+      TRONDHEIM,
+      '2026-05-26',
+      prefs({ method: 'jafari', timeZone: 'Europe/Oslo' }),
+    );
+    expect(clock(trondheim.times.maghrib, 'Europe/Oslo')).toBe('23:12');
+    expect(clock(trondheim.times.isha, 'Europe/Oslo')).toBe('23:59');
+  });
+
+  it('keeps a late true angle that is still before Isha', () => {
+    // Anchorage on 20 June reaches 4 degrees at 00:01, after sunset but still before the
+    // method's Isha, so the true angle wins and the cap is not used.
+    const anchorage = computeDay(
+      ANCHORAGE,
+      '2026-06-20',
+      prefs({ method: 'jafari', timeZone: 'America/Anchorage' }),
+    );
+    expect(clock(anchorage.times.maghrib, 'America/Anchorage')).toBe('00:01');
+    expect(clock(anchorage.times.isha, 'America/Anchorage')).toBe('00:47');
+  });
+
+  it('never lets the Shia Maghrib land on or after Isha across high summer', () => {
+    for (let latitude = 55; latitude <= 66; latitude += 0.5) {
+      for (const date of ['2026-05-25', '2026-06-21', '2026-07-15']) {
+        const day = computeDay(
+          { latitude, longitude: 10 },
+          date,
+          prefs({ method: 'jafari', timeZone: 'UTC' }),
+        );
+        if (day.isPolar) continue;
+        expect(day.times.maghrib.getTime()).toBeLessThan(day.times.isha.getTime());
+      }
+    }
+  });
+
   it('keeps every time on the whole minute, as the phone does', () => {
     const day = computeDay(OSLO, '2026-06-21', prefs({ method: 'jafari', timeZone: 'Europe/Oslo' }));
     for (const slot of SLOTS) {
       expect(day.times[slot].getSeconds()).toBe(0);
       expect(day.times[slot].getMilliseconds()).toBe(0);
     }
+  });
+
+  it('matches the phone for Singapore nearest-minute rounding', () => {
+    // adhan-js sets Rounding.Up for Singapore, which moves Dhuhr and Isha one minute
+    // later than the phone's nearest-minute rule. The engine forces nearest so the two
+    // agree. See DECISIONS D-004.
+    const day = computeDay(
+      MAKKAH,
+      '2026-01-15',
+      prefs({ method: 'singapore', timeZone: 'Asia/Riyadh' }),
+    );
+    expect(clock(day.times.dhuhr, 'Asia/Riyadh')).toBe('12:31');
+    expect(clock(day.times.isha, 'Asia/Riyadh')).toBe('19:17');
   });
 
   it('matches the phone for London, Muslim World League, 10 April 2026', () => {

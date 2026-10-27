@@ -115,19 +115,22 @@ function isUsable(times: PrayerTimes): boolean {
  * result must be computed at the same latitude as the day, including the borrowed polar
  * latitude, or the two halves would describe different places.
  *
- * The true angle wins whenever the sun reaches it. Only when it never does, as at
- * Trondheim in midsummer, fall back to the Twilight Angle cap at sunset plus a portion
- * of the night. The phone still caps in both cases; this is a deliberate difference
- * recorded in D-002 until the phone follows.
+ * The true angle wins whenever the sun reaches it before Isha. When it never does, or
+ * it would land on or after Isha, fall back to the Twilight Angle cap at sunset plus a
+ * portion of the night. The phone still caps in both cases; this is a deliberate
+ * difference recorded in D-002 until the phone follows.
  */
 function shiaMaghrib(
   coordinates: AdhanCoordinates,
   date: Date,
   method: MethodId,
   sunset: Date,
+  isha: Date,
 ): Date | null {
   const angle = method === 'jafari' ? 4 : method === 'tehran' ? 4.5 : null;
   if (angle === null) return null;
+
+  const minute = (value: Date) => Math.floor(value.getTime() / 60000);
 
   try {
     // A long Isha interval keeps adhan's own maghrib guard out of the way, so this
@@ -135,7 +138,14 @@ function shiaMaghrib(
     const trueParams = new CalculationParameters('Other', 0, 0, 24 * 60);
     trueParams.maghribAngle = angle;
     const trueProbe = new PrayerTimes(coordinates, date, trueParams);
-    if (valid(trueProbe.maghrib) && trueProbe.maghrib.getTime() > sunset.getTime()) {
+    // The true angle is only usable while it sits in a strictly earlier minute than
+    // Isha. Near solar midnight in summer it can reach or pass the method's Isha, and
+    // the order clamp would then pull Isha onto Maghrib and show the same minute twice.
+    if (
+      valid(trueProbe.maghrib) &&
+      trueProbe.maghrib.getTime() > sunset.getTime() &&
+      minute(trueProbe.maghrib) < minute(isha)
+    ) {
       return trueProbe.maghrib;
     }
 
@@ -228,6 +238,7 @@ export function computeDay(
       dateAtLocalNoon,
       prefs.method,
       baseTimes.maghrib,
+      baseTimes.isha,
     );
     if (maghrib) baseTimes.maghrib = maghrib;
   }

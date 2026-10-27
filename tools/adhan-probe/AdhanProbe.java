@@ -4,6 +4,7 @@ import com.batoulapps.adhan.Coordinates;
 import com.batoulapps.adhan.HighLatitudeRule;
 import com.batoulapps.adhan.Madhab;
 import com.batoulapps.adhan.PrayerTimes;
+import com.batoulapps.adhan.data.CalendarUtil;
 import com.batoulapps.adhan.data.DateComponents;
 import com.batoulapps.adhan.data.TimeComponents;
 import com.batoulapps.adhan.internal.SolarTime;
@@ -50,7 +51,7 @@ public final class AdhanProbe {
     SolarTime solar = new SolarTime(date, coordinates);
     double value = solar.hourAngle(-angle, true);
     if (Double.isNaN(value)) return null;
-    return TimeComponents.fromDouble(value).dateComponents(date);
+    return CalendarUtil.roundedMinute(TimeComponents.fromDouble(value).dateComponents(date));
   }
 
   private static String text(Date value, ZoneId zone) {
