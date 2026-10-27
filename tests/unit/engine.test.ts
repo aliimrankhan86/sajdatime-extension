@@ -149,16 +149,24 @@ describe('computeDay', () => {
     expect(clock(anchorage.times.isha, 'America/Anchorage')).toBe('00:47');
   });
 
-  it('never lets the Shia Maghrib land on or after Isha across high summer', () => {
-    for (let latitude = 55; latitude <= 66; latitude += 0.5) {
-      for (const date of ['2026-05-25', '2026-06-21', '2026-07-15']) {
-        const day = computeDay(
-          { latitude, longitude: 10 },
-          date,
-          prefs({ method: 'jafari', timeZone: 'UTC' }),
-        );
-        if (day.isPolar) continue;
-        expect(day.times.maghrib.getTime()).toBeLessThan(day.times.isha.getTime());
+  it('never lets the Shia Maghrib land on or after Isha from May to August', () => {
+    // The collision window runs from late May to mid July, and its edges differ by
+    // latitude, so this sweeps the whole window for both Shia methods rather than
+    // pinning three days.
+    for (let latitude = 55; latitude <= 66; latitude += 1) {
+      for (let offset = 0; offset <= 122; offset += 3) {
+        const date = new Date(Date.UTC(2026, 4, 1) + offset * 86_400_000)
+          .toISOString()
+          .slice(0, 10);
+        for (const method of ['jafari', 'tehran'] as const) {
+          const day = computeDay(
+            { latitude, longitude: 10 },
+            date,
+            prefs({ method, timeZone: 'UTC' }),
+          );
+          if (day.isPolar) continue;
+          expect(day.times.maghrib.getTime()).toBeLessThan(day.times.isha.getTime());
+        }
       }
     }
   });
