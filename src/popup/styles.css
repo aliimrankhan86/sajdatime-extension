@@ -178,7 +178,7 @@ button {
 
 .time-row.is-next {
   background: var(--primary-soft);
-  box-shadow: inset 4px 0 0 var(--primary);
+  box-shadow: inset 3px 0 0 var(--primary);
 }
 
 .time-row.is-now {

@@ -109,6 +109,11 @@ test('dark mode uses a flat card and stays complete', async () => {
       .locator('.next-card')
       .evaluate((node) => getComputedStyle(node).boxShadow);
     expect(shadow).toBe('none');
+    const bar = await extension.page
+      .locator('.time-row.is-next')
+      .evaluate((node) => getComputedStyle(node).boxShadow);
+    expect(bar).toContain('3px');
+    expect(bar).toContain('inset');
     const sizes = await extension.page.evaluate(() => ({
       scrollHeight: document.documentElement.scrollHeight,
       clientHeight: document.documentElement.clientHeight,
