@@ -142,6 +142,22 @@ describe('scheduledAlarms', () => {
     expect(names).toContain('refresh');
   });
 
+  it('keeps the daily refresh when the suhoor reminder is on before Ramadan', () => {
+    // 1 Ramadan 1448 is 8 February 2027. Three days before, today and tomorrow are both
+    // outside Ramadan, so no suhoor alarm exists yet. The refresh still has to wake the
+    // worker each night, or the first suhoor alarm is never scheduled when Ramadan begins.
+    const beforeRamadan = new Date('2027-02-05T16:00:00Z');
+    const names = scheduledAlarms(
+      settings({
+        alerts: { enabled: false, prayers: PRAYERS_ON, sound: 'beep', reminder: { enabled: false, minutes: 10 } },
+        suhoorReminder: { enabled: true, minutes: 30 },
+      }),
+      beforeRamadan,
+    ).map((alarm) => alarm.name);
+    expect(names.filter((name) => name.startsWith('suhoor:'))).toEqual([]);
+    expect(names).toContain('refresh');
+  });
+
   it('gives an empty list when prayer alerts and the suhoor reminder are both off', () => {
     // Everything off leaves nothing to wake for, so even the daily refresh stays out.
     const ramadanNow = new Date('2027-02-20T16:00:00Z');

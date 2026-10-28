@@ -58,10 +58,12 @@ export function isLate(nowMs: number, scheduledMs: number): boolean {
  * a prayer, so it is never scheduled. The suhoor reminder is its own setting and fires in
  * Ramadan even when the prayer alerts are off.
  *
- * The refresh is scheduled whenever any other alarm is. It used to sit inside the prayer
- * alerts branch, so a user with prayer alerts off but the suhoor reminder on got no
- * refresh and lost the suhoor reminder after the two days planned ahead, until Chrome
- * restarted. With everything off the list stays empty: there is nothing to wake for.
+ * The refresh is scheduled whenever the prayer alerts or the suhoor reminder are on, not
+ * only when an alarm already exists in the list. A suhoor reminder switched on two or
+ * three days before Ramadan schedules nothing yet (today and tomorrow are not Ramadan),
+ * but it still needs the midnight wake-up each night, or the first suhoor alarm is never
+ * scheduled when Ramadan begins. With both switches off the list stays empty: there is
+ * nothing to wake for.
  */
 export function scheduledAlarms(settings: Settings, now: Date): ScheduledAlarm[] {
   const prefs: CalculationPrefs = {
@@ -100,8 +102,9 @@ export function scheduledAlarms(settings: Settings, now: Date): ScheduledAlarm[]
     }
   }
 
-  // Any prayer, reminder or suhoor alarm needs the midnight wake-up to plan the next day.
-  if (alarms.length > 0) {
+  // Any prayer, reminder or suhoor alarm needs the midnight wake-up to plan the next day,
+  // and so does a suhoor reminder that has no alarm yet because Ramadan has not started.
+  if (settings.alerts.enabled || settings.suhoorReminder.enabled) {
     alarms.push({ name: 'refresh', when: refreshTime(now, settings.place.timeZone) });
   }
 
