@@ -113,6 +113,7 @@ export const LONDON = {
     sound: 'beep',
     prayers: { fajr: true, dhuhr: true, asr: true, maghrib: true, isha: true },
   },
+  ramadanCard: true,
 };
 
 export async function seedSettings(

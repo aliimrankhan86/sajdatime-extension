@@ -20,5 +20,6 @@ export function firstSettings(place: Place): Settings {
     madhab: 'shafii',
     hijriOffsetDays: 0,
     alerts: DEFAULT_ALERTS,
+    ramadanCard: true,
   };
 }

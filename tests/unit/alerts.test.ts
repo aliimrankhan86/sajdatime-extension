@@ -16,6 +16,7 @@ function settings(overrides: Partial<Settings> = {}): Settings {
     madhab: 'shafii',
     hijriOffsetDays: 0,
     alerts: { enabled: true, prayers: PRAYERS_ON, sound: 'beep' },
+    ramadanCard: true,
     ...overrides,
   };
 }

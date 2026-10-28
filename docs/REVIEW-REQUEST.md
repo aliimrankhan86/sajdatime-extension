@@ -1,8 +1,8 @@
 # Review request
 
-**Baseline:** [`aliimrankhan86/sajdatime-extension`](https://github.com/aliimrankhan86/sajdatime-extension) at commit `fd002ba` on `main`, plus this P3 fix commit on top of it, which is the one to review. `fd002ba` is the accepted Step 2 commit: prayer alerts, off until turned on, with the three review bugs fixed. This P3 commit fixes one more: a replaced sound no longer reports its end, so starting a new sound over a playing one no longer flips the Play button back to Play while the new sound is still sounding. Step 2 of [`docs/BUILD-NEXT.md`](BUILD-NEXT.md) adds prayer alerts: the `alarms`, `notifications` and `offscreen` permissions, a background worker that schedules and fires them, one offscreen audio page, and a Settings Alerts group.
+**Baseline:** [`aliimrankhan86/sajdatime-extension`](https://github.com/aliimrankhan86/sajdatime-extension) at commit `a534306` on `main`, plus this Step 3a commit on top of it, which is the one to review. `a534306` is the accepted Step 2 P3 fix. Step 3a of [`docs/BUILD-NEXT.md`](BUILD-NEXT.md) adds Ramadan labels: inside Ramadan the Times screen reads Fajr as "Suhoor ends" and Maghrib as "Iftar", the hero and countdown follow, a "Ramadan, day N" line sits under the Hijri date, and a "Ramadan" group in Settings holds one switch that turns the card off.
 
-**Previous reviews:** Step 1 (`ca39f1a`), on top of the security foundation commit, was judged READY with three P2 fixes applied; do not reopen the School choice, the popup width fix or the Shia Maghrib rule. Step 2 (`cf60111`) was reviewed and judged NOT READY: a notification icon URL resolved against the worker script so no alert ever appeared (P0), the Play button never returned to Play after the beep ended (P1), and a settings rebuild cleared the 60 second self-clear alarm so a pinned notification never went away (P2). The fix commit `fd002ba` repaired all three and added the tests that should have caught them, and Step 2 was then judged READY. The security foundation is `docs/SECURITY.md` enforced by code. All of these are history for this review.
+**Previous reviews:** Step 1 (`ca39f1a`), on top of the security foundation commit, was judged READY with three P2 fixes applied; do not reopen the School choice, the popup width fix or the Shia Maghrib rule. Step 2 (`cf60111`) was reviewed and judged NOT READY: a notification icon URL resolved against the worker script so no alert ever appeared (P0), the Play button never returned to Play after the beep ended (P1), and a settings rebuild cleared the 60 second self-clear alarm so a pinned notification never went away (P2). The fix commit `fd002ba` repaired all three and added the tests that should have caught them, and Step 2 was then judged READY. A P3 fix (`a534306`) made a replaced sound never report its end, so starting a new sound over a playing one no longer flips Play back to Play. The security foundation is `docs/SECURITY.md` enforced by code. All of these are history for this review.
 
 **Date:** 28 October 2026.
 **Reviewer:** Claude, Opus review pass.
@@ -10,20 +10,18 @@
 
 ## What this is
 
-A Manifest V3 browser extension, Chrome first and Edge later. It shows today's six prayer times for a saved place, the next prayer with a countdown, the Hijri date, a small Settings screen, and, from this step, optional prayer alerts. It is a separate product from the Android app. Do not review it as a port of `SajdaTime` and do not copy phone release notes or store copy into it.
+A Manifest V3 browser extension, Chrome first and Edge later. It shows today's six prayer times for a saved place, the next prayer with a countdown, the Hijri date, a small Settings screen, optional prayer alerts, and Ramadan labels for Suhoor and Iftar. It is a separate product from the Android app. Do not review it as a port of `SajdaTime` and do not copy phone release notes or store copy into it.
 
 There is no account, no ad, no analytics, no host permission, no content script and no runtime network request. Location is handled on the computer. The full intent is in [`docs/PLAN.md`](PLAN.md). Binding decisions are in [`docs/DECISIONS.md`](DECISIONS.md). If the plan and a decision disagree, the decision wins. The current state is [`docs/HANDOVER.md`](HANDOVER.md).
 
 ## What this commit changed
 
-This is Step 2 of [`docs/BUILD-NEXT.md`](BUILD-NEXT.md): prayer alerts.
+This is Step 3a of [`docs/BUILD-NEXT.md`](BUILD-NEXT.md): Ramadan labels, shown automatically every year.
 
-- **Three permissions arrive with a working alert.** The manifest now asks for `alarms`, `notifications` and `offscreen` on top of `storage` and `geolocation`, still with no host permissions and no content scripts. Each permission maps to one visible thing, recorded in D-024.
-- **A background worker schedules and fires.** `src/background/index.ts` reads the settings, schedules one alarm per prayer plus a daily refresh, drops an alert that is disabled, switched off for that prayer, or more than five minutes late, and fires a notification whose id equals the alarm name. On install, startup and settings change it rebuilds the set, and it recreates only when the scheduled set drifts. A "Stop sound" button and a 60 second self-clear end the sound.
-- **Sound plays through one offscreen page.** A service worker cannot play audio, so `src/offscreen/index.ts` plays the beep (Web Audio, two notes, no file) or the bundled adhan recordings, chosen by the stored sound and sect, never by a message. The worker creates the page only when a sound is due, with reason `AUDIO_PLAYBACK`.
-- **Messages are checked before anything runs.** `src/core/messages.ts` ignores any message whose sender is not the extension or whose URL is outside `chrome.runtime.getURL('')`, and switches only on the six fixed types, never on a message field used as a URL, path, alarm name or HTML. The offscreen page sends a `sound-ended` type when a sound finishes or is stopped so the popup's Play button returns to Play; the worker ignores it. R4 and R11 test this.
-- **Settings gains an Alerts group, off by default.** `alerts.enabled` is `false` and the sound is `beep`. A master switch, five per-prayer switches, three sound choices, a Play/Stop control, a test alert button, and a blocked notice when the browser denies notifications. The three adhan credits are in `THIRD-PARTY-NOTICES.txt` and the About credits, with the Shia recording's CC BY-SA 4.0 link.
-- **No network, still.** The wide R6 test now watches the whole context — popup, worker and offscreen — through Settings, Play, the test alert and "Use my location", and asserts every request starts `chrome-extension://`.
+- **A `ramadanCard` setting, on by default.** `Settings` gains `ramadanCard: boolean`, written `true` for a new install and added by the migration for an existing one. `isSettings` rejects anything that is not a boolean, and the migration preserves a value the user has already chosen. This step adds no new permission.
+- **Inside Ramadan, Fajr and Maghrib are renamed.** While today is inside Ramadan on Umm al-Qura (with the user's Hijri shift) and the card is on, the hero names the next prayer "Suhoor ends" or "Iftar", the countdown note reads "until suhoor ends" or "until you break your fast", the Fajr row reads "Suhoor ends" and the Maghrib row "Iftar", and a "Ramadan, day N" line sits under the Hijri date. Every other prayer keeps its name, and turning the card off returns all six to normal. `src/core/hijri.ts` already held the Ramadan windows; this step only renders them.
+- **Settings gains a Ramadan group.** Above Alerts and shown while the card would ever apply (inside Ramadan or up to three days before), one "Ramadan card" switch with no hint text. The Isha-plus-thirty-minutes rule for Umm al-Qura in Ramadan was already in the engine and is untouched.
+- **No network, still.** The popup and Settings read only the stored settings and the bundled Hijri table. The R6 no-network test is unchanged and still passes.
 
 ## What to run
 
@@ -39,30 +37,31 @@ npm run test:e2e
 
 `npm run check` runs strict TypeScript, Vitest, a production build and then `tools/check-bundle.mjs`, the `docs/SECURITY.md` bundle scan. `npm run test:e2e` builds `dist` and drives the loaded extension with Playwright. It finds Chrome for Testing through `SAJATIME_CHROME` or Playwright's cache. If neither exists, set `SAJATIME_CHROME` to a Chrome for Testing binary.
 
-To look by hand, open `chrome://extensions`, enable Developer mode, choose **Load unpacked** and pick `dist/`. The popup is 380 by 600. Settings is the green button in the header, and the Alerts group is below Hijri.
+To look by hand, open `chrome://extensions`, enable Developer mode, choose **Load unpacked** and pick `dist/`. The popup is 380 by 600. Settings is the green button in the header, and the Ramadan group is between Hijri and Alerts while it applies.
 
 ## What to judge
 
-1. **The alert path end to end.** Read `src/background/index.ts`, `src/core/alerts.ts`, `src/core/messages.ts` and `src/offscreen/index.ts`. Confirm the alarm name is the notification id, that `isLate` uses five minutes, that a disabled or switched-off prayer cannot fire, that the sound is selected from the stored sound and sect and never from a message, and that the offscreen page is created only with `AUDIO_PLAYBACK`. The location step, the School choice, the popup width fix and the Shia Maghrib rule are accepted; do not reopen them.
-2. **Design against the brief.** Quiet Glass tokens, 380 by 600 popup, spacing, type hierarchy, the solid green action button with bold white text, no two icon buttons side by side, a close control on every dismissable screen, times in tabular numerals, nothing below 14 pixels, targets at least 44 pixels — including the new switch buttons, the three sound choices, Play and Send a test alert. The plan's section 3 and section 6 are the written brief.
-3. **The Times screen in every state.** First open, next prayer today, next prayer tomorrow after Isha, a current prayer that is not the next one, sunrise as a quieter row, a polar estimate, a very long place name, 12-hour and 24-hour browser languages, 200 percent zoom, light and dark.
-4. **First run and Settings.** Whether the words are plain and true, whether the Alerts group is understandable without a manual and clearly off by default, whether Settings preserves a deliberately chosen method when the place changes, and whether the disclaimer is intact and readable. The disclaimer must never be removed, softened or hidden.
-5. **Accessibility.** axe is not a screen reader. Check the tab order, the heading focus, Escape, the `aria-current` value, the live city hint, the switch `role="switch"` and `aria-checked`, the sound choices' `aria-pressed`, the blocked notice's `role="alert"`, and whether the visible pills match what is announced.
-6. **Correctness and privacy in the code.** The engine mirrors the phone's high-latitude rule, the projection to the signed reference latitude, the Ramadan Isha adjustment, manual corrections last and the ascending clamp. The manifest should ask only for `alarms`, `notifications`, `storage`, `offscreen` and `geolocation`, with the strict content security policy that `tests/unit/manifest.test.ts` asserts. There should be no `fetch` to a remote host, no remote code and no content script, and `tools/check-bundle.mjs` is the scan that fails the build if one appears.
-7. **Test quality.** Look for tests that only assert the code's own output, tests that pass for the wrong reason, and state that is not covered. The engine fixtures are the phone's values, not Aladhan's, except the broad sanity fixtures. The high-latitude Shia values were produced with the phone's Java adhan library, not by running the extension.
-8. **Documentation accuracy.** If a claim in `HANDOVER.md` is not true of this commit, that is a finding. The alert permissions in `docs/privacy.html` and the adhan credits in `THIRD-PARTY-NOTICES.txt` must match the build.
+1. **The Ramadan window.** Read `src/core/hijri.ts` and confirm `ramadanInfo` and `contains` draw from Umm al-Qura with the user's shift, and that the Times screen applies the labels only inside Ramadan while Settings shows the group for the wider window. The location step, the School choice, the popup width fix, the Shia Maghrib rule and the Step 2 alerts are accepted; do not reopen them.
+2. **Design against the brief.** Quiet Glass tokens, 380 by 600 popup, spacing, type hierarchy, the solid green action button with bold white text, no two icon buttons side by side, a close control on every dismissable screen, times in tabular numerals, nothing below 14 pixels, targets at least 44 pixels. The new "Ramadan, day N" line and the "Ramadan card" switch must meet the same bar in light and dark.
+3. **The Times screen in Ramadan.** Fajr and Maghrib renamed before and after Isha (the hero says "Iftar" before Maghrib and "Suhoor ends" after Isha), every other row unchanged, the whole view still inside 600 pixels without a scrollbar, and a normal view outside Ramadan.
+4. **The setting.** The "Ramadan" group appears only while the card would apply, the switch is on by default, turning it off returns the labels to normal and the choice survives a reload, and the disclaimer is intact.
+5. **Accessibility.** axe is not a screen reader. Check the tab order, the heading focus, Escape, the `aria-current` value, the switch `role="switch"` and `aria-checked`, and that the hero's `aria-label` matches the renamed prayer.
+6. **Correctness and privacy in the code.** The engine mirrors the phone's high-latitude rule, the projection, the Ramadan Isha adjustment, manual corrections last and the ascending clamp. The manifest should ask only for `alarms`, `notifications`, `storage`, `offscreen` and `geolocation`; this step adds none. No `fetch` to a remote host, no remote code, no content script, and `tools/check-bundle.mjs` still fails the build on any.
+7. **Test quality.** Look for tests that only assert the code's own output, tests that pass for the wrong reason, and state that is not covered. The Ramadan dates are pinned to Umm al-Qura fixtures.
+8. **Documentation accuracy.** If a claim in `HANDOVER.md` is not true of this commit, that is a finding. The permissions in `docs/privacy.html` are unchanged.
 
 ## Evidence in this commit
 
-`npm run check`: 12 unit files, 141 tests passed, strict typecheck passed, production build passed, then the bundle scan passed.
-`npm run test:e2e`: 48 tests passed.
+`npm run check`: 12 unit files, 144 tests passed, strict typecheck passed, production build passed, then the bundle scan passed.
+`npm run test:e2e`: 52 tests passed.
 
 | Test file | What it covers |
 | --- | --- |
 | `tests/unit/engine.test.ts` | Phone fixtures, including the five high-latitude Shia cases, polar projection and correction clamp |
 | `tests/unit/aladhan.test.ts` | 13 broad independent sanity fixtures |
+| `tests/unit/hijri.test.ts` | Umm al-Qura Ramadan windows pinned: 1 Ramadan 1447 and 1448, the 29 day length, day numbers and Eids |
 | `tests/unit/methods.test.ts` | The Sunni and Shia method split and the offered list |
-| `tests/unit/settings.test.ts` | Validators: unknown method, coordinates outside the world, unknown time zone, a place name over 200 characters, and a damaged or missing `alerts` object |
+| `tests/unit/settings.test.ts` | Validators: unknown method, coordinates outside the world, unknown time zone, a place name over 200 characters, a damaged or missing `alerts` object, and a non boolean `ramadanCard`; the migration adds the default card and keeps a chosen `false` |
 | `tests/unit/manifest.test.ts` | The manifest lock: exact keys, exact five permissions, the content security policy, no route from a web page |
 | `tests/unit/alerts.test.ts` | `scheduledAlarms` names and ordering, the refresh alarm, empty when off, Shia Maghrib, `isLate` at four and six minutes, `parseAlarmName` |
 | `tests/unit/messages.test.ts` | `parseAlertMessage` accepts the extension page and rejects a wrong id, a web URL, a lookalike URL, an unknown type, extra fields and a non object; `soundMessageType` |
@@ -70,6 +69,7 @@ To look by hand, open `chrome://extensions`, enable Developer mode, choose **Loa
 | `tests/unit/place.test.ts` | A place from a browser fix: the promoted city name and country with the browser coordinates, "Near" past 50 kilometres, and the fallback when there is no city |
 | `tools/check-bundle.mjs` | `docs/SECURITY.md` R3, R6, R7 and R8 over `dist/` and `src/` |
 | `tests/e2e/popup.test.ts` | Times, 200 percent zoom, countdown tick, 12-hour language, tomorrow Fajr, first run with the location confirmation, a stored name that is markup shown as text, Makkah fallback, Settings, city search, method persistence |
+| `tests/e2e/ramadan.test.ts` | Inside Ramadan the hero and rows read Suhoor ends and Iftar, after Isha the hero says Suhoor ends, turning the card off restores normal labels, and outside Ramadan nothing changes; the whole view stays inside 600 pixels |
 | `tests/e2e/location-found.test.ts` | The confirmation in the Settings Location sheet with Done, and a city list aborted in the browser, which still saves My location |
 | `tests/e2e/alerts.test.ts` | The worker schedules prayer alarms when alerts turn on and clears them when off, a fired prayer shows a titled notification, Play returns to Play when the beep ends, a new sound over a playing one keeps Play on Stop, the adhan runs through an offscreen page, a settings change never clears a pending clear alarm, the Alerts group and its five switches and sound choices, focus after a save, the test alert, the blocked notice, 44 pixel targets, and the wide R6 no network test |
 | `tests/e2e/audit.test.ts` | Asr school, method change, place change, dark link contrast, keyboard focus and Escape, focus after a save |
@@ -85,6 +85,8 @@ These are review evidence at 380 by 600, not the final store set. They are refre
 
 ![Times, light](images/times-light.png)
 ![Times, dark](images/times-dark.png)
+![Times in Ramadan, light](images/times-ramadan-light.png)
+![Times in Ramadan, dark](images/times-ramadan-dark.png)
 ![Settings, light](images/settings-light.png)
 ![Settings, dark](images/settings-dark.png)
 ![First run, light](images/first-run-light.png)
@@ -100,7 +102,7 @@ The 200 percent zoom Settings screenshot is deliberately tall. It shows the stac
 - The Times header is the scaffold version: the phone app logo (about 38 pixels, larger than the plan's 32 at Ali's request) with the word mark and a Settings pill, but not the plan's Gregorian date over the Hijri date, and town chip with pin and refresh. The footer is one line, not the two solid buttons. The next card has no glyph and no five prayer bars.
 - The next card uses a 28 pixel name and time with a 22 pixel countdown. The plan's type table says a 46 pixel countdown. The previous review accepted the compact card; Ali also accepted it. Do not reopen it unless it causes a real usability fault.
 - The full first run is not built. There is one location step and a city search. The school, madhab, language and six-step sequence are later milestones. The first-run pick always starts Sunni and suggests a method from the country.
-- No badge, no "time until the next prayer" reminder, no Ramadan notices, suhoor, Eid, PDF timetable, Qibla or full About page. Alerts are this step; the badge and reminders are deferred by D-024.
+- No badge, no "time until the next prayer" reminder, no Ramadan notice, suhoor reminder, Eid, PDF timetable, Qibla or full About page. The Ramadan card is this step; the notice, suhoor reminder and Eid are deferred to Step 3b.
 - The worker schedules against the real wall clock, while the popup tests use Playwright's faked clock. The alert end-to-end test therefore asserts that a refresh alarm and prayer-named alarms exist and clear, not exact counts.
 - Silent is a real choice and makes no sound by design; the test alert still shows a notification. The adhan plays through the offscreen page and is not asserted by capturing audio.
 - English only. No language switcher and no right-to-left layout yet. A remaining recorded P2: an Arabic browser shows Arabic meridian words beside the English labels. The digits are not yet forced to Latin.

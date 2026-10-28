@@ -2,10 +2,12 @@ import { useEffect, useRef, useState } from 'preact/hooks';
 import {
   SLOTS,
   computeDay,
+  contains,
   currentPrayer,
   dateInZone,
   hijriFor,
   nextPrayer,
+  ramadanInfo,
   type DayTimes,
   type NextPrayer,
   type Prayer,
@@ -63,6 +65,20 @@ function formatCountdown(target: Date, now: Date): string {
   if (hours > 0 || minutes > 0) parts.push(`${minutes} m`);
   parts.push(`${String(rest).padStart(2, '0')} s`);
   return parts.join(' ');
+}
+
+/** The label a prayer slot shows during Ramadan, when the Ramadan card is on. */
+function slotLabel(slot: PrayerSlot, inRamadan: boolean): string {
+  if (inRamadan && slot === 'fajr') return 'Suhoor ends';
+  if (inRamadan && slot === 'maghrib') return 'Iftar';
+  return LABELS[slot];
+}
+
+/** The words under the countdown during Ramadan, when the Ramadan card is on. */
+function countdownNote(slot: Prayer, inRamadan: boolean): string {
+  if (inRamadan && slot === 'fajr') return 'until suhoor ends';
+  if (inRamadan && slot === 'maghrib') return 'until you break your fast';
+  return `until ${LABELS[slot]}`;
 }
 
 export function Popup() {
@@ -310,11 +326,15 @@ function Times({
   }
 
   const hijri = formatHijri(today, settings.hijriOffsetDays);
+  const ramadan = ramadanInfo(today, settings.hijriOffsetDays);
+  const inRamadan = settings.ramadanCard && ramadan !== null && contains(ramadan, today);
   const nextLabel = next.isTomorrow ? 'Next prayer, tomorrow' : 'Next prayer';
   const countdown = formatCountdown(next.at, now);
+  const nextName = slotLabel(next.slot, inRamadan);
+  const nextNote = countdownNote(next.slot, inRamadan);
 
   return (
-    <main>
+    <main class={inRamadan ? 'is-ramadan' : undefined}>
       <header class="hero">
         <div class="hero-top">
           <Brand />
@@ -324,6 +344,9 @@ function Times({
         </div>
         <h1 class="place">{settings.place.name}</h1>
         {hijri ? <p class="hijri">{hijri}</p> : null}
+        {inRamadan && ramadan?.dayNumber ? (
+          <p class="ramadan-day">Ramadan, day {ramadan.dayNumber}</p>
+        ) : null}
       </header>
 
       <section class="next-card" aria-labelledby="next-label">
@@ -331,18 +354,18 @@ function Times({
           {nextLabel}
         </p>
         <div class="next-row">
-          <p class="next-name">{LABELS[next.slot]}</p>
+          <p class="next-name">{nextName}</p>
           <p class="next-time">{clock.format(next.at)}</p>
         </div>
         <p
           class="countdown"
           role="timer"
           aria-live="off"
-          aria-label={`Time until ${LABELS[next.slot]}: ${countdown}`}
+          aria-label={`Time until ${nextName}: ${countdown}`}
         >
           {countdown}
         </p>
-        <p class="countdown-note">until {LABELS[next.slot]}</p>
+        <p class="countdown-note">{nextNote}</p>
       </section>
 
       {day.isPolar ? (
@@ -373,7 +396,7 @@ function Times({
               aria-current={isNow ? 'time' : undefined}
             >
               <span class="time-label">
-                {LABELS[slot]}
+                {slotLabel(slot, inRamadan)}
                 {isNext || isNow ? ' ' : null}
                 {isNext ? <span class="state-pill next-pill">Next</span> : null}
                 {isNow ? <span class="state-pill now-pill">Now</span> : null}

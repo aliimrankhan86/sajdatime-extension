@@ -16,6 +16,7 @@ const LONDON = {
   madhab: 'shafii',
   hijriOffsetDays: 0,
   alerts: DEFAULT_ALERTS,
+  ramadanCard: true,
 } as const;
 
 function changed(overrides: Record<string, unknown>): unknown {
@@ -74,6 +75,11 @@ describe('stored settings', () => {
       isSettings(changed({ alerts: { enabled: true, prayers: { ...prayers, sunrise: true }, sound: 'beep' } })),
     ).toBe(false);
   });
+
+  it('rejects a damaged Ramadan card value', () => {
+    expect(isSettings(changed({ ramadanCard: 'yes' }))).toBe(false);
+    expect(isSettings(changed({ ramadanCard: true }))).toBe(true);
+  });
 });
 
 describe('alerts migration', () => {
@@ -88,6 +94,20 @@ describe('alerts migration', () => {
   });
 });
 
+describe('ramadan card migration', () => {
+  it('adds the default Ramadan card to an old setting without one', () => {
+    const old = { ...LONDON };
+    delete (old as { ramadanCard?: unknown }).ramadanCard;
+    expect(migrateSettings(old)).toEqual(LONDON);
+  });
+
+  it('keeps an off Ramadan card off after migration', () => {
+    const old = { ...LONDON, ramadanCard: false };
+    delete (old as { alerts?: unknown }).alerts;
+    expect(migrateSettings(old)).toEqual({ ...LONDON, ramadanCard: false });
+  });
+});
+
 describe('first settings', () => {
   it('uses the Muslim World League when the country is unknown', () => {
     const settings = firstSettings({ ...LONDON.place, countryCode: 'ZZ' });
@@ -95,6 +115,7 @@ describe('first settings', () => {
     expect(settings.place.countryCode).toBe('ZZ');
     expect(settings.alerts).toEqual(DEFAULT_ALERTS);
     expect(settings.alerts.enabled).toBe(false);
+    expect(settings.ramadanCard).toBe(true);
   });
 
   it('uses the place country when it is known', () => {

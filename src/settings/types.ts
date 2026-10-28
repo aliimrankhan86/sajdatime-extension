@@ -37,6 +37,7 @@ export interface Settings {
   madhab: Madhab;
   hijriOffsetDays: number;
   alerts: AlertsSettings;
+  ramadanCard: boolean;
 }
 
 export const SETTINGS_KEY = 'sajdatime.settings.v1';
@@ -46,15 +47,22 @@ export const SETTINGS_KEY = 'sajdatime.settings.v1';
 // the first release and deliberate once released only if the migration is written first.
 
 /**
- * A version 1 setting written before alerts shipped has no alerts object. This adds the
- * defaults before validation, so an upgrade never throws a user back to the first run.
+ * A version 1 setting written before alerts or the Ramadan card shipped has neither.
+ * This adds the defaults before validation, so an upgrade never throws a user back to
+ * the first run, and never overwrites a value the user has already chosen.
  */
 export function migrateSettings(value: unknown): unknown {
   if (!value || typeof value !== 'object') return value;
   const candidate = value as Partial<Settings>;
   if (candidate.version !== 1) return value;
-  if (candidate.alerts !== undefined) return value;
-  return { ...value, alerts: DEFAULT_ALERTS };
+  let result = value;
+  if (candidate.alerts === undefined) {
+    result = { ...result, alerts: DEFAULT_ALERTS };
+  }
+  if (candidate.ramadanCard === undefined) {
+    result = { ...result, ramadanCard: true };
+  }
+  return result;
 }
 
 export function isSettings(value: unknown): value is Settings {
@@ -84,7 +92,8 @@ export function isSettings(value: unknown): value is Settings {
     Number.isInteger(candidate.hijriOffsetDays) &&
     candidate.hijriOffsetDays >= -2 &&
     candidate.hijriOffsetDays <= 2 &&
-    isAlertsSettings(candidate.alerts)
+    isAlertsSettings(candidate.alerts) &&
+    typeof candidate.ramadanCard === 'boolean'
   );
 }
 

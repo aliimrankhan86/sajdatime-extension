@@ -5,6 +5,7 @@ import { suggestMethod } from '../core/suggestions';
 import { PRAYER_NAMES } from '../core/alerts';
 import { parseAlertMessage, soundMessageType } from '../core/messages';
 import { PRAYERS, type MethodId, type Sect } from '../core/types';
+import { dateInZone, ramadanInfo, showsSettings } from '../core';
 import { saveSettings } from '../settings/storage';
 import type { Settings as SettingsValue } from '../settings/types';
 import { LocationSheet } from './LocationSheet';
@@ -86,6 +87,10 @@ export function Settings({ settings, onClose, onSaved }: Props) {
   const title = useRef<HTMLHeadingElement>(null);
   const wasChangingPlace = useRef(false);
   const saving = useRef(false);
+
+  const today = dateInZone(new Date(), settings.place.timeZone);
+  const ramadan = ramadanInfo(today, settings.hijriOffsetDays);
+  const showRamadan = ramadan !== null && showsSettings(ramadan, today);
 
   useEffect(() => {
     title.current?.focus();
@@ -374,6 +379,25 @@ export function Settings({ settings, onClose, onSaved }: Props) {
         </div>
         <p class="field-hint">Use this if your mosque's Hijri date differs by a day or two.</p>
       </section>
+
+      {showRamadan ? (
+        <section class="settings-group" aria-labelledby="ramadan-heading">
+          <h2 class="group-title" id="ramadan-heading">
+            Ramadan
+          </h2>
+          <div class="switch-row">
+            <div class="switch-copy">
+              <p class="switch-title">Ramadan card</p>
+            </div>
+            <Switch
+              label="Ramadan card"
+              checked={settings.ramadanCard}
+              disabled={busy}
+              onToggle={() => update({ ramadanCard: !settings.ramadanCard })}
+            />
+          </div>
+        </section>
+      ) : null}
 
       <section class="settings-group" aria-labelledby="alerts-heading">
         <h2 class="group-title" id="alerts-heading">
