@@ -1,0 +1,268 @@
+/**
+ * The printable timetable (PLAN.md section 6.5).
+ *
+ * On screen it is an ordinary extension page in the product's own colours, light and
+ * dark, so it matches the popup it was opened from. On paper it is always black on
+ * white at 12 pt or larger, because a timetable is often printed on a shared or
+ * monochrome printer and read by someone who did not choose the theme.
+ *
+ * Colours come from tokens.css. The black, white and whitesmoke in the print block are
+ * the deliberate exception the plan asks for: paper is not a theme.
+ */
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--background);
+  color: var(--on-background);
+  font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    Roboto,
+    'Helvetica Neue',
+    Arial,
+    sans-serif;
+  font-size: 16px;
+  line-height: 1.4;
+  -webkit-font-smoothing: antialiased;
+}
+
+button {
+  font: inherit;
+}
+
+.print-page {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+/* The bar only exists on screen. Everything after it is the sheet. */
+.print-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 20px;
+}
+
+.action {
+  min-height: 52px;
+  padding: 0 20px;
+  color: var(--on-cta);
+  background: var(--cta);
+  border: 0;
+  border-radius: 999px;
+  font-size: 16px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.action:hover {
+  filter: brightness(0.92);
+}
+
+.action-small {
+  min-height: 48px;
+}
+
+:focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.print-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin: 0 0 16px;
+}
+
+.print-logo {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+}
+
+.print-title {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.print-line {
+  margin: 6px 0 0;
+  color: var(--on-surface-variant);
+  font-size: 15px;
+}
+
+.print-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15px;
+}
+
+.print-table th,
+.print-table td {
+  padding: 7px 8px;
+  text-align: left;
+  border-bottom: 1px solid var(--outline-variant);
+}
+
+.print-table th {
+  color: var(--on-surface-variant);
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* Tabular digits, so the columns of times line up the way the Times screen's do. */
+.print-table td.time {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.print-table td.hijri {
+  white-space: nowrap;
+}
+
+.print-table tr.is-today td {
+  background: var(--surface-container);
+}
+
+.print-note {
+  margin: 12px 0 0;
+  color: var(--on-surface-variant);
+  font-size: 15px;
+}
+
+.print-foot {
+  margin: 24px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--outline-variant);
+  color: var(--on-surface-variant);
+  font-size: 15px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* A4 portrait with 12 mm margins. 12 pt text, so the table is readable at arm's length
+   and photocopies without becoming a grey smear. */
+@page {
+  size: A4 portrait;
+  margin: 12mm;
+}
+
+@media print {
+  body {
+    background: white;
+    color: black;
+    font-size: 12pt;
+  }
+
+  .print-page {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .print-bar {
+    display: none;
+  }
+
+  /* One A4 sheet for a whole month, which is what the plan asks for. Thirty one rows
+     at 12 pt leave very little room, so the header and the padding are measured in
+     points and the row height is fixed by the line height rather than by air. */
+  .print-head {
+    margin-bottom: 6pt;
+  }
+
+  .print-logo {
+    width: 11mm;
+    height: 11mm;
+    border-radius: 2mm;
+  }
+
+  .print-title {
+    font-size: 16pt;
+  }
+
+  .print-line {
+    margin-top: 1pt;
+    color: black;
+    font-size: 12pt;
+    line-height: 1.3;
+  }
+
+  .print-table {
+    font-size: 12pt;
+  }
+
+  .print-table th,
+  .print-table td {
+    padding: 2pt 3pt;
+    color: black;
+    line-height: 1.2;
+    border-bottom: 1px solid black;
+  }
+
+  .print-table th {
+    font-size: 12pt;
+  }
+
+  .print-table thead th {
+    border-bottom: 2px solid black;
+  }
+
+  .print-table tr.is-today td {
+    background: whitesmoke;
+  }
+
+  .print-note,
+  .print-foot {
+    color: black;
+    font-size: 12pt;
+    line-height: 1.25;
+  }
+
+  .print-note {
+    margin-top: 6pt;
+  }
+
+  .print-foot {
+    margin-top: 8pt;
+    padding-top: 4pt;
+    border-top: 1px solid black;
+  }
+
+  /* If a month ever runs to a second sheet, its header goes with it and a row is never
+     split across the break. */
+  thead {
+    display: table-header-group;
+  }
+
+  tr {
+    break-inside: avoid;
+  }
+}

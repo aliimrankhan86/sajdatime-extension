@@ -154,6 +154,35 @@ test('every screen uses plain words in both themes', async () => {
   }
 });
 
+test('the printed timetable uses plain words in both themes', async () => {
+  const extension = await launchExtension();
+  try {
+    await seedSettings(extension);
+    const page = await extension.context.newPage();
+    await page.clock.install({ time: new Date('2026-10-27T11:00:00Z') });
+
+    const check = async () => {
+      expect(findProblems(await userText(page))).toEqual([]);
+      await setTheme(page, 'dark');
+      expect(findProblems(await userText(page))).toEqual([]);
+      await setTheme(page, 'light');
+    };
+
+    await page.goto(`chrome-extension://${extension.id}/print/index.html?month=2026-10&kind=month`);
+    await page.waitForSelector('table.print-table');
+    await check();
+
+    // The Ramadan variant renames two columns, so its headers are checked too.
+    await page.goto(
+      `chrome-extension://${extension.id}/print/index.html?month=2027-02&kind=ramadan`,
+    );
+    await page.waitForSelector('table.print-table');
+    await check();
+  } finally {
+    await extension.close();
+  }
+});
+
 test('a notice uses plain words in both themes', async () => {
   const extension = await launchExtension();
   try {

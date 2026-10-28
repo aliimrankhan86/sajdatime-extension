@@ -513,10 +513,20 @@ button {
   text-align: center;
 }
 
-/* 48 px inside a footer, against the 52 px standalone `.action`. */
-.footer .footer-settings {
-  width: 100%;
+/* Two pills side by side since Step 9: the timetable can be saved as a PDF from the
+   footer. Equal halves, 48 px tall, one gap of 8 px, and neither label wraps, so the
+   footer keeps the height it had with one button. */
+.footer-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.footer-actions .action {
+  flex: 1 1 0;
+  min-width: 0;
   min-height: 48px;
+  padding: 0 12px;
+  white-space: nowrap;
 }
 
 .footer-note {

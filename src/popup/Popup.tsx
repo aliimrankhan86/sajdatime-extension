@@ -22,6 +22,8 @@ import {
   type PrayerSlot,
 } from '../core';
 import { clockFormatter, type ClockFormat } from '../core/clock';
+import { monthOfDate } from '../print/timetable';
+import { HIJRI_MONTHS, SLOT_LABELS } from '../core/labels';
 import { clearSettings, loadSettings, saveSettings, watchSettings } from '../settings/storage';
 import type { Settings } from '../settings/types';
 import { applyTheme, watchSystemTheme } from './theme';
@@ -32,30 +34,6 @@ import { LocationSheet } from './LocationSheet';
 import { Notice } from './Notice';
 import { Settings as SettingsScreen } from './Settings';
 import { TownChip } from './TownChip';
-
-const HIJRI_MONTHS = [
-  'Muharram',
-  'Safar',
-  "Rabi' al-Awwal",
-  "Rabi' al-Thani",
-  'Jumada al-Awwal',
-  'Jumada al-Thani',
-  'Rajab',
-  "Sha'ban",
-  'Ramadan',
-  'Shawwal',
-  "Dhu al-Qi'dah",
-  'Dhu al-Hijjah',
-];
-
-const LABELS: Record<PrayerSlot, string> = {
-  fajr: 'Fajr',
-  sunrise: 'Sunrise',
-  dhuhr: 'Dhuhr',
-  asr: 'Asr',
-  maghrib: 'Maghrib',
-  isha: 'Isha',
-};
 
 function formatHijri(date: string, offset: number): string | null {
   const day = hijriFor(date, offset);
@@ -98,7 +76,7 @@ function countdownWords(target: Date, now: Date): string {
 function slotLabel(slot: PrayerSlot, inRamadan: boolean): string {
   if (inRamadan && slot === 'fajr') return 'Suhoor ends';
   if (inRamadan && slot === 'maghrib') return 'Iftar';
-  return LABELS[slot];
+  return SLOT_LABELS[slot];
 }
 
 /** The words under the countdown during Ramadan, when the Ramadan card is on. */
@@ -275,6 +253,15 @@ function Times({
       </main>
     );
   }
+
+  // The printable timetable opens in its own tab, because a month of times will not fit in
+  // a 380 pixel popup. The URL carries the month and the kind and nothing else: the place
+  // is read from saved settings by the page itself, so no coordinate leaves the storage
+  // (docs/SECURITY.md R5).
+  const onOpenPrint = () => {
+    const url = chrome.runtime.getURL(`print/index.html?month=${monthOfDate(today)}&kind=month`);
+    void chrome.tabs.create({ url });
+  };
 
   const hijri = formatHijri(today, settings.hijriOffsetDays);
   const ramadan = ramadanInfo(today, settings.hijriOffsetDays);
@@ -453,9 +440,14 @@ function Times({
       </ul>
 
       <footer class="footer">
-        <button class="action footer-settings" type="button" onClick={onOpenSettings}>
-          Settings
-        </button>
+        <div class="footer-actions">
+          <button class="action footer-settings" type="button" onClick={onOpenSettings}>
+            Settings
+          </button>
+          <button class="action footer-pdf" type="button" onClick={onOpenPrint}>
+            Save as PDF
+          </button>
+        </div>
         <p class="footer-note">Worked out on this computer. No ads.</p>
       </footer>
     </main>

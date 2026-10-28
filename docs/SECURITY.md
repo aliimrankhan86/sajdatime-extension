@@ -70,6 +70,7 @@ What an attacker could try, and the rule that stops it:
 - Round latitude and longitude to 2 decimals **before** anything else touches them: before storage, before naming the place, before computing times. Never keep the raw values in a variable that outlives the handler.
 - Never log coordinates, the place name, the school or the method with `console.*`. No `console.log` in shipped code at all; `console.error` only for a fixed message with no user data.
 - Never put location or settings in a URL, a notification button, an alarm name, a file name or a page title.
+- The printable timetable page is the one page with a query string: it carries the month and the kind and nothing else. Two e2e tests read the URL and the tab title the footer button produces, and fail on a coordinate, the town or an unescaped value. The sheet itself names the town in its heading, because `docs/PLAN.md` section 6.5 asks for that line. The tab title does not, because Chrome turns it into the file name when the sheet is saved.
 - **Check:** a unit test asserts the rounding happens in `placeFromBrowser`. The bundle test fails on `console.log` in `dist/`. Review reads every new `console.*` call.
 
 ## R6. No network, with a short list of user-pressed links
@@ -138,7 +139,7 @@ Security checklist
 [ ] R2 CSP unchanged and asserted
 [ ] R3 bundle scan: no eval, new Function, document.write, remote URL
 [ ] R4 message handlers check sender id, sender url and type
-[ ] R5 location asked only on press; rounded first; no console.log in dist
+[ ] R5 location asked only on press; rounded first; no console.log in dist; the print URL and title carry no place
 [ ] R6 e2e: zero requests outside chrome-extension:// (popup, worker, offscreen)
 [ ] R7 no innerHTML family in src; hostile place name renders as text
 [ ] R8 validators reject wrong type, range, length and extra keys

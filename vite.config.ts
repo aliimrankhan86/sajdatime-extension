@@ -32,6 +32,9 @@ export default defineConfig({
         popup: resolve(root, 'src/popup/index.html'),
         'background/index': resolve(root, 'src/background/index.ts'),
         offscreen: resolve(root, 'src/offscreen/index.html'),
+        // The printable timetable. A second page, so the code it shares with the popup
+        // lands in a chunk both pages load rather than being copied into each.
+        print: resolve(root, 'src/print/index.html'),
       },
       output: {
         entryFileNames: (chunk) =>
