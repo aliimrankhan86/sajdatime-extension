@@ -22,16 +22,12 @@ import {
   type PrayerSlot,
 } from '../core';
 import { clockFormatter, type ClockFormat } from '../core/clock';
-import type { City } from '../core/cities';
-import { firstSettings } from '../settings/create';
-import { MAKKAH, placeFromCity, placeFromGeolocation } from '../settings/place';
 import { clearSettings, loadSettings, saveSettings, watchSettings } from '../settings/storage';
-import type { Place, Settings } from '../settings/types';
+import type { Settings } from '../settings/types';
 import { applyTheme, watchSystemTheme } from './theme';
-import { CitySearch } from './CitySearch';
 import { Brand } from './Brand';
+import { FirstRun } from './FirstRun';
 import { Glyph } from './Glyph';
-import { LocationFound } from './LocationFound';
 import { LocationSheet } from './LocationSheet';
 import { Notice } from './Notice';
 import { Settings as SettingsScreen } from './Settings';
@@ -183,137 +179,6 @@ export function Popup({ initial }: { initial?: Settings | null }) {
   }
 
   return <Times settings={settings} onReset={resetPlace} onOpenSettings={() => setScreen('settings')} />;
-}
-
-function FirstRun({ onSaved }: { onSaved: (settings: Settings) => void }) {
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [found, setFound] = useState<Place | null>(null);
-
-  function useMyLocation() {
-    setError(null);
-    if (!navigator.geolocation) {
-      setError('This browser cannot read your location. Try a newer version of Chrome or Edge.');
-      return;
-    }
-    setBusy(true);
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        // placeFromGeolocation never rejects: when the city list will not load it falls
-        // back to "My location" itself, so there is no error branch to show here.
-        placeFromGeolocation(
-          position.coords.latitude,
-          position.coords.longitude,
-          Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
-        ).then((place) => {
-          setBusy(false);
-          setFound(place);
-        });
-      },
-      () => {
-        setBusy(false);
-        setError('We could not read your location. Allow location for this browser, then try again.');
-      },
-      { enableHighAccuracy: false, timeout: 15_000, maximumAge: 600_000 },
-    );
-  }
-
-  /**
-   * The panel's Continue. The place is saved here rather than when the position arrives,
-   * because saving earlier would switch the popup to Times before the user has read the
-   * confirmation or pressed anything.
-   */
-  function continueWithFound() {
-    if (!found) return;
-    setError(null);
-    setBusy(true);
-    const next = firstSettings(found);
-    saveSettings(next)
-      .then(() => {
-        setBusy(false);
-        onSaved(next);
-      })
-      .catch(() => {
-        setBusy(false);
-        setError('Your place could not be saved. Try again.');
-      });
-  }
-
-  function useCity(city: City) {
-    setError(null);
-    setBusy(true);
-    const next = firstSettings(placeFromCity(city));
-    saveSettings(next)
-      .then(() => {
-        setBusy(false);
-        onSaved(next);
-      })
-      .catch(() => {
-        setBusy(false);
-        setError('Your place could not be saved. Try again.');
-      });
-  }
-
-  function useMakkah() {
-    setError(null);
-    setBusy(true);
-    const next = firstSettings(MAKKAH);
-    saveSettings(next)
-      .then(() => {
-        setBusy(false);
-        onSaved(next);
-      })
-      .catch(() => {
-        setBusy(false);
-        setError('Your place could not be saved. Try again.');
-      });
-  }
-
-  // The location controls are replaced by the confirmation, so there is one thing to read
-  // and one thing to press. Searching by name never comes through here.
-  if (found) {
-    return (
-      <main class="welcome">
-        <Brand />
-        <h1 class="welcome-title">Prayer times, quietly in your browser.</h1>
-        <LocationFound place={found} action="Continue" onAction={continueWithFound} />
-        {error ? (
-          <p class="error" role="alert">
-            {error}
-          </p>
-        ) : null}
-      </main>
-    );
-  }
-
-  return (
-    <main class="welcome">
-      <Brand />
-      <h1 class="welcome-title">Prayer times, quietly in your browser.</h1>
-      <p class="welcome-lead">
-        Fajr to Isha, a calm countdown, and the Hijri date. Worked out on your computer.
-      </p>
-      <button class="action" type="button" onClick={useMyLocation} disabled={busy}>
-        {busy ? 'Finding your place...' : 'Use my location'}
-      </button>
-      <p class="welcome-note">
-        SajdaTime does not send your location anywhere. Your browser's location service finds it.
-        There is no account and no ads.
-      </p>
-      <CitySearch onPick={useCity} disabled={busy} />
-      {error ? (
-        <>
-          <p class="error" role="alert">
-            {error}
-          </p>
-          <button class="action" type="button" onClick={useMakkah} disabled={busy}>
-            Use Makkah for now
-          </button>
-          <p class="welcome-note">Times will be for Makkah until you set your place.</p>
-        </>
-      ) : null}
-    </main>
-  );
 }
 
 /**

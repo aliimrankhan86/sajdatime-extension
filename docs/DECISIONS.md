@@ -426,3 +426,15 @@ The method Sheet (U13) is the only one without a Done button: choosing a method 
 **Verified:** `npm run check` passes (strict typecheck, 272 unit tests in 15 files, build, `check-bundle: 7 bundle files and the source are clean`). `npm run test:e2e` passes 78 tests, so the existing expectations that alerts off leaves only the badge alarm still hold.
 
 **Revisit if:** a future setting schedules an alarm of its own without the refresh, or the worker gains a reason to wake daily with nothing scheduled.
+
+## D-038: first-run progress lives in its own storage key
+
+**Decided:** the first-run journey writes its in-progress answers to a new `sajdatime.setup.v1` key, kept apart from `sajdatime.settings.v1`, and removes it the moment setup finishes. The draft holds the step number, the settings object being filled in, and a `madhabChosen` flag, all checked by `isSetupDraft` before use.
+
+**Why:** PLAN.md section 6.3 requires closing the popup mid setup to resume at the same step. The finished settings key cannot hold a half-built settings object, because `isSettings` would reject it and the popup would fall back to the welcome step anyway. A separate key keeps `sajdatime.settings.v1` the single source of truth for a finished install, and lets the draft be removed as soon as `saveSettings` succeeds.
+
+**R8 and R12:** `src/settings/setup.ts` reads only `chrome.storage.local`, validates the draft with the same strictness as `isSettings`, and writes only its one key. `docs/SECURITY.md` R8 now names both keys, and `docs/privacy.html` says the in-progress answers are held under `sajdatime.setup.v1` and removed on finish.
+
+**Verified:** `npm run check` passes (strict typecheck, 281 unit tests, build, `check-bundle: 7 bundle files and the source are clean`). `npm run test:e2e` passes 82 tests, including the new first-run journey, Shia skip, madhab gating and match-my-mosque tests.
+
+**Revisit if:** setup ever needs to survive across browsers or machines, which would require `storage.sync` and a fresh privacy and security review.

@@ -94,7 +94,7 @@ What an attacker could try, and the rule that stops it:
 
 - Everything read from `chrome.storage.local` goes through a validator (`isSettings` and its siblings) before use. A missing, damaged or out-of-range value falls back to safe defaults or to the first run, never to a crash or a half-drawn screen.
 - Validators check types **and** ranges: latitude -90 to 90, longitude -180 to 180, Hijri shift -2 to 2, adjustments -30 to 30, method and sound from their fixed lists, place name a string of at most 200 characters.
-- Only these keys are written: `sajdatime.settings.v1` and the notice keys named in `BUILD-NEXT.md`. Nothing is written to `storage.sync`, `localStorage`, `sessionStorage`, IndexedDB or cookies.
+- Only these keys are written: `sajdatime.settings.v1`, `sajdatime.setup.v1` (the first-run draft, removed the moment setup finishes) and the notice keys named in `BUILD-NEXT.md`. Nothing is written to `storage.sync`, `localStorage`, `sessionStorage`, IndexedDB or cookies.
 - **Check:** unit tests feed each validator a wrong type, an out-of-range number, an over-long string and extra keys, and assert rejection. The bundle test fails on `storage.sync`, `localStorage`, `sessionStorage` and `indexedDB` in `dist/`.
 
 ## R9. Dependencies and the build

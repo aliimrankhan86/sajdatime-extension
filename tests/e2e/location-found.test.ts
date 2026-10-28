@@ -1,6 +1,12 @@
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
-import { launchExtension, screenshot, seedSettings, setTheme } from './extension';
+import {
+  launchExtension,
+  screenshot,
+  seedSettings,
+  setTheme,
+  walkToLocation,
+} from './extension';
 
 /** Leeds, because the bundled city list names it and its country is GB. */
 const LEEDS = { latitude: 53.8, longitude: -1.55 };
@@ -117,12 +123,15 @@ test('a city list that will not load still saves My location and goes on', async
     });
     await mockPosition(extension.page);
     await extension.page.reload();
+    await walkToLocation(extension);
 
-    await extension.page.getByRole('button', { name: 'Use my location' }).click();
+    await extension.page.getByRole('button', { name: 'Allow location' }).click();
     const panel = extension.page.getByRole('status');
-    await expect(panel.getByRole('heading', { name: 'Location found' })).toBeVisible();
+    await expect(panel.getByRole('heading', { name: 'Where are you?' })).toBeVisible();
     await expect(panel).toContainText('My location');
-    await panel.getByRole('button', { name: 'Continue' }).click();
+    await extension.page.getByRole('button', { name: 'Continue' }).click(); // location -> method
+    await extension.page.getByRole('button', { name: 'Continue' }).click(); // method -> alerts
+    await extension.page.getByRole('button', { name: 'Finish' }).click();
 
     await extension.page.waitForSelector('.next-card', { timeout: 20_000 });
     await expect(extension.page.locator('.place')).toHaveText('My location');

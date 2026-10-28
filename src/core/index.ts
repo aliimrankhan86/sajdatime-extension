@@ -4,3 +4,4 @@ export * from './engine';
 export * from './hijri';
 export * from './notices';
 export * from './suggestions';
+export * from './match';

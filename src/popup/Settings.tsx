@@ -16,6 +16,15 @@ import {
   type Settings as SettingsValue,
   type Theme,
 } from '../settings/types';
+import {
+  browserName,
+  METHOD_HINTS,
+  METHOD_NAMES,
+  methodGroupsFor,
+  SOUND_HINTS,
+  SOUND_LABELS,
+} from './meta';
+import { SHORT_DISCLAIMER } from './disclaimer';
 import { applyTheme } from './theme';
 import { LocationSheet } from './LocationSheet';
 import { Row } from './components/Row';
@@ -72,64 +81,6 @@ const THEME_LABELS: Record<Theme, string> = {
   light: 'Light',
   dark: 'Dark',
 };
-
-// The method names and hints are the phone's own strings (Ali's words), kept verbatim.
-const METHOD_NAMES: Record<MethodId, string> = {
-  moonsighting: 'Moonsighting Committee',
-  'north-america': 'ISNA, North America',
-  karachi: 'University of Karachi',
-  mwl: 'Muslim World League',
-  'umm-al-qura': 'Umm al-Qura, Makkah',
-  egyptian: 'Egyptian General Authority',
-  dubai: 'Dubai',
-  kuwait: 'Kuwait',
-  qatar: 'Qatar',
-  turkey: 'Diyanet, Turkey',
-  singapore: 'Kemenag & MUIS, Indonesia and Singapore',
-  jafari: 'Jafari (Ithna Ashari)',
-  tehran: 'Institute of Geophysics, Tehran',
-};
-
-const METHOD_HINTS: Record<MethodId, string> = {
-  mwl: 'A general convention used in many countries. The standard here.',
-  egyptian: "Egypt's official method.",
-  karachi: 'Common across Pakistan and South Asia.',
-  'umm-al-qura': 'The official method in Saudi Arabia. Isha is set at a fixed time after Maghrib.',
-  dubai: 'A convention used in the Gulf.',
-  moonsighting: 'A seasonal rule made for places far from the equator. Followed by some mosques in Britain.',
-  'north-america':
-    'The Islamic Society of North America. Used by many mosques in the United States and Canada.',
-  kuwait: 'The convention used in Kuwait.',
-  qatar: 'The convention used in Qatar.',
-  singapore: 'The official bodies of Indonesia and Singapore.',
-  turkey: "Turkey's Presidency of Religious Affairs, with its precaution minutes.",
-  jafari: "The usual Shia convention. Maghrib is a little after sunset, once the redness has left the sky.",
-  tehran: "The University of Tehran, whose calendar Iran's official times follow.",
-};
-
-// PLAN 6.3 "Other methods": the region groups that the method sheet shows below the
-// "Suggested for <country>" group. North America has no group of its own in the plan, so
-// ISNA sits with the other western far-from-the-equator methods under Europe (D-034).
-const REGION_GROUPS: ReadonlyArray<{ title: string; methods: ReadonlyArray<MethodId> }> = [
-  { title: 'Europe', methods: ['moonsighting', 'mwl', 'north-america', 'turkey'] },
-  {
-    title: 'Middle East and Africa',
-    methods: ['umm-al-qura', 'egyptian', 'dubai', 'kuwait', 'qatar'],
-  },
-  { title: 'South and East Asia', methods: ['karachi', 'singapore'] },
-  { title: 'Shia', methods: ['jafari', 'tehran'] },
-];
-
-const SOUND_LABELS: Record<SettingsValue['alerts']['sound'], string> = {
-  beep: 'Soft beep',
-  adhan: 'Adhan',
-  silent: 'Silent',
-};
-
-function browserName(): 'Edge' | 'Chrome' {
-  const data = (navigator as unknown as { userAgentData?: { brands?: Array<{ brand: string }> } }).userAgentData;
-  return data?.brands?.some((entry) => entry.brand === 'Microsoft Edge') ? 'Edge' : 'Chrome';
-}
 
 function Switch(props: { label: string; checked: boolean; disabled: boolean; onToggle: () => void }) {
   return (
@@ -351,34 +302,13 @@ export function Settings({ settings, onClose, onSaved }: Props) {
   }
 
   const offeredMethods = methodsOfferedTo(settings.sect);
-
-  /*
-   * The method sheet lists each method exactly once. The suggested ones form the
-   * first group and are left out of the region groups below, so the UK does not see
-   * Moonsighting, ISNA and Karachi twice. A Sunni list never reaches the Shia group,
-   * and a group left empty is dropped rather than shown as a heading over nothing.
-   */
-  const methodGroups: Array<{ title: string; methods: ReadonlyArray<MethodId> }> = [];
-  if (settings.sect === 'shia') {
-    methodGroups.push({ title: 'Shia', methods: ['jafari', 'tehran'] });
-  } else {
-    const first = [suggestion.suggested, ...suggestion.alternatives].filter((method) =>
-      offeredMethods.includes(method),
-    );
-    const shown = new Set<MethodId>(first);
-    if (first.length > 0) {
-      methodGroups.push({ title: `Suggested for ${placeValue}`, methods: first });
-    }
-    for (const group of REGION_GROUPS) {
-      if (group.title === 'Shia') continue;
-      const rest = group.methods.filter(
-        (method) => offeredMethods.includes(method) && !shown.has(method),
-      );
-      if (rest.length === 0) continue;
-      for (const method of rest) shown.add(method);
-      methodGroups.push({ title: group.title, methods: rest });
-    }
-  }
+  const methodGroups = methodGroupsFor(
+    settings.sect,
+    suggestion.suggested,
+    suggestion.alternatives,
+    offeredMethods,
+    placeValue,
+  );
 
   if (sheet) {
     return renderSheet();
@@ -609,17 +539,7 @@ export function Settings({ settings, onClose, onSaved }: Props) {
         return (
           <Sheet title="Disclaimer" onClose={() => closeSheet('disclaimer')}>
             <div class="sheet-body">
-              <p class="disclaimer-text">
-                SajdaTime is a helper, not a religious authority. These times are worked out on this
-                computer from the position of the sun, using published calculation methods. They are
-                not given by a mosque, a scholar, or any authority. I am not a Mufti, an Aalim, or an
-                expert in fiqh, and this extension was built with the help of artificial intelligence.
-                Software can carry faults, the computer can hold the wrong place or the wrong clock,
-                and I can be wrong. Take what you see as a calculation, not a ruling. Where SajdaTime
-                and your mosque disagree, follow your mosque. If something looks wrong or you are
-                unsure, ask someone qualified. SajdaTime is free and given as it is, with no warranty
-                and no promise of accuracy. Please remember me, my family, and my parents in your duas.
-              </p>
+              <p class="disclaimer-text">{SHORT_DISCLAIMER}</p>
             </div>
           </Sheet>
         );
@@ -782,22 +702,22 @@ export function Settings({ settings, onClose, onSaved }: Props) {
               <div class="choices" role="group" aria-labelledby="sheet-title">
                 <ChoiceRow
                   selected={settings.alerts.sound === 'beep'}
-                  title="Soft beep"
-                  hint="Short and gentle"
+                  title={SOUND_LABELS.beep}
+                  hint={SOUND_HINTS.beep}
                   disabled={busy}
                   onSelect={() => update({ alerts: { ...settings.alerts, sound: 'beep' } })}
                 />
                 <ChoiceRow
                   selected={settings.alerts.sound === 'adhan'}
-                  title="Adhan"
-                  hint="The full call to prayer"
+                  title={SOUND_LABELS.adhan}
+                  hint={SOUND_HINTS.adhan}
                   disabled={busy}
                   onSelect={() => update({ alerts: { ...settings.alerts, sound: 'adhan' } })}
                 />
                 <ChoiceRow
                   selected={settings.alerts.sound === 'silent'}
-                  title="Silent"
-                  hint="The message only"
+                  title={SOUND_LABELS.silent}
+                  hint={SOUND_HINTS.silent}
                   disabled={busy}
                   onSelect={() => update({ alerts: { ...settings.alerts, sound: 'silent' } })}
                 />

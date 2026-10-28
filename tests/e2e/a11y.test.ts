@@ -1,7 +1,7 @@
 import { createRequire } from 'node:module';
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
-import { launchExtension, LONDON, seedSettings, setTheme } from './extension';
+import { launchExtension, LONDON, seedSettings, setTheme, walkToLocation } from './extension';
 
 const axePath = createRequire(import.meta.url).resolve('axe-core/axe.min.js');
 
@@ -79,10 +79,16 @@ test('first run and its search results have no WCAG 2.2 AA violations', async ()
     await extension.page.evaluate(async () => chrome.storage.local.clear());
     await extension.page.addInitScript({ path: axePath });
     await extension.page.reload();
-    expectNoViolations(await audit(extension.page));
+    expectNoViolations(await audit(extension.page)); // welcome
 
-    await extension.page.getByRole('searchbox', { name: 'Or find a place' }).fill('London');
+    await walkToLocation(extension);
+    expectNoViolations(await audit(extension.page)); // location step
+
+    await extension.page.getByRole('searchbox', { name: 'Or type a place' }).fill('London');
     await expect(extension.page.locator('.city-result').first()).toBeVisible();
+    expectNoViolations(await audit(extension.page)); // search results
+
+    await setTheme(extension.page, 'dark');
     expectNoViolations(await audit(extension.page));
   } finally {
     await extension.close();
@@ -124,8 +130,9 @@ test('the location found panel has no WCAG 2.2 AA violations', async () => {
       });
     });
     await extension.page.reload();
-    await extension.page.getByRole('button', { name: 'Use my location' }).click();
-    await expect(extension.page.getByRole('status')).toContainText('Leeds, United Kingdom');
+    await walkToLocation(extension);
+    await extension.page.getByRole('button', { name: 'Allow location' }).click();
+    await expect(extension.page.getByRole('status')).toContainText('Leeds');
     expectNoViolations(await audit(extension.page));
 
     await setTheme(extension.page, 'dark');

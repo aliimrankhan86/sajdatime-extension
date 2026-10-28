@@ -4,13 +4,15 @@ import { countryName, CITY_SEARCH_LIMIT, loadCities, searchCities, type City } f
 interface Props {
   onPick: (city: City) => void;
   disabled?: boolean;
+  /** The field label. The location sheet says "Or find a place"; first run says "Or type a place". */
+  label?: string;
 }
 
 /**
  * An offline town search. The list is loaded only when the field is first used, so a
  * person who allows location never waits for three megabytes they do not need.
  */
-export function CitySearch({ onPick, disabled = false }: Props) {
+export function CitySearch({ onPick, disabled = false, label = 'Or find a place' }: Props) {
   const [query, setQuery] = useState('');
   const [cities, setCities] = useState<City[] | null>(null);
   const [loading, setLoading] = useState(false);
@@ -47,7 +49,7 @@ export function CitySearch({ onPick, disabled = false }: Props) {
   return (
     <div class="city-search">
       <label class="field-label" for="city-search">
-        Or find a place
+        {label}
       </label>
       <input
         class="search-input"

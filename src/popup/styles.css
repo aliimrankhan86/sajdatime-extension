@@ -1420,3 +1420,304 @@ button {
 [dir='rtl'] .back-button svg {
   transform: scaleX(-1);
 }
+
+/* First-run journey (PLAN 6.3). Six steps, saved after each, with a language button,
+   a disclaimer that must be answered, school, madhab, location, method and alerts. */
+
+.first-run {
+  min-height: 600px;
+}
+
+.first-run-welcome,
+.first-run-step,
+.first-run-sheet {
+  display: flex;
+  min-height: 600px;
+  flex-direction: column;
+}
+
+.first-run-welcome {
+  gap: 24px;
+  padding: 16px 24px 28px;
+}
+
+.first-run-welcome-head {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.language-button {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 8px;
+  padding: 0 14px;
+  color: var(--on-surface);
+  background: var(--surface);
+  border: 1px solid var(--outline-variant);
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.first-run-welcome-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  text-align: center;
+}
+
+.first-run-welcome-foot {
+  display: flex;
+}
+
+.first-run-welcome-foot .action {
+  flex: 1;
+  min-height: 56px;
+}
+
+.first-run-step {
+  gap: 12px;
+  padding: 20px 20px 24px;
+}
+
+.first-run-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.step-line {
+  margin: 0;
+  color: var(--on-surface-variant);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.progress {
+  display: flex;
+  gap: 6px;
+}
+
+.progress-part {
+  flex: 1;
+  height: 4px;
+  background: var(--outline-variant);
+  border-radius: 999px;
+}
+
+.progress-part.is-done {
+  background: var(--cta);
+}
+
+.first-run-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.first-run-foot,
+.first-run-method-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.first-run-foot .action,
+.first-run-method-actions .action {
+  flex: 1;
+  min-height: 56px;
+}
+
+/* A step's Continue is disabled until a choice is made (the madhab step). Faded, not
+   a second grey style, and it still reads as the one solid action. */
+.first-run-foot .action:disabled {
+  cursor: default;
+  opacity: 0.45;
+}
+
+.first-run-title {
+  margin: 0;
+  font-size: 26px;
+  line-height: 1.15;
+}
+
+.first-run-primary {
+  min-height: 56px;
+}
+
+.first-run-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.choice-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.choice-card {
+  display: flex;
+  min-height: 56px;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  color: var(--on-surface);
+  text-align: start;
+  background: var(--surface);
+  border: 1px solid var(--card-outline);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+}
+
+.choice-card.is-selected {
+  color: var(--on-primary-container);
+  background: var(--primary-container);
+  border-color: var(--primary-container);
+}
+
+.choice-card-copy {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.choice-card-title {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.choice-card-hint {
+  color: var(--on-surface-variant);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.choice-card.is-selected .choice-card-hint {
+  color: var(--on-primary-container);
+}
+
+.first-run-sound-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.first-run-sound-row .action {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px;
+}
+
+/* The alerts step reuses the Settings choice rows and notice. Inside a step the body gap
+   already separates them, so the notice keeps a little less padding and the rows take a
+   touch less, which keeps the last step within the 600px popup. */
+.first-run-body .settings-notice {
+  padding: 12px;
+}
+
+.first-run-body .choice-row {
+  padding-block: 6px;
+}
+
+.first-run-skip {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.first-run-place {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 24px 16px;
+  color: var(--on-surface);
+  background: var(--surface);
+  border: 1px solid var(--card-outline);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+  text-align: center;
+}
+
+.first-run-place-name {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.first-run-place-meta {
+  margin: 0;
+  color: var(--on-surface-variant);
+  font-size: 14px;
+}
+
+/* The single-method card is read only, not a button. */
+.first-run-method-card {
+  cursor: default;
+}
+
+.first-run-method-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  color: var(--on-surface);
+  text-align: start;
+  background: var(--surface);
+  border: 1px solid var(--outline-variant);
+  border-radius: 14px;
+  cursor: pointer;
+}
+
+.first-run-method-row.is-selected {
+  color: var(--on-primary-container);
+  background: var(--primary-container);
+  border-color: var(--primary-container);
+}
+
+.method-times-large .method-time {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.first-run-sheet {
+  gap: 16px;
+  padding: 20px 20px 28px;
+}
+
+.first-run-sheet-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.first-run-sheet-title {
+  flex: 1;
+  margin: 0;
+  font-size: 26px;
+  line-height: 1.15;
+}
+
+.first-run-sheet-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.disclaimer-full {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}

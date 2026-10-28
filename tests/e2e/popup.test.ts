@@ -1,5 +1,11 @@
 import { expect, test } from '@playwright/test';
-import { launchExtension, screenshot, seedSettings, setTheme } from './extension';
+import {
+  launchExtension,
+  screenshot,
+  seedSettings,
+  setTheme,
+  walkToLocation,
+} from './extension';
 import { countdownLineCount, undersizedControls } from './measures';
 
 test('shows the place, the next prayer and all six times', async () => {
@@ -125,14 +131,6 @@ test('first run asks for location, then saves the town it found', async () => {
   const extension = await launchExtension();
   try {
     await extension.page.evaluate(async () => chrome.storage.local.clear());
-    await extension.page.reload();
-    await expect(extension.page.getByRole('button', { name: 'Use my location' })).toBeVisible();
-    await expect(extension.page.locator('.welcome-note')).not.toContainText('keeps your location');
-    await expect(extension.page.locator('.welcome-note')).not.toContainText('never leaves');
-    await screenshot(extension.page, 'docs/images/first-run-light.png');
-    await setTheme(extension.page, 'dark');
-    await screenshot(extension.page, 'docs/images/first-run-dark.png');
-
     // The browser's own permission bubble cannot be driven from Playwright for an
     // extension origin, so this test supplies a known fix and checks what we do with it.
     // It is Leeds, not London, because the bundled list names Leeds and the country lets
@@ -148,21 +146,30 @@ test('first run asks for location, then saves the town it found', async () => {
     });
     await extension.page.clock.install({ time: new Date('2026-10-27T11:00:00Z') });
     await extension.page.reload();
-    await extension.page.getByRole('button', { name: 'Use my location' }).click();
 
-    // The confirmation takes the place of the location controls, and focus moves onto
-    // its one button so a keyboard user is already where the next press belongs.
+    await expect(extension.page.getByRole('button', { name: 'Begin' })).toBeVisible();
+    await screenshot(extension.page, 'docs/images/first-run-light.png');
+    await setTheme(extension.page, 'dark');
+    await screenshot(extension.page, 'docs/images/first-run-dark.png');
+    await setTheme(extension.page, 'light');
+
+    await walkToLocation(extension);
+
+    await extension.page.getByRole('button', { name: 'Allow location' }).click();
     const panel = extension.page.getByRole('status');
-    await expect(panel.getByRole('heading', { name: 'Location found' })).toBeVisible();
-    await expect(panel).toContainText('Leeds, United Kingdom');
-    await expect(panel).toContainText('Your prayer times are now for this place.');
-    const goOn = panel.getByRole('button', { name: 'Continue' });
-    await expect(goOn).toBeFocused();
+    await expect(panel.getByRole('heading', { name: 'Where are you?' })).toBeVisible();
+    await expect(panel).toContainText('Leeds');
+    await expect(panel).toContainText('United Kingdom');
+    await expect(panel).toContainText('Your prayer times will be for this place.');
     await screenshot(extension.page, 'docs/images/location-found-light.png');
     await setTheme(extension.page, 'dark');
     await screenshot(extension.page, 'docs/images/location-found-dark.png');
+    await setTheme(extension.page, 'light');
 
-    await goOn.click();
+    await extension.page.getByRole('button', { name: 'Continue' }).click(); // location -> method
+    await extension.page.getByRole('button', { name: 'Continue' }).click(); // method -> alerts
+    await extension.page.getByRole('button', { name: 'Finish' }).click();
+
     await extension.page.waitForSelector('.next-card', { timeout: 20_000 });
     await expect(extension.page.locator('.place')).toHaveText('Leeds');
     await expect(extension.page.locator('.time-row')).toHaveCount(6);
@@ -198,12 +205,18 @@ test('first run offers Makkah when location is refused', async () => {
       });
     });
     await extension.page.reload();
-    await extension.page.getByRole('button', { name: 'Use my location' }).click();
+    await walkToLocation(extension);
+    await extension.page.getByRole('button', { name: 'Allow location' }).click();
 
     await expect(extension.page.getByRole('alert')).toContainText('could not read your location');
-    const makkah = extension.page.getByRole('button', { name: 'Use Makkah for now' });
+    const makkah = extension.page.getByRole('button', { name: 'Skip for now and use Makkah' });
     await expect(makkah).toBeVisible();
     await makkah.click();
+    await expect(extension.page.getByRole('status')).toContainText('Makkah');
+
+    await extension.page.getByRole('button', { name: 'Continue' }).click(); // location -> method
+    await extension.page.getByRole('button', { name: 'Continue' }).click(); // method -> alerts
+    await extension.page.getByRole('button', { name: 'Finish' }).click();
 
     await extension.page.waitForSelector('.next-card', { timeout: 20_000 });
     await expect(extension.page.locator('.place')).toHaveText('Makkah');
@@ -245,18 +258,26 @@ test('first run lets someone find a town by name', async () => {
   try {
     await extension.page.evaluate(async () => chrome.storage.local.clear());
     await extension.page.reload();
+    await walkToLocation(extension);
 
-    const search = extension.page.getByRole('searchbox', { name: 'Or find a place' });
+    const search = extension.page.getByRole('searchbox', { name: 'Or type a place' });
     await search.fill('London');
     const result = extension.page.locator('.city-result').filter({ hasText: 'London' }).first();
     await expect(result).toBeVisible();
     await result.click();
 
+    // A found town is confirmed before it becomes live, so the person can still go back.
+    await expect(extension.page.getByRole('status')).toContainText('London');
+    await extension.page.getByRole('button', { name: 'Continue' }).click(); // location -> method
+    await extension.page.getByRole('button', { name: 'Continue' }).click(); // method -> alerts
+    await extension.page.getByRole('button', { name: 'Finish' }).click();
+
+    await extension.page.waitForSelector('.next-card', { timeout: 20_000 });
     await expect(extension.page.locator('.place')).toHaveText('London');
     await expect(extension.page.locator('.time-row')).toHaveCount(6);
     await expect(extension.page.getByRole('button', { name: 'Settings' })).toBeVisible();
 
-    // Searching by name never shows the confirmation: the user already chose the town.
+    // Once saved the confirmation is gone and the Times screen is showing.
     await expect(extension.page.getByRole('status')).toHaveCount(0);
   } finally {
     await extension.close();

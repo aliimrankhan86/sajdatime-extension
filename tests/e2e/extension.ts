@@ -143,6 +143,49 @@ export async function seedSettings(
 }
 
 /**
+ * Walks the first-run journey from the Welcome screen to the Location step (step 4),
+ * where each test then drives the geolocation or city search itself. The disclaimer's
+ * two actions, the school cards and the madhab cards (Sunni only) all advance with the
+ * shared "Continue" foot, so this helper only names the choice each step asks for.
+ */
+export async function walkToLocation(
+  extension: Extension,
+  options: { sect?: 'sunni' | 'shia'; madhab?: 'hanafi' | 'shafii' } = {},
+): Promise<void> {
+  const { sect = 'sunni', madhab = 'shafii' } = options;
+  const page = extension.page;
+  await page.getByRole('button', { name: 'Begin' }).click();
+  await page.getByRole('button', { name: 'I understand' }).click();
+  await page.getByRole('button', { name: sect === 'shia' ? 'Shia' : 'Sunni' }).click();
+  await page.getByRole('button', { name: 'Continue' }).click();
+  if (sect === 'sunni') {
+    await page.getByRole('button', { name: madhab === 'hanafi' ? 'Hanafi' : "Shafi'i" }).click();
+    await page.getByRole('button', { name: 'Continue' }).click();
+  }
+}
+
+/**
+ * Walks the whole journey to the Times screen. The geolocation fix has to be mocked by the
+ * caller first (through addInitScript), or the caller can ask for Makkah instead.
+ */
+export async function walkFirstRun(
+  extension: Extension,
+  options: { sect?: 'sunni' | 'shia'; madhab?: 'hanafi' | 'shafii'; useMakkah?: boolean } = {},
+): Promise<void> {
+  const { sect, madhab, useMakkah = false } = options;
+  await walkToLocation(extension, { sect, madhab });
+  if (useMakkah) {
+    await extension.page.getByRole('button', { name: 'Skip for now and use Makkah' }).click();
+  } else {
+    await extension.page.getByRole('button', { name: 'Allow location' }).click();
+  }
+  await extension.page.getByRole('button', { name: 'Continue' }).click(); // location -> method
+  await extension.page.getByRole('button', { name: 'Continue' }).click(); // method -> alerts
+  await extension.page.getByRole('button', { name: 'Finish' }).click(); // alerts -> saved
+  await extension.page.waitForSelector('.next-card', { timeout: 20_000 });
+}
+
+/**
  * Screenshots are opt in, so a plain test run leaves the checkout clean. Set
  * SAJDATIME_SCREENSHOTS=1 to rewrite the committed images in docs/images, then commit them.
  */

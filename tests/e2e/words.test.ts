@@ -83,43 +83,72 @@ test('every screen uses plain words in both themes', async () => {
     });
     await page.reload();
 
-    // First run, light then dark.
-    await expect(page.getByRole('button', { name: 'Use my location' })).toBeVisible();
-    expect(findProblems(await userText(page))).toEqual([]);
-    await setTheme(page, 'dark');
-    expect(findProblems(await userText(page))).toEqual([]);
-    await setTheme(page, 'light');
+    const check = async () => {
+      expect(findProblems(await userText(page))).toEqual([]);
+      await setTheme(page, 'dark');
+      expect(findProblems(await userText(page))).toEqual([]);
+      await setTheme(page, 'light');
+    };
 
-    // Location found, light then dark.
-    await page.getByRole('button', { name: 'Use my location' }).click();
-    await expect(page.getByRole('status')).toContainText('Leeds, United Kingdom');
-    expect(findProblems(await userText(page))).toEqual([]);
-    await setTheme(page, 'dark');
-    expect(findProblems(await userText(page))).toEqual([]);
-    await setTheme(page, 'light');
+    // Welcome.
+    await expect(page.getByRole('button', { name: 'Begin' })).toBeVisible();
+    await check();
 
-    // Times, light then dark.
-    await page.getByRole('status').getByRole('button', { name: 'Continue' }).click();
+    // Language sheet.
+    await page.getByRole('button', { name: 'English' }).click();
+    await expect(page.getByRole('heading', { name: 'Language' })).toBeVisible();
+    await check();
+    await page.getByRole('button', { name: 'Back' }).click();
+
+    // Disclaimer, short and full.
+    await page.getByRole('button', { name: 'Begin' }).click();
+    await check();
+    await page.getByRole('button', { name: 'Read in full' }).click();
+    await expect(page.getByRole('heading', { name: 'Disclaimer' })).toBeVisible();
+    await check();
+    await page.getByRole('button', { name: 'Back' }).click();
+
+    // School.
+    await page.getByRole('button', { name: 'I understand' }).click();
+    await check();
+
+    // Madhab.
+    await page.getByRole('button', { name: 'Sunni' }).click();
+    await page.getByRole('button', { name: 'Continue' }).click();
+    await check();
+
+    // Location.
+    await page.getByRole('button', { name: "Shafi'i" }).click();
+    await page.getByRole('button', { name: 'Continue' }).click();
+    await check();
+
+    // Location found.
+    await page.getByRole('button', { name: 'Allow location' }).click();
+    await expect(page.getByRole('status')).toContainText('Leeds');
+    await check();
+
+    // Method.
+    await page.getByRole('button', { name: 'Continue' }).click();
+    await check();
+
+    // Alerts.
+    await page.getByRole('button', { name: 'Continue' }).click();
+    await check();
+
+    // Times.
+    await page.getByRole('button', { name: 'Finish' }).click();
     await page.waitForSelector('.next-card', { timeout: 20_000 });
-    expect(findProblems(await userText(page))).toEqual([]);
-    await setTheme(page, 'dark');
-    expect(findProblems(await userText(page))).toEqual([]);
-    await setTheme(page, 'light');
+    await check();
 
-    // Settings, light then dark.
+    // Settings.
     await page.getByRole('button', { name: 'Settings' }).click();
     await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible();
-    expect(findProblems(await userText(page))).toEqual([]);
-    await setTheme(page, 'dark');
-    expect(findProblems(await userText(page))).toEqual([]);
-    await setTheme(page, 'light');
+    await check();
 
-    // Location sheet, including the offline town search, light then dark.
+    // Location sheet, including the offline town search.
     await page.locator('[data-row="place"]').click();
     await expect(page.getByRole('heading', { name: 'Location' })).toBeVisible();
-    expect(findProblems(await userText(page))).toEqual([]);
-    await setTheme(page, 'dark');
-    expect(findProblems(await userText(page))).toEqual([]);
+    await check();
   } finally {
     await extension.close();
   }
