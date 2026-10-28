@@ -115,7 +115,7 @@ test('every screen uses plain words in both themes', async () => {
     await setTheme(page, 'light');
 
     // Location sheet, including the offline town search, light then dark.
-    await page.getByRole('button', { name: 'Change' }).click();
+    await page.locator('[data-row="place"]').click();
     await expect(page.getByRole('heading', { name: 'Location' })).toBeVisible();
     expect(findProblems(await userText(page))).toEqual([]);
     await setTheme(page, 'dark');

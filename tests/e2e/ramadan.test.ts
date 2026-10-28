@@ -58,7 +58,7 @@ test('turning the Ramadan card off restores the normal labels', async () => {
     const card = extension.page.getByRole('switch', { name: 'Ramadan card' });
     await card.click();
     await expect(card).toHaveAttribute('aria-checked', 'false');
-    await extension.page.getByRole('button', { name: 'Close settings' }).click();
+    await extension.page.getByRole('button', { name: 'Back to times' }).click();
 
     await expect(extension.page.locator('.next-name')).toHaveText('Maghrib');
     await expect(extension.page.locator('.countdown-note')).toHaveText('until it begins');

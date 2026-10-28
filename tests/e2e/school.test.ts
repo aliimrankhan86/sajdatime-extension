@@ -42,15 +42,18 @@ test('choosing Shia from a Sunni method saves the Shia suggestion and offers onl
   try {
     await seedSettings(extension); // London, Sunni, MWL
     await openSettings(extension.page);
+    await extension.page.locator('[data-row="school"]').click();
     await extension.page.getByRole('button', { name: 'Shia' }).click();
+    await extension.page.getByRole('button', { name: 'Done' }).click();
 
     const stored = await storedSectAndMethod(extension.page);
     expect(stored.sect).toBe('shia');
     expect(stored.method).toBe('jafari'); // suggestMethod('GB', 'shia').suggested
 
+    await extension.page.locator('[data-row="method"]').click();
     const values = await extension.page
-      .locator('#method option')
-      .evaluateAll((options) => (options as HTMLOptionElement[]).map((option) => option.value));
+      .locator('.method-row')
+      .evaluateAll((rows) => (rows as HTMLElement[]).map((row) => row.getAttribute('data-method')));
     expect(values).toEqual(['jafari', 'tehran']);
   } finally {
     await extension.close();
@@ -62,6 +65,7 @@ test('choosing Sunni from Jafari saves the country Sunni suggestion', async () =
   try {
     await seed(extension.page, { ...LONDON_SHIA_TEHRAN, method: 'jafari' });
     await openSettings(extension.page);
+    await extension.page.locator('[data-row="school"]').click();
     await extension.page.getByRole('button', { name: 'Sunni' }).click();
 
     const stored = await storedSectAndMethod(extension.page);
@@ -77,6 +81,7 @@ test('choosing Shia while already on Tehran keeps Tehran', async () => {
   try {
     await seed(extension.page, LONDON_SHIA_TEHRAN);
     await openSettings(extension.page);
+    await extension.page.locator('[data-row="school"]').click();
     await extension.page.getByRole('button', { name: 'Shia' }).click();
 
     const stored = await storedSectAndMethod(extension.page);
@@ -94,6 +99,8 @@ test('keyboard focus stays on the pressed school button after the save', async (
     await openSettings(extension.page);
     await expect(extension.page.getByRole('heading', { name: 'Settings' })).toBeFocused();
 
+    await extension.page.locator('[data-row="school"]').click();
+    await expect(extension.page.getByRole('heading', { name: 'School' })).toBeFocused();
     const shia = extension.page.getByRole('button', { name: 'Shia' });
     await shia.press('Enter');
     await expect(shia).toBeFocused();

@@ -73,15 +73,17 @@ test('makes no network requests through the whole alert and location flow', asyn
     await extension.page.getByRole('button', { name: 'Settings' }).click();
     await expect(extension.page.getByRole('heading', { name: 'Alerts' })).toBeVisible();
 
-    // Play the adhan: this creates the offscreen audio page and loads the bundled file.
+    // Play the adhan from the Sound sheet: this creates the offscreen audio page.
+    await extension.page.locator('[data-row="sound"]').click();
     await extension.page.getByRole('button', { name: 'Play' }).click();
     await expect(extension.page.getByRole('button', { name: 'Stop' })).toBeVisible();
+    await extension.page.getByRole('button', { name: 'Done' }).click();
 
     // The test alert runs the notification path from the popup through the worker.
     await extension.page.getByRole('button', { name: 'Send a test alert' }).click();
 
     // "Use my location" resolves through the geolocation mock, never the network.
-    await extension.page.getByRole('button', { name: 'Change' }).click();
+    await extension.page.locator('[data-row="place"]').click();
     await extension.page.getByRole('button', { name: 'Use my location' }).click();
     await expect(extension.page.getByRole('heading', { name: 'Location found' })).toBeVisible();
 
@@ -143,6 +145,7 @@ test('Play returns to Play when the beep ends, and Stop returns it at once', asy
     });
     await extension.page.getByRole('button', { name: 'Settings' }).click();
     await expect(extension.page.getByRole('heading', { name: 'Alerts' })).toBeVisible();
+    await extension.page.locator('[data-row="sound"]').click();
 
     const play = extension.page.getByRole('button', { name: 'Play' });
     const stop = extension.page.getByRole('button', { name: 'Stop' });
@@ -172,6 +175,7 @@ test('the adhan plays through an offscreen document', async () => {
       alerts: { ...LONDON.alerts, enabled: true, sound: 'adhan' },
     });
     await extension.page.getByRole('button', { name: 'Settings' }).click();
+    await extension.page.locator('[data-row="sound"]').click();
     await extension.page.getByRole('button', { name: 'Play' }).click();
     await expect(extension.page.getByRole('button', { name: 'Stop' })).toBeVisible();
 
@@ -206,6 +210,7 @@ test('starting a new sound over a playing one keeps Play on Stop', async () => {
 
     await extension.page.getByRole('button', { name: 'Settings' }).click();
     await expect(extension.page.getByRole('heading', { name: 'Alerts' })).toBeVisible();
+    await extension.page.locator('[data-row="sound"]').click();
 
     // Play starts a second adhan over the first. The replaced adhan must not report its
     // end, or this flips straight back to Play while the new adhan is still sounding.
@@ -253,23 +258,24 @@ test('the Alerts group shows five switches and keeps the chosen sound', async ()
     await expect(extension.page.getByRole('heading', { name: 'Alerts' })).toBeVisible();
 
     // The group is hidden beyond the master switch while alerts are off.
-    await expect(extension.page.getByRole('heading', { name: 'Sound' })).toBeHidden();
+    await expect(extension.page.getByRole('button', { name: 'Sound, Soft beep' })).toBeHidden();
     await expect(extension.page.getByRole('button', { name: 'Send a test alert' })).toBeHidden();
 
     await extension.page.getByRole('switch', { name: 'Prayer alerts' }).click();
-    await expect(extension.page.getByRole('heading', { name: 'Sound' })).toBeVisible();
+    await expect(extension.page.getByRole('button', { name: 'Sound, Soft beep' })).toBeVisible();
     for (const prayer of ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha']) {
       await expect(extension.page.getByRole('switch', { name: prayer })).toHaveAttribute(
         'aria-checked',
         'true',
       );
     }
+
+    // The Sound sheet starts on Soft beep; pick the adhan and a reload keeps it.
+    await extension.page.locator('[data-row="sound"]').click();
     await expect(extension.page.getByRole('button', { name: 'Soft beep' })).toHaveAttribute(
       'aria-pressed',
       'true',
     );
-
-    // Pick the adhan; a reload keeps it.
     await extension.page.getByRole('button', { name: 'Adhan' }).click();
     await expect(extension.page.getByRole('button', { name: 'Adhan' })).toHaveAttribute(
       'aria-pressed',
@@ -277,6 +283,7 @@ test('the Alerts group shows five switches and keeps the chosen sound', async ()
     );
     await extension.page.reload();
     await extension.page.getByRole('button', { name: 'Settings' }).click();
+    await extension.page.locator('[data-row="sound"]').click();
     await expect(extension.page.getByRole('button', { name: 'Adhan' })).toHaveAttribute(
       'aria-pressed',
       'true',
@@ -339,8 +346,8 @@ test('the amber notice shows when the browser denies notifications', async () =>
     });
     await seedSettings(extension, new Date('2026-10-27T11:00:00Z'), LONDON);
     await extension.page.getByRole('button', { name: 'Settings' }).click();
-    await expect(extension.page.locator('.blocked-notice')).toBeVisible();
-    await expect(extension.page.locator('.blocked-title')).toHaveText('Prayer alerts are blocked');
+    await expect(extension.page.locator('.settings-notice-warning')).toBeVisible();
+    await expect(extension.page.locator('.settings-notice-title')).toHaveText('Prayer alerts are blocked');
   } finally {
     await extension.close();
   }

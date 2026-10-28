@@ -1047,10 +1047,8 @@ button {
 .choice-row {
   display: flex;
   min-height: 48px;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: center;
-  gap: 2px;
+  align-items: center;
+  gap: 12px;
   padding: 8px 14px;
   color: var(--on-surface);
   text-align: start;
@@ -1060,9 +1058,26 @@ button {
   cursor: pointer;
 }
 
+.choice-copy {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+}
+
 .choice-row.is-selected {
-  border-color: var(--cta);
-  box-shadow: inset 0 0 0 1px var(--cta);
+  color: var(--on-primary-container);
+  background: var(--primary-container);
+  border-color: var(--primary-container);
+}
+
+.choice-row.is-selected .choice-hint {
+  color: var(--on-primary-container);
+}
+
+.choice-tick {
+  flex: none;
 }
 
 .choice-title {
@@ -1123,4 +1138,266 @@ button {
 
 .credits .field-hint {
   margin: 8px 0 0;
+}
+
+/* Step 6 (U8, U9, U10, U11, U13): Settings is one screen of rows inside group cards.
+   The header stays put and the list scrolls, so the back arrow is always reachable. */
+
+.settings {
+  display: flex;
+  height: 600px;
+  flex-direction: column;
+}
+
+.settings-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 12px 4px;
+}
+
+.settings-title {
+  margin: 0;
+  font-size: 22px;
+  line-height: 1.3;
+}
+
+.settings-scroll {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 12px;
+  padding: 8px 16px 24px;
+  overflow-y: auto;
+}
+
+.group-card {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px;
+  background: var(--surface);
+  border: 1px solid var(--card-outline);
+  border-radius: 24px;
+  box-shadow: var(--shadow);
+}
+
+.group-card > .group-title {
+  padding: 6px 8px 4px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 64px;
+  padding: 16px 12px;
+  color: var(--on-surface);
+  text-align: start;
+  background: transparent;
+  border: 0;
+  border-radius: 14px;
+  cursor: pointer;
+}
+
+.row-icon {
+  display: grid;
+  flex: none;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  color: var(--on-secondary-container);
+  background: var(--secondary-container);
+  border-radius: 10px;
+}
+
+.row-copy {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.row-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.row-value {
+  margin: 0;
+  color: var(--on-surface-variant);
+  font-size: 14px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.row-chevron {
+  flex: none;
+  color: var(--on-surface-variant);
+}
+
+/* A sheet's body is the scrollable content between the header and the foot. */
+.sheet-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.credit-line {
+  margin: 0;
+  color: var(--on-surface);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Settings notices. Scoped apart from the dismissable Times notice so they never pick
+   up its top margin or the space it reserves for a close button. */
+
+.settings-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 24px;
+}
+
+.settings-notice-warning {
+  color: var(--on-accent-container);
+  background: var(--accent-container);
+}
+
+.settings-notice-warning .settings-notice-mark {
+  color: var(--accent);
+}
+
+.settings-notice-quiet {
+  color: var(--on-secondary-container);
+  background: var(--secondary-container);
+}
+
+.settings-notice-quiet .settings-notice-mark {
+  color: var(--on-secondary-container);
+}
+
+.settings-notice-mark {
+  flex: none;
+  width: 24px;
+  height: 24px;
+}
+
+.settings-notice-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.settings-notice-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.settings-notice-line {
+  margin: 4px 0 0;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.settings-notice-details {
+  margin: 4px 0 0;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+/* Calculation method sheet. */
+
+.method-body {
+  gap: 16px;
+}
+
+.method-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.method-group-title {
+  margin: 0;
+  color: var(--on-surface-variant);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.method-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.method-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  color: var(--on-surface);
+  text-align: start;
+  background: var(--surface);
+  border: 1px solid var(--outline-variant);
+  border-radius: 14px;
+  cursor: pointer;
+}
+
+.method-row.is-selected {
+  color: var(--on-primary-container);
+  background: var(--primary-container);
+  border-color: var(--primary-container);
+}
+
+.method-copy {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.method-name {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.method-hint {
+  color: var(--on-surface-variant);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.method-row.is-selected .method-hint {
+  color: var(--on-primary-container);
+}
+
+.method-times {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin-top: 4px;
+  font-variant-numeric: tabular-nums;
+}
+
+.method-time {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* Chevrons and the back arrow mirror in a right-to-left reading direction. */
+[dir='rtl'] .row-chevron,
+[dir='rtl'] .back-button svg {
+  transform: scaleX(-1);
 }

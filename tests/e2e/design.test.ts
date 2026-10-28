@@ -41,7 +41,7 @@ test('every control on every screen has a 44px target', async () => {
     await extension.page.getByRole('button', { name: 'Settings' }).click();
     expect(await undersizedControls(extension.page)).toEqual([]);
 
-    await extension.page.getByRole('button', { name: 'Change' }).click();
+    await extension.page.locator('[data-row="place"]').click();
     await expect(extension.page.getByRole('heading', { name: 'Location' })).toBeVisible();
     expect(await undersizedControls(extension.page)).toEqual([]);
   } finally {

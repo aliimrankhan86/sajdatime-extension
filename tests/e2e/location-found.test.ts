@@ -29,7 +29,7 @@ test('the Location sheet confirms the town and Done goes back to Settings', asyn
     await expect(extension.page.locator('.place')).toHaveText('London');
 
     await extension.page.getByRole('button', { name: 'Settings' }).click();
-    await extension.page.getByRole('button', { name: 'Change' }).click();
+    await extension.page.locator('[data-row="place"]').click();
     await expect(extension.page.getByRole('heading', { name: 'Location' })).toBeVisible();
 
     // The same confirmation as the first run, with Done in place of Continue, and the
@@ -47,8 +47,8 @@ test('the Location sheet confirms the town and Done goes back to Settings', asyn
 
     await done.click();
     await expect(extension.page.getByRole('heading', { name: 'Settings' })).toBeVisible();
-    await expect(extension.page.locator('.setting-title')).toHaveText('Leeds');
-    await expect(extension.page.getByRole('button', { name: 'Change' })).toBeFocused();
+    await expect(extension.page.locator('[data-row="place"] .row-title')).toHaveText('Leeds');
+    await expect(extension.page.locator('[data-row="place"]')).toBeFocused();
 
     const stored = await extension.page.evaluate(async () =>
       chrome.storage.local.get('sajdatime.settings.v1'),
@@ -76,7 +76,7 @@ test('pressing Close while the confirmation is showing saves the found place', a
     await expect(extension.page.locator('.place')).toHaveText('London');
 
     await extension.page.getByRole('button', { name: 'Settings' }).click();
-    await extension.page.getByRole('button', { name: 'Change' }).click();
+    await extension.page.locator('[data-row="place"]').click();
     await expect(extension.page.getByRole('heading', { name: 'Location' })).toBeVisible();
 
     await extension.page.getByRole('button', { name: 'Use my location' }).click();
@@ -87,7 +87,7 @@ test('pressing Close while the confirmation is showing saves the found place', a
     // Close commits the place the panel just confirmed, instead of discarding it.
     await extension.page.getByRole('button', { name: 'Close location' }).click();
     await expect(extension.page.getByRole('heading', { name: 'Settings' })).toBeVisible();
-    await expect(extension.page.locator('.setting-title')).toHaveText('Leeds');
+    await expect(extension.page.locator('[data-row="place"] .row-title')).toHaveText('Leeds');
 
     const stored = await extension.page.evaluate(async () =>
       chrome.storage.local.get('sajdatime.settings.v1'),

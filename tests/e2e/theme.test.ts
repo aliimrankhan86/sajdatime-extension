@@ -124,6 +124,7 @@ test('the Theme selector stores System, Light and Dark', async () => {
   try {
     await seedSettings(extension);
     await extension.page.getByRole('button', { name: 'Settings' }).click();
+    await extension.page.locator('[data-row="theme"]').click();
     const group = extension.page.getByRole('group', { name: 'Theme' });
     await expect(group.getByRole('button', { name: 'System' })).toHaveAttribute(
       'aria-pressed',
@@ -159,6 +160,7 @@ test('a setting saved before themes existed becomes System', async () => {
     expect((await themeState(extension.page)).theme).toBe('dark');
 
     await extension.page.getByRole('button', { name: 'Settings' }).click();
+    await extension.page.locator('[data-row="theme"]').click();
     await expect(
       extension.page.getByRole('group', { name: 'Theme' }).getByRole('button', { name: 'System' }),
     ).toHaveAttribute('aria-pressed', 'true');

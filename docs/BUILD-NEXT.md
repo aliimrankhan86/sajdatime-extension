@@ -6,6 +6,8 @@
 
 This brief turns three requests into four steps: 1, 2, 3a and 3b. Each step is one commit, pushed to `main`. **After each step, stop and report. Claude reviews it before the next step starts.** Do not run ahead.
 
+**Status note, 28 October 2026:** this brief covers only Steps 1 to 3b. Steps 5 (the Times screen re-plan) and 6 (the Settings restructure) of [`docs/UX-PLAN.md`](UX-PLAN.md) were briefed separately and are built; see `docs/DECISIONS.md` D-032, D-033 and D-034 and the top of `docs/HANDOVER.md`.
+
 `docs/PLAN.md` is the full design. This brief says which parts of it to build now, and decides the points the plan leaves open. Where this brief and `PLAN.md` disagree, this brief wins for these steps. Where `DECISIONS.md` disagrees with either, `DECISIONS.md` wins.
 
 ## Rules for every step

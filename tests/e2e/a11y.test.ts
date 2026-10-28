@@ -65,7 +65,7 @@ test('Settings and Location have no WCAG 2.2 AA violations', async () => {
     await setTheme(extension.page, 'dark');
     expectNoViolations(await audit(extension.page));
 
-    await extension.page.getByRole('button', { name: 'Change' }).click();
+    await extension.page.locator('[data-row="place"]').click();
     await expect(extension.page.getByRole('heading', { name: 'Location' })).toBeVisible();
     expectNoViolations(await audit(extension.page));
   } finally {
@@ -99,7 +99,7 @@ test('Settings with the Alerts group open has no WCAG 2.2 AA violations', async 
     });
     await extension.page.getByRole('button', { name: 'Settings' }).click();
     await expect(extension.page.getByRole('heading', { name: 'Alerts' })).toBeVisible();
-    await expect(extension.page.getByRole('heading', { name: 'Sound' })).toBeVisible();
+    await expect(extension.page.getByRole('button', { name: 'Sound, Soft beep' })).toBeVisible();
     expectNoViolations(await audit(extension.page));
 
     await setTheme(extension.page, 'dark');

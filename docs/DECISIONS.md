@@ -341,3 +341,29 @@ Superseded in part by D-033 (Step 5 review): the one-line countdown note, the 20
 
 **Revisit if:** a later step shortens or removes the notice, which would let the rows or the countdown grow again, or Step 6 gives the Times rows back their height.
 
+## D-034: the Settings restructure (Step 6)
+
+**Decided:** Step 6 rebuilt Settings as one scrollable screen of `Row`s grouped into cards, exactly as `docs/UX-PLAN.md` §4 and §6 write it. The frozen Times screen, hero, notice and footer are untouched; only the Settings DOM, its sheet components and the e2e selectors that drove the old `<select>` and inline controls changed.
+
+The new layout, top to bottom: a header (back arrow "Back to times", title "Settings"), then a fixed-height 600 px column whose inner `.settings-scroll` scrolls, holding these group cards:
+
+- **Disclaimer** (its own card, first, never moved — U8 wins over U11's old About list): one Row, title "Disclaimer", value "A helper, not a religious authority. Worth reading.", opening a full-text Sheet titled "Disclaimer" whose body is the single-paragraph extension disclaimer ending with the dua request.
+- **Place**: one Row opening the existing LocationSheet; focus returns to the Place row on close.
+- **Prayer times**: School (Segmented Sunni/Shia), Asr school (Segmented Shafi'i/Hanafi, hidden for Shia methods), Calculation method, Hijri date (stepper).
+- **Ramadan**: the existing switch, only while `showRamadan` holds.
+- **Alerts**: a never-closable amber Notice while notifications are denied ("Prayer alerts are blocked"), the master switch, five prayer switches, the Sound Row, "Send a test alert", the field hint and a quiet Notice ("<browser> needs to be open").
+- **Appearance**: Theme (Segmented System/Light/Dark).
+- **About**: Privacy policy (Row opening the page in a new tab), Credits (Row opening a Sheet with the GeoNames, adhan-js and adhan-recording attributions), Version (plain-value Row, no chevron).
+
+Components added under `src/popup/components/`: `Row` (36 px icon tile, title over value, chevron, whole row is the button, `data-row` and `aria-label="${title}, ${value}"`), `Sheet` (title top start, close X alone top end, content, "Done" at the foot, focus moves in and returns to the row, Escape closes), `ChoiceRow`, `Segmented`, and a `Notice` that uses **distinct `settings-notice*` class names** so it cannot collide with the frozen Times `.notice*` classes.
+
+The method Sheet (U13) is the only one without a Done button: choosing a method saves and closes immediately. It shows each offered method with the phone's exact name and description plus "Fajr {time} · Isha {time}" for today in the current place, grouped "Suggested for <country>" (suggested + alternatives) then **Europe** (Moonsighting, Muslim World League, ISNA, Diyanet), **Middle East and Africa** (Umm al-Qura, Egyptian, Dubai, Kuwait, Qatar), **South and East Asia** (Karachi, Singapore), **Shia** (Jafari, Tehran). For a Shia sect the sheet shows only the Shia group.
+
+**Why:** U8 demands the disclaimer be first and never moved, so it is its own first card and no duplicate sits in About. U9 makes every setting a row with a sheet, so the old inline `<select>`s and inline choice list go. U13 wants the method list comparable against today's Fajr and Isha, which is why each row carries the two times and the sheet has no Done. The distinct `settings-notice*` classes keep Step 5's frozen `.notice*` styling and `notices.test.ts` untouched. The 600 px fixed column plus an inner scroll lets Settings and the method sheet scroll (PLAN §6.4) while every other screen still fits with no scroll.
+
+**Resolved before implementation (flag to reviewer):** the region mapping above, the phone-exact method names and descriptions in `METHOD_NAMES`/`METHOD_HINTS`, the material-outlined icon set (Info/Pin/School/Clock/Tune/Calendar/Note/Contrast/Lock/Person/Phone), and the switch rows keeping their existing `.switch-row`/`.switch` pattern without icon tiles (only chevron rows get the 36 px tile). "Send a test alert" stays an inline solid button in the Alerts card.
+
+**Verified:** `npm run check` (250 unit tests, strict typecheck, build, bundle scan) passes. The e2e suite, axe in both themes, the Settings fit/scroll measurements and the screenshots are in `docs/images/settings-*.png` (light, dark and 200% zoom for Settings and each sheet).
+
+**Revisit if:** a later step adds a row whose sheet needs different footing, or the phone adds a method name or region the extension does not yet carry.
+

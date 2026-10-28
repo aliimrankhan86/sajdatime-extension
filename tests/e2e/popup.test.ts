@@ -268,8 +268,8 @@ test('saves a calculation method chosen in Settings', async () => {
   try {
     await seedSettings(extension);
     await extension.page.getByRole('button', { name: 'Settings' }).click();
-    await extension.page.locator('#method').selectOption('umm-al-qura');
-    await expect(extension.page.locator('#method')).toHaveValue('umm-al-qura');
+    await extension.page.locator('[data-row="method"]').click();
+    await extension.page.getByRole('button', { name: 'Umm al-Qura, Makkah' }).click();
     const stored = await extension.page.evaluate(async () => {
       const value = await chrome.storage.local.get('sajdatime.settings.v1');
       return value['sajdatime.settings.v1'] as { method: string };
