@@ -42,6 +42,18 @@ const SOURCE_PATTERNS = [
   ['R4', /\bon(?:Message|Connect)External\b/, 'external messaging'],
 ];
 
+/**
+ * UX-PLAN section 5.2. One token file owns every colour, and no stylesheet or component
+ * may set uppercase or !important. tokens.css is the only file allowed to name a colour.
+ */
+const STYLE_PATTERNS = [
+  ['U1', /#[0-9a-fA-F]{3,8}\b/, 'a literal colour outside tokens.css'],
+  ['U3', /text-transform\s*:/, 'text-transform'],
+  ['U3', /!important/, '!important'],
+];
+
+const TOKEN_FILE = 'src/popup/tokens.css';
+
 function filesUnder(directory, extensions) {
   const found = [];
   for (const entry of readdirSync(join(ROOT, directory), { withFileTypes: true })) {
@@ -76,6 +88,14 @@ for (const file of bundle) {
 for (const file of filesUnder('src', ['.ts', '.tsx'])) {
   const text = readFileSync(join(ROOT, file), 'utf8');
   for (const [rule, pattern, name] of SOURCE_PATTERNS) {
+    if (pattern.test(text)) report(rule, relative('.', join(ROOT, file)), `contains ${name}`);
+  }
+}
+
+for (const file of filesUnder('src', ['.css', '.ts', '.tsx'])) {
+  if (file === TOKEN_FILE) continue;
+  const text = readFileSync(join(ROOT, file), 'utf8');
+  for (const [rule, pattern, name] of STYLE_PATTERNS) {
     if (pattern.test(text)) report(rule, relative('.', join(ROOT, file)), `contains ${name}`);
   }
 }

@@ -21,5 +21,6 @@ export function firstSettings(place: Place): Settings {
     hijriOffsetDays: 0,
     alerts: DEFAULT_ALERTS,
     ramadanCard: true,
+    theme: 'system',
   };
 }

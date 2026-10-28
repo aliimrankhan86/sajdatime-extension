@@ -114,7 +114,18 @@ export const LONDON = {
     prayers: { fajr: true, dhuhr: true, asr: true, maghrib: true, isha: true },
   },
   ramadanCard: true,
+  theme: 'system',
 };
+
+/**
+ * Paints a theme directly. Tests that care about the stored-setting pipeline use the
+ * theme test instead; this is for checking rendering, contrast and targets in dark.
+ */
+export async function setTheme(page: Page, theme: 'light' | 'dark'): Promise<void> {
+  await page.evaluate((next) => {
+    document.documentElement.dataset.theme = next;
+  }, theme);
+}
 
 export async function seedSettings(
   extension: Extension,

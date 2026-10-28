@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { launchExtension, screenshot, seedSettings } from './extension';
+import { LONDON, launchExtension, screenshot, seedSettings } from './extension';
 import { countdownLineCount, undersizedControls } from './measures';
 
 test('shows a Now pill on the current prayer and a Next pill on the next', async () => {
@@ -93,8 +93,8 @@ test('keeps the popup readable at 200 percent zoom', async () => {
 test('dark mode uses a flat card and stays complete', async () => {
   const extension = await launchExtension();
   try {
-    await extension.page.emulateMedia({ colorScheme: 'dark' });
-    await seedSettings(extension);
+    await seedSettings(extension, new Date('2026-10-27T11:00:00Z'), { ...LONDON, theme: 'dark' });
+    expect(await undersizedControls(extension.page)).toEqual([]);
     await expect(extension.page.locator('.time-row')).toHaveCount(6);
     const shadow = await extension.page
       .locator('.next-card')
@@ -111,6 +111,10 @@ test('dark mode uses a flat card and stays complete', async () => {
     }));
     expect(sizes.scrollHeight).toBeLessThanOrEqual(sizes.clientHeight);
     await screenshot(extension.page, 'docs/images/times-dark.png');
+
+    await extension.page.getByRole('button', { name: 'Settings' }).click();
+    expect(await undersizedControls(extension.page)).toEqual([]);
+    await screenshot(extension.page, 'docs/images/settings-dark.png');
   } finally {
     await extension.close();
   }

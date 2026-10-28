@@ -12,6 +12,10 @@ export interface Place {
   countryCode: string;
 }
 
+export const THEMES = ['system', 'light', 'dark'] as const;
+
+export type Theme = (typeof THEMES)[number];
+
 export const ALERT_SOUNDS = ['beep', 'adhan', 'silent'] as const;
 
 export type AlertSound = (typeof ALERT_SOUNDS)[number];
@@ -38,6 +42,8 @@ export interface Settings {
   hijriOffsetDays: number;
   alerts: AlertsSettings;
   ramadanCard: boolean;
+  /** System follows the computer. System is the default, and a migration adds it. */
+  theme: Theme;
 }
 
 export const SETTINGS_KEY = 'sajdatime.settings.v1';
@@ -61,6 +67,9 @@ export function migrateSettings(value: unknown): unknown {
   }
   if (candidate.ramadanCard === undefined) {
     result = { ...result, ramadanCard: true };
+  }
+  if (candidate.theme === undefined) {
+    result = { ...result, theme: 'system' };
   }
   return result;
 }
@@ -93,7 +102,8 @@ export function isSettings(value: unknown): value is Settings {
     candidate.hijriOffsetDays >= -2 &&
     candidate.hijriOffsetDays <= 2 &&
     isAlertsSettings(candidate.alerts) &&
-    typeof candidate.ramadanCard === 'boolean'
+    typeof candidate.ramadanCard === 'boolean' &&
+    THEMES.includes(candidate.theme as Theme)
   );
 }
 

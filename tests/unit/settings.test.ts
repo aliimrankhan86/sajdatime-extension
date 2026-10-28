@@ -17,6 +17,7 @@ const LONDON = {
   hijriOffsetDays: 0,
   alerts: DEFAULT_ALERTS,
   ramadanCard: true,
+  theme: 'system',
 } as const;
 
 function changed(overrides: Record<string, unknown>): unknown {
@@ -80,6 +81,13 @@ describe('stored settings', () => {
     expect(isSettings(changed({ ramadanCard: 'yes' }))).toBe(false);
     expect(isSettings(changed({ ramadanCard: true }))).toBe(true);
   });
+
+  it('rejects an unknown theme and accepts the three known ones', () => {
+    expect(isSettings(changed({ theme: 'sepia' }))).toBe(false);
+    expect(isSettings(changed({ theme: 'system' }))).toBe(true);
+    expect(isSettings(changed({ theme: 'light' }))).toBe(true);
+    expect(isSettings(changed({ theme: 'dark' }))).toBe(true);
+  });
 });
 
 describe('alerts migration', () => {
@@ -108,6 +116,19 @@ describe('ramadan card migration', () => {
   });
 });
 
+describe('theme migration', () => {
+  it('adds System to an old setting without a theme', () => {
+    const old = { ...LONDON };
+    delete (old as { theme?: unknown }).theme;
+    expect(migrateSettings(old)).toEqual(LONDON);
+  });
+
+  it('keeps an explicit theme after migration', () => {
+    const old = { ...LONDON, theme: 'dark' };
+    expect(migrateSettings(old)).toEqual({ ...LONDON, theme: 'dark' });
+  });
+});
+
 describe('first settings', () => {
   it('uses the Muslim World League when the country is unknown', () => {
     const settings = firstSettings({ ...LONDON.place, countryCode: 'ZZ' });
@@ -116,6 +137,7 @@ describe('first settings', () => {
     expect(settings.alerts).toEqual(DEFAULT_ALERTS);
     expect(settings.alerts.enabled).toBe(false);
     expect(settings.ramadanCard).toBe(true);
+    expect(settings.theme).toBe('system');
   });
 
   it('uses the place country when it is known', () => {

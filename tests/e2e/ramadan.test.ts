@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { launchExtension, LONDON, screenshot, seedSettings } from './extension';
+import { launchExtension, LONDON, screenshot, seedSettings, setTheme } from './extension';
 
 // Ramadan 1448 runs from 8 February to 8 March 2027 (29 days). Day 13 is
 // 20 February 2027, the date these tests seed so the labels are visible.
@@ -29,7 +29,7 @@ test('inside Ramadan the hero and rows change to suhoor and iftar', async () => 
     expect(sizes.scrollHeight).toBeLessThanOrEqual(sizes.clientHeight);
 
     await screenshot(extension.page, 'docs/images/times-ramadan-light.png');
-    await extension.page.emulateMedia({ colorScheme: 'dark' });
+    await setTheme(extension.page, 'dark');
     await screenshot(extension.page, 'docs/images/times-ramadan-dark.png');
   } finally {
     await extension.close();

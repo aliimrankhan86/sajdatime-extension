@@ -1,0 +1,1250 @@
+{
+  "$description": "SajdaTime colour tokens, release 1.6. Generated from and tested against app/src/main/java/com/sajdatime/app/ui/theme/Color.kt by DesignTokensTest. Hex is #RRGGBB, or #RRGGBBAA when translucent (CSS and iOS order; Kotlin writes 0xAARRGGBB). Change the Kotlin and this file in the same commit, or the build fails.",
+  "roles": {
+    "primary": {
+      "$type": "color",
+      "m3Role": "primary",
+      "light": {
+        "$value": "#0B5A43",
+        "kotlin": "LightPrimary"
+      },
+      "dark": {
+        "$value": "#4FC48F",
+        "kotlin": "DarkPrimary"
+      },
+      "usage": "Identity green. Next prayer accent bar and Next pill, Qibla needle, N letter and aligned bezel, Hijri date on the sky, links (Close, Got it). Never decoration, never a large fill behind white text in dark (use cta)."
+    },
+    "onPrimary": {
+      "$type": "color",
+      "m3Role": "onPrimary",
+      "light": {
+        "$value": "#FFFFFF",
+        "kotlin": "LightOnPrimary"
+      },
+      "dark": {
+        "$value": "#062117",
+        "kotlin": "DarkOnPrimary"
+      },
+      "usage": "Text and icons on a primary fill (the Next pill)."
+    },
+    "primaryContainer": {
+      "$type": "color",
+      "m3Role": "primaryContainer",
+      "light": {
+        "$value": "#D7EAE0",
+        "kotlin": "LightPrimaryContainer"
+      },
+      "dark": {
+        "$value": "#143028",
+        "kotlin": "DarkPrimaryContainer"
+      },
+      "usage": "Highlight: the next prayer row, the aligned Qibla dial face, middle stop of the dark hero card."
+    },
+    "onPrimaryContainer": {
+      "$type": "color",
+      "m3Role": "onPrimaryContainer",
+      "light": {
+        "$value": "#0F2A1F",
+        "kotlin": "LightOnPrimaryContainer"
+      },
+      "dark": {
+        "$value": "#8FD9B8",
+        "kotlin": "DarkOnPrimaryContainer"
+      },
+      "usage": "Text on primaryContainer; the dark hero card's label."
+    },
+    "secondary": {
+      "$type": "color",
+      "m3Role": "secondary",
+      "light": {
+        "$value": "#3E5C4C",
+        "kotlin": "LightSecondary"
+      },
+      "dark": {
+        "$value": "#B8C4BE",
+        "kotlin": "DarkSecondary"
+      },
+      "usage": "Muted green text: the dark hero card's time line."
+    },
+    "onSecondary": {
+      "$type": "color",
+      "m3Role": "onSecondary",
+      "light": {
+        "$value": "#FFFFFF",
+        "kotlin": "LightOnSecondary"
+      },
+      "dark": {
+        "$value": "#1F352C",
+        "kotlin": "DarkOnSecondary"
+      },
+      "usage": "Text on a secondary fill (rare)."
+    },
+    "secondaryContainer": {
+      "$type": "color",
+      "m3Role": "secondaryContainer",
+      "light": {
+        "$value": "#CDE3D7",
+        "kotlin": "LightSecondaryContainer"
+      },
+      "dark": {
+        "$value": "#1E4034",
+        "kotlin": "DarkSecondaryContainer"
+      },
+      "usage": "Selected tab pill, Now pill, quiet notice fill, Settings row icon tile. Must be set or Material falls back to lilac."
+    },
+    "onSecondaryContainer": {
+      "$type": "color",
+      "m3Role": "onSecondaryContainer",
+      "light": {
+        "$value": "#12372A",
+        "kotlin": "LightOnSecondaryContainer"
+      },
+      "dark": {
+        "$value": "#8FD9B8",
+        "kotlin": "DarkOnSecondaryContainer"
+      },
+      "usage": "Text and icons on secondaryContainer."
+    },
+    "accent": {
+      "$type": "color",
+      "m3Role": "tertiary",
+      "light": {
+        "$value": "#9A6208",
+        "kotlin": "LightAccent"
+      },
+      "dark": {
+        "$value": "#E8B14A",
+        "kotlin": "DarkAccent"
+      },
+      "usage": "Warning amber only: warning icon, warning notice button fill. Never decoration, never the Kaaba gold."
+    },
+    "onAccent": {
+      "$type": "color",
+      "m3Role": "onTertiary",
+      "light": {
+        "$value": "#FFFFFF",
+        "kotlin": "LightOnAccent"
+      },
+      "dark": {
+        "$value": "#3A2A00",
+        "kotlin": "DarkOnAccent"
+      },
+      "usage": "Label on the amber button. Dark is #3A2A00, not white (white on #E8B14A is about 1.9:1): the one exception to white button text."
+    },
+    "accentContainer": {
+      "$type": "color",
+      "m3Role": "tertiaryContainer",
+      "light": {
+        "$value": "#FBF1DC",
+        "kotlin": "LightAccentContainer"
+      },
+      "dark": {
+        "$value": "#2A2113",
+        "kotlin": "DarkAccentContainer"
+      },
+      "usage": "Warning notice fill (middle stop of the warning gloss)."
+    },
+    "onAccentContainer": {
+      "$type": "color",
+      "m3Role": "onTertiaryContainer",
+      "light": {
+        "$value": "#5A4408",
+        "kotlin": "LightOnAccentContainer"
+      },
+      "dark": {
+        "$value": "#F3E4C5",
+        "kotlin": "DarkOnAccentContainer"
+      },
+      "usage": "Text inside a warning notice."
+    },
+    "background": {
+      "$type": "color",
+      "m3Role": "background",
+      "light": {
+        "$value": "#F7F5F3",
+        "kotlin": "LightBackground"
+      },
+      "dark": {
+        "$value": "#101312",
+        "kotlin": "DarkBackground"
+      },
+      "usage": "The page behind everything; the foot of every sky."
+    },
+    "onBackground": {
+      "$type": "color",
+      "m3Role": "onBackground",
+      "light": {
+        "$value": "#1B211E",
+        "kotlin": "LightOnBackground"
+      },
+      "dark": {
+        "$value": "#E7EAE8",
+        "kotlin": "DarkOnBackground"
+      },
+      "usage": "Text directly on the page."
+    },
+    "surface": {
+      "$type": "color",
+      "m3Role": "surface",
+      "light": {
+        "$value": "#FDFCFB",
+        "kotlin": "LightSurface"
+      },
+      "dark": {
+        "$value": "#171B1A",
+        "kotlin": "DarkSurface"
+      },
+      "usage": "Cards, list containers, the glass tab bar (at glassBarAlpha). Light bezel of the Qibla dial."
+    },
+    "onSurface": {
+      "$type": "color",
+      "m3Role": "onSurface",
+      "light": {
+        "$value": "#1B211E",
+        "kotlin": "LightOnSurface"
+      },
+      "dark": {
+        "$value": "#E7EAE8",
+        "kotlin": "DarkOnSurface"
+      },
+      "usage": "Body text, prayer times, the city title, the Kaaba silhouette, close X."
+    },
+    "surfaceVariant": {
+      "$type": "color",
+      "m3Role": "surfaceVariant",
+      "light": {
+        "$value": "#EDEFE8",
+        "kotlin": "LightSurfaceVariant"
+      },
+      "dark": {
+        "$value": "#161A19",
+        "kotlin": "DarkSurfaceVariant"
+      },
+      "usage": "The Qibla dial face."
+    },
+    "onSurfaceVariant": {
+      "$type": "color",
+      "m3Role": "onSurfaceVariant",
+      "light": {
+        "$value": "#5A605C",
+        "kotlin": "LightOnSurfaceVariant"
+      },
+      "dark": {
+        "$value": "#A9B2AE",
+        "kotlin": "DarkOnSurfaceVariant"
+      },
+      "usage": "Secondary text, descriptions, icons, the Gregorian date, section titles in Settings."
+    },
+    "outline": {
+      "$type": "color",
+      "m3Role": "outline",
+      "light": {
+        "$value": "#757C77",
+        "kotlin": "LightOutline"
+      },
+      "dark": {
+        "$value": "#8B948F",
+        "kotlin": "DarkOutline"
+      },
+      "usage": "Chevrons, dial ticks, the facing tick. Holds 3:1 (WCAG 1.4.11)."
+    },
+    "outlineVariant": {
+      "$type": "color",
+      "m3Role": "outlineVariant",
+      "light": {
+        "$value": "#C9CFC9",
+        "kotlin": "LightOutlineVariant"
+      },
+      "dark": {
+        "$value": "#2A312E",
+        "kotlin": "DarkOutlineVariant"
+      },
+      "usage": "Decorative only: hairline row dividers, the dark card border. Below 3:1 on purpose; never for an icon or a meaningful boundary."
+    },
+    "error": {
+      "$type": "color",
+      "m3Role": "error",
+      "light": {
+        "$value": "#B3261E",
+        "kotlin": "LightError"
+      },
+      "dark": {
+        "$value": "#F2B8B5",
+        "kotlin": "DarkError"
+      },
+      "usage": "Set so Material never invents one. Not used for any app message: warnings are amber, destructive actions stay green and the words carry the warning."
+    },
+    "onError": {
+      "$type": "color",
+      "m3Role": "onError",
+      "light": {
+        "$value": "#FFFFFF",
+        "kotlin": "LightOnError"
+      },
+      "dark": {
+        "$value": "#601410",
+        "kotlin": "DarkOnError"
+      },
+      "usage": "Pair of error. Unused in app UI."
+    },
+    "surfaceContainerLowest": {
+      "$type": "color",
+      "m3Role": "surfaceContainerLowest",
+      "light": {
+        "$value": "#FFFFFF",
+        "kotlin": "LightSurfaceContainerLowest"
+      },
+      "dark": {
+        "$value": "#0B0D0C",
+        "kotlin": "DarkSurfaceContainerLowest"
+      },
+      "usage": "Lowest tonal step. Set so Material never falls back to lilac."
+    },
+    "surfaceContainerLow": {
+      "$type": "color",
+      "m3Role": "surfaceContainerLow",
+      "light": {
+        "$value": "#FAF8F5",
+        "kotlin": "LightSurfaceContainerLow"
+      },
+      "dark": {
+        "$value": "#141817",
+        "kotlin": "DarkSurfaceContainerLow"
+      },
+      "usage": "The dimmed Sunrise row."
+    },
+    "surfaceContainer": {
+      "$type": "color",
+      "m3Role": "surfaceContainer",
+      "light": {
+        "$value": "#F1EEE8",
+        "kotlin": "LightSurfaceContainer"
+      },
+      "dark": {
+        "$value": "#171B1A",
+        "kotlin": "DarkSurfaceContainer"
+      },
+      "usage": "Default container (Material components)."
+    },
+    "surfaceContainerHigh": {
+      "$type": "color",
+      "m3Role": "surfaceContainerHigh",
+      "light": {
+        "$value": "#EDEFE8",
+        "kotlin": "LightSurfaceContainerHigh"
+      },
+      "dark": {
+        "$value": "#1E2321",
+        "kotlin": "DarkSurfaceContainerHigh"
+      },
+      "usage": "Dialogs, bottom sheets, menus; the Now row fill."
+    },
+    "surfaceContainerHighest": {
+      "$type": "color",
+      "m3Role": "surfaceContainerHighest",
+      "light": {
+        "$value": "#E7E4DE",
+        "kotlin": "LightSurfaceContainerHighest"
+      },
+      "dark": {
+        "$value": "#262C29",
+        "kotlin": "DarkSurfaceContainerHighest"
+      },
+      "usage": "Highest tonal step; the dark Qibla bezel (dialBezel())."
+    },
+    "surfaceBright": {
+      "$type": "color",
+      "m3Role": "surfaceBright",
+      "light": {
+        "$value": "#FDFCFB",
+        "kotlin": "LightSurfaceBright"
+      },
+      "dark": {
+        "$value": "#2E3532",
+        "kotlin": "DarkSurfaceBright"
+      },
+      "usage": "Material role, set for completeness."
+    },
+    "surfaceDim": {
+      "$type": "color",
+      "m3Role": "surfaceDim",
+      "light": {
+        "$value": "#E7E4DE",
+        "kotlin": "LightSurfaceDim"
+      },
+      "dark": {
+        "$value": "#101312",
+        "kotlin": "DarkSurfaceDim"
+      },
+      "usage": "Material role, set for completeness."
+    },
+    "inverseSurface": {
+      "$type": "color",
+      "m3Role": "inverseSurface",
+      "light": {
+        "$value": "#2A322E",
+        "kotlin": "LightInverseSurface"
+      },
+      "dark": {
+        "$value": "#E7EAE8",
+        "kotlin": "DarkInverseSurface"
+      },
+      "usage": "Snackbar fill (Undo message)."
+    },
+    "inverseOnSurface": {
+      "$type": "color",
+      "m3Role": "inverseOnSurface",
+      "light": {
+        "$value": "#F0F2EE",
+        "kotlin": "LightInverseOnSurface"
+      },
+      "dark": {
+        "$value": "#171B1A",
+        "kotlin": "DarkInverseOnSurface"
+      },
+      "usage": "Snackbar text."
+    },
+    "inversePrimary": {
+      "$type": "color",
+      "m3Role": "inversePrimary",
+      "light": {
+        "$value": "#4FC48F",
+        "kotlin": "LightInversePrimary"
+      },
+      "dark": {
+        "$value": "#0B5A43",
+        "kotlin": "DarkInversePrimary"
+      },
+      "usage": "Snackbar action (Undo). Each theme's inversePrimary is the other theme's primary; move them together."
+    }
+  },
+  "brand": {
+    "cta": {
+      "$type": "color",
+      "light": {
+        "$value": "#0B5A43",
+        "kotlin": "LightCta"
+      },
+      "dark": {
+        "$value": "#17805A",
+        "kotlin": "DarkCta"
+      },
+      "usage": "Fill of every solid call to action button (CtaButton, ctaButtonColors, ctaIconButtonColors). Dark is its own green because dark primary cannot carry white text. White on it: light 8.2:1, dark 4.9:1."
+    },
+    "onCta": {
+      "$type": "color",
+      "$value": "#FFFFFF",
+      "kotlin": "OnCta",
+      "usage": "Label and icon on a cta fill, both themes. Always white, always bold."
+    },
+    "kiswah": {
+      "$type": "color",
+      "light": {
+        "$value": "#E8B14A",
+        "kotlin": "LightKiswah"
+      },
+      "dark": {
+        "$value": "#8A5807",
+        "kotlin": "DarkKiswah"
+      },
+      "usage": "DEPICTIVE, not semantic. Gold of the Kaaba's hizam and door, drawn only on the onSurface silhouette. Never alias to accent. Read through kiswahGold(). Wear carries its own copy in WearTheme.kt."
+    }
+  },
+  "gradients": {
+    "$description": "Fixed gradients only. A gradient that moves with time or data is banned: its contrast cannot be asserted. Every ink on every stop is held to WCAG AA in ColorContrastTest.",
+    "hero": {
+      "light": {
+        "stops": [
+          {
+            "$type": "color",
+            "$value": "#D6E8DC",
+            "kotlin": "LightHeroStart",
+            "usage": "Top stop (mint)"
+          },
+          {
+            "$type": "color",
+            "$value": "#DDE2CE",
+            "kotlin": "LightHeroMiddle",
+            "usage": "Middle stop"
+          },
+          {
+            "$type": "color",
+            "$value": "#E4D2B4",
+            "kotlin": "LightHeroEnd",
+            "usage": "Bottom stop (sand)"
+          }
+        ],
+        "ink": {
+          "prominent": {
+            "$type": "color",
+            "$value": "#0A2419",
+            "kotlin": "LightOnHero",
+            "usage": "Countdown and prayer name"
+          },
+          "label": {
+            "$type": "color",
+            "$value": "#2C4A3C",
+            "kotlin": "LightOnHeroLabel",
+            "usage": "Section label (Next prayer)"
+          },
+          "secondary": {
+            "$type": "color",
+            "$value": "#3E5C4C",
+            "kotlin": "LightOnHeroSecondary",
+            "usage": "Time and until it begins"
+          }
+        },
+        "sheen": {
+          "$type": "color",
+          "$value": "#FFFFFF99",
+          "kotlin": "LightHeroSheen",
+          "usage": "White over the top half, fading out by the middle"
+        },
+        "rim": {
+          "$type": "color",
+          "$value": "#FFFFFFCC",
+          "kotlin": "LightHeroRim",
+          "usage": "1dp rim at the top"
+        },
+        "rimBottom": {
+          "$type": "color",
+          "$value": "#FFFFFF33",
+          "kotlin": "LightHeroRimBottom",
+          "usage": "Rim at the bottom"
+        },
+        "glow": {
+          "$type": "color",
+          "$value": "#0B5A4359",
+          "kotlin": "LightHeroGlow",
+          "usage": "Soft green shadow, 12dp, light only"
+        }
+      },
+      "dark": {
+        "stops": [
+          {
+            "$type": "color",
+            "$value": "#18382D",
+            "kotlin": "DarkHeroTop",
+            "usage": "Top stop"
+          },
+          {
+            "ref": "primaryContainer.dark",
+            "usage": "Middle stop is the primaryContainer role"
+          },
+          {
+            "$type": "color",
+            "$value": "#0F241D",
+            "kotlin": "DarkHeroBottom",
+            "usage": "Bottom stop"
+          }
+        ],
+        "ink": {
+          "prominent": {
+            "ref": "onSurface.dark"
+          },
+          "label": {
+            "ref": "onPrimaryContainer.dark"
+          },
+          "secondary": {
+            "ref": "secondary.dark"
+          }
+        },
+        "sheen": {
+          "$type": "color",
+          "$value": "#FFFFFF12",
+          "kotlin": "DarkHeroSheen",
+          "usage": "White over the top half (also used by the dark warning gloss)"
+        },
+        "rim": {
+          "$type": "color",
+          "$value": "#FFFFFF29",
+          "kotlin": "DarkHeroRim",
+          "usage": "1dp rim at the top"
+        },
+        "rimBottom": {
+          "$type": "color",
+          "$value": "#FFFFFF0A",
+          "kotlin": "DarkHeroRimBottom",
+          "usage": "Rim at the bottom"
+        },
+        "glow": {
+          "$value": "transparent",
+          "usage": "No shadow in dark"
+        }
+      }
+    },
+    "warningGloss": {
+      "light": {
+        "stops": [
+          {
+            "$type": "color",
+            "$value": "#FBF0D8",
+            "kotlin": "LightWarnTop",
+            "usage": "Top"
+          },
+          {
+            "ref": "accentContainer.light"
+          },
+          {
+            "$type": "color",
+            "$value": "#F3E2BE",
+            "kotlin": "LightWarnBottom",
+            "usage": "Bottom"
+          }
+        ],
+        "sheen": {
+          "ref": "hero.light.sheen"
+        },
+        "rim": {
+          "ref": "hero.light.rim"
+        }
+      },
+      "dark": {
+        "stops": [
+          {
+            "$type": "color",
+            "$value": "#352A17",
+            "kotlin": "DarkWarnTop",
+            "usage": "Top"
+          },
+          {
+            "ref": "accentContainer.dark"
+          },
+          {
+            "$type": "color",
+            "$value": "#20190D",
+            "kotlin": "DarkWarnBottom",
+            "usage": "Bottom"
+          }
+        ],
+        "sheen": {
+          "ref": "hero.dark.sheen"
+        },
+        "rim": {
+          "ref": "hero.dark.rim"
+        }
+      }
+    },
+    "sky": {
+      "$description": "DEPICTIVE. Behind the top of Times only (and the Next prayer widget body). Period from core Sky.periodOf: dawn Fajr to sunrise, day sunrise to Asr, evening Asr to Isha, night Isha to Fajr; no times means day. Inks: city onSurface; Gregorian date, arc, dots onSurfaceVariant; Hijri date, caret, glyph, passed arc primary. Nothing else sits on a sky.",
+      "light": {
+        "dawn": {
+          "top": {
+            "$type": "color",
+            "$value": "#EADFE3",
+            "kotlin": "LightSkyDawnTop",
+            "usage": "Dawn top"
+          },
+          "mid": {
+            "$type": "color",
+            "$value": "#F0E9EC",
+            "kotlin": "LightSkyDawnMid",
+            "usage": "Dawn middle"
+          },
+          "foot": {
+            "ref": "background.light"
+          }
+        },
+        "day": {
+          "top": {
+            "$type": "color",
+            "$value": "#D6E8DC",
+            "kotlin": "LightSkyDayTop",
+            "usage": "Day top"
+          },
+          "mid": {
+            "$type": "color",
+            "$value": "#E6EFE9",
+            "kotlin": "LightSkyDayMid",
+            "usage": "Day middle"
+          },
+          "foot": {
+            "ref": "background.light"
+          }
+        },
+        "evening": {
+          "top": {
+            "$type": "color",
+            "$value": "#ECD8BB",
+            "kotlin": "LightSkyEveningTop",
+            "usage": "Evening top"
+          },
+          "mid": {
+            "$type": "color",
+            "$value": "#F1E5D3",
+            "kotlin": "LightSkyEveningMid",
+            "usage": "Evening middle"
+          },
+          "foot": {
+            "ref": "background.light"
+          }
+        },
+        "night": {
+          "top": {
+            "$type": "color",
+            "$value": "#D0DBE1",
+            "kotlin": "LightSkyNightTop",
+            "usage": "Night top"
+          },
+          "mid": {
+            "$type": "color",
+            "$value": "#DFE6EA",
+            "kotlin": "LightSkyNightMid",
+            "usage": "Night middle"
+          },
+          "foot": {
+            "ref": "background.light"
+          }
+        },
+        "foot": {
+          "$type": "color",
+          "$value": "#F7F5F3",
+          "kotlin": "LightSkyFoot",
+          "usage": "Every sky's foot; must equal background"
+        }
+      },
+      "dark": {
+        "dawn": {
+          "top": {
+            "$type": "color",
+            "$value": "#231E2C",
+            "kotlin": "DarkSkyDawnTop",
+            "usage": "Dawn top"
+          },
+          "mid": {
+            "$type": "color",
+            "$value": "#171520",
+            "kotlin": "DarkSkyDawnMid",
+            "usage": "Dawn middle"
+          },
+          "foot": {
+            "ref": "background.dark"
+          }
+        },
+        "day": {
+          "top": {
+            "$type": "color",
+            "$value": "#17323A",
+            "kotlin": "DarkSkyDayTop",
+            "usage": "Day top"
+          },
+          "mid": {
+            "$type": "color",
+            "$value": "#13262B",
+            "kotlin": "DarkSkyDayMid",
+            "usage": "Day middle"
+          },
+          "foot": {
+            "ref": "background.dark"
+          }
+        },
+        "evening": {
+          "top": {
+            "$type": "color",
+            "$value": "#262A1E",
+            "kotlin": "DarkSkyEveningTop",
+            "usage": "Evening top"
+          },
+          "mid": {
+            "$type": "color",
+            "$value": "#181B15",
+            "kotlin": "DarkSkyEveningMid",
+            "usage": "Evening middle"
+          },
+          "foot": {
+            "ref": "background.dark"
+          }
+        },
+        "night": {
+          "top": {
+            "$type": "color",
+            "$value": "#0B1730",
+            "kotlin": "DarkSkyNightTop",
+            "usage": "Night top"
+          },
+          "mid": {
+            "$type": "color",
+            "$value": "#0C1320",
+            "kotlin": "DarkSkyNightMid",
+            "usage": "Night middle"
+          },
+          "foot": {
+            "ref": "background.dark"
+          }
+        },
+        "foot": {
+          "$type": "color",
+          "$value": "#101312",
+          "kotlin": "DarkSkyFoot",
+          "usage": "Every sky's foot; must equal background"
+        }
+      }
+    }
+  },
+  "glassBarAlpha": {
+    "$type": "number",
+    "$value": 0.97,
+    "kotlin": "GlassBarAlpha",
+    "usage": "Opacity of the floating tab bar (surface). Owner chose 97% on 18 Oct 2026. Do not lower."
+  },
+  "widget": {
+    "$description": "Home screen widget colours, from app/src/main/res/values/colors.xml (light, and System under a light phone) and values-night/colors.xml (dark). The widget_light_* and widget_dark_* fixed copies used when the user picks Light or Dark are held equal to these by WidgetThemeTest and are not repeated. Tested by DesignTokensTest; ink contrast on every stop by WidgetColorsTest.",
+    "window_background": {
+      "$type": "color",
+      "androidRes": "window_background",
+      "light": {
+        "$value": "#F7F5F3"
+      },
+      "dark": {
+        "$value": "#101312"
+      },
+      "usage": "The app window before Compose draws, and the Android 12 splash background.",
+      "sameAsRole": "background"
+    },
+    "widget_surface": {
+      "$type": "color",
+      "androidRes": "widget_surface",
+      "light": {
+        "$value": "#FDFCFB"
+      },
+      "dark": {
+        "$value": "#171B1A"
+      },
+      "usage": "Middle stop of every paper widget body.",
+      "sameAsRole": "surface"
+    },
+    "widget_on_surface": {
+      "$type": "color",
+      "androidRes": "widget_on_surface",
+      "light": {
+        "$value": "#1B211E"
+      },
+      "dark": {
+        "$value": "#E7EAE8"
+      },
+      "usage": "Main widget ink: names, times, countdown.",
+      "sameAsRole": "onSurface"
+    },
+    "widget_on_surface_variant": {
+      "$type": "color",
+      "androidRes": "widget_on_surface_variant",
+      "light": {
+        "$value": "#5A605C"
+      },
+      "dark": {
+        "$value": "#A9B2AE"
+      },
+      "usage": "Secondary widget ink; row glyph tint; Sunrise.",
+      "sameAsRole": "onSurfaceVariant"
+    },
+    "widget_highlight": {
+      "$type": "color",
+      "androidRes": "widget_highlight",
+      "light": {
+        "$value": "#D7EAE0"
+      },
+      "dark": {
+        "$value": "#143028"
+      },
+      "usage": "Next row, location chip, foot of the countdown card. No on-highlight colour on purpose: highlighted rows keep ordinary inks.",
+      "sameAsRole": "primaryContainer"
+    },
+    "widget_primary": {
+      "$type": "color",
+      "androidRes": "widget_primary",
+      "light": {
+        "$value": "#0B5A43"
+      },
+      "dark": {
+        "$value": "#4FC48F"
+      },
+      "usage": "Chip ink, hero glyph, day bars. Held equal to LightPrimary / DarkPrimary by WidgetColorsTest.",
+      "sameAsRole": "primary"
+    },
+    "widget_outline_variant": {
+      "$type": "color",
+      "androidRes": "widget_outline_variant",
+      "light": {
+        "$value": "#C9CFC9"
+      },
+      "dark": {
+        "$value": "#2A312E"
+      },
+      "usage": "Hairline divider; to come bars on paper.",
+      "sameAsRole": "outlineVariant"
+    },
+    "widget_surface_top": {
+      "$type": "color",
+      "androidRes": "widget_surface_top",
+      "light": {
+        "$value": "#FFFFFF"
+      },
+      "dark": {
+        "$value": "#252C29"
+      },
+      "usage": "Top stop of the paper widget body (widget only)."
+    },
+    "widget_surface_bottom": {
+      "$type": "color",
+      "androidRes": "widget_surface_bottom",
+      "light": {
+        "$value": "#EEF1EC"
+      },
+      "dark": {
+        "$value": "#121514"
+      },
+      "usage": "Bottom stop of the paper widget body (widget only)."
+    },
+    "widget_highlight_top": {
+      "$type": "color",
+      "androidRes": "widget_highlight_top",
+      "light": {
+        "$value": "#E6F3EC"
+      },
+      "dark": {
+        "$value": "#18382D"
+      },
+      "usage": "Top stop of the large Today countdown card. Dark equals DarkHeroTop by value only (WidgetColorsTest holds a literal)."
+    },
+    "widget_sheen": {
+      "$type": "color",
+      "androidRes": "widget_sheen",
+      "light": {
+        "$value": "#FFFFFF00"
+      },
+      "dark": {
+        "$value": "#FFFFFF12"
+      },
+      "usage": "White over the top half: none in light (the top stop is already white), 7% in dark."
+    },
+    "widget_edge": {
+      "$type": "color",
+      "androidRes": "widget_edge",
+      "light": {
+        "$value": "#C9CFC9"
+      },
+      "dark": {
+        "$value": "#FFFFFF29"
+      },
+      "usage": "1dp rim: the opaque hairline in light, 16% white in dark."
+    },
+    "widget_sky_dawn_top": {
+      "$type": "color",
+      "androidRes": "widget_sky_dawn_top",
+      "light": {
+        "$value": "#EADFE3"
+      },
+      "dark": {
+        "$value": "#231E2C"
+      },
+      "usage": "Next prayer widget body, dawn sky top stop. Equals the phone sky token."
+    },
+    "widget_sky_dawn_mid": {
+      "$type": "color",
+      "androidRes": "widget_sky_dawn_mid",
+      "light": {
+        "$value": "#F0E9EC"
+      },
+      "dark": {
+        "$value": "#171520"
+      },
+      "usage": "Next prayer widget body, dawn sky mid stop. Equals the phone sky token."
+    },
+    "widget_sky_day_top": {
+      "$type": "color",
+      "androidRes": "widget_sky_day_top",
+      "light": {
+        "$value": "#D6E8DC"
+      },
+      "dark": {
+        "$value": "#17323A"
+      },
+      "usage": "Next prayer widget body, day sky top stop. Equals the phone sky token."
+    },
+    "widget_sky_day_mid": {
+      "$type": "color",
+      "androidRes": "widget_sky_day_mid",
+      "light": {
+        "$value": "#E6EFE9"
+      },
+      "dark": {
+        "$value": "#13262B"
+      },
+      "usage": "Next prayer widget body, day sky mid stop. Equals the phone sky token."
+    },
+    "widget_sky_evening_top": {
+      "$type": "color",
+      "androidRes": "widget_sky_evening_top",
+      "light": {
+        "$value": "#ECD8BB"
+      },
+      "dark": {
+        "$value": "#262A1E"
+      },
+      "usage": "Next prayer widget body, evening sky top stop. Equals the phone sky token."
+    },
+    "widget_sky_evening_mid": {
+      "$type": "color",
+      "androidRes": "widget_sky_evening_mid",
+      "light": {
+        "$value": "#F1E5D3"
+      },
+      "dark": {
+        "$value": "#181B15"
+      },
+      "usage": "Next prayer widget body, evening sky mid stop. Equals the phone sky token."
+    },
+    "widget_sky_night_top": {
+      "$type": "color",
+      "androidRes": "widget_sky_night_top",
+      "light": {
+        "$value": "#D0DBE1"
+      },
+      "dark": {
+        "$value": "#0B1730"
+      },
+      "usage": "Next prayer widget body, night sky top stop. Equals the phone sky token."
+    },
+    "widget_sky_night_mid": {
+      "$type": "color",
+      "androidRes": "widget_sky_night_mid",
+      "light": {
+        "$value": "#DFE6EA"
+      },
+      "dark": {
+        "$value": "#0C1320"
+      },
+      "usage": "Next prayer widget body, night sky mid stop. Equals the phone sky token."
+    },
+    "widget_sky_foot": {
+      "$type": "color",
+      "androidRes": "widget_sky_foot",
+      "light": {
+        "$value": "#F7F5F3"
+      },
+      "dark": {
+        "$value": "#101312"
+      },
+      "usage": "Foot of every sky on the Next prayer widget.",
+      "sameAsRole": "background"
+    },
+    "widget_sky_track": {
+      "$type": "color",
+      "androidRes": "widget_sky_track",
+      "light": {
+        "$value": "#5A605C4D"
+      },
+      "dark": {
+        "$value": "#A9B2AE4D"
+      },
+      "usage": "To come bars and the divider on a sky: onSurfaceVariant at 30%."
+    }
+  },
+  "wear": {
+    "$description": "Wear OS colours from wear/src/main/java/com/sajdatime/wear/WearTheme.kt. The watch has one scheme, always dark, and does not follow the phone's theme choice. Every role equals the phone's dark role except background, which is pure black for OLED. Tested by DesignTokensTest in both directions.",
+    "primary": {
+      "$type": "color",
+      "$value": "#4FC48F",
+      "phoneDarkRole": "primary"
+    },
+    "onPrimary": {
+      "$type": "color",
+      "$value": "#062117",
+      "phoneDarkRole": "onPrimary"
+    },
+    "primaryContainer": {
+      "$type": "color",
+      "$value": "#143028",
+      "phoneDarkRole": "primaryContainer"
+    },
+    "onPrimaryContainer": {
+      "$type": "color",
+      "$value": "#8FD9B8",
+      "phoneDarkRole": "onPrimaryContainer"
+    },
+    "secondary": {
+      "$type": "color",
+      "$value": "#B8C4BE",
+      "phoneDarkRole": "secondary"
+    },
+    "onSecondary": {
+      "$type": "color",
+      "$value": "#1F352C",
+      "phoneDarkRole": "onSecondary"
+    },
+    "secondaryContainer": {
+      "$type": "color",
+      "$value": "#1E4034",
+      "phoneDarkRole": "secondaryContainer"
+    },
+    "onSecondaryContainer": {
+      "$type": "color",
+      "$value": "#8FD9B8",
+      "phoneDarkRole": "onSecondaryContainer"
+    },
+    "tertiary": {
+      "$type": "color",
+      "$value": "#E8B14A",
+      "phoneDarkRole": "tertiary"
+    },
+    "onTertiary": {
+      "$type": "color",
+      "$value": "#3A2A00",
+      "phoneDarkRole": "onTertiary"
+    },
+    "tertiaryContainer": {
+      "$type": "color",
+      "$value": "#2A2113",
+      "phoneDarkRole": "tertiaryContainer"
+    },
+    "onTertiaryContainer": {
+      "$type": "color",
+      "$value": "#F3E4C5",
+      "phoneDarkRole": "onTertiaryContainer"
+    },
+    "surfaceContainerLow": {
+      "$type": "color",
+      "$value": "#141817",
+      "phoneDarkRole": "surfaceContainerLow"
+    },
+    "surfaceContainer": {
+      "$type": "color",
+      "$value": "#171B1A",
+      "phoneDarkRole": "surfaceContainer"
+    },
+    "surfaceContainerHigh": {
+      "$type": "color",
+      "$value": "#1E2321",
+      "phoneDarkRole": "surfaceContainerHigh"
+    },
+    "onSurface": {
+      "$type": "color",
+      "$value": "#E7EAE8",
+      "phoneDarkRole": "onSurface"
+    },
+    "onSurfaceVariant": {
+      "$type": "color",
+      "$value": "#A9B2AE",
+      "phoneDarkRole": "onSurfaceVariant"
+    },
+    "outline": {
+      "$type": "color",
+      "$value": "#8B948F",
+      "phoneDarkRole": "outline"
+    },
+    "outlineVariant": {
+      "$type": "color",
+      "$value": "#2A312E",
+      "phoneDarkRole": "outlineVariant"
+    },
+    "background": {
+      "$type": "color",
+      "$value": "#000000",
+      "usage": "Pure black, not the phone's #101312: OLED pixels switch off. The one deliberate difference."
+    },
+    "onBackground": {
+      "$type": "color",
+      "$value": "#E7EAE8",
+      "phoneDarkRole": "onBackground"
+    },
+    "error": {
+      "$type": "color",
+      "$value": "#F2B8B5",
+      "phoneDarkRole": "error"
+    },
+    "onError": {
+      "$type": "color",
+      "$value": "#601410",
+      "phoneDarkRole": "onError"
+    },
+    "kiswah": {
+      "$type": "color",
+      "$value": "#8A5807",
+      "wearKotlin": "Kiswah",
+      "phoneDarkRole": "brand.kiswah",
+      "usage": "The watch's copy of DarkKiswah."
+    }
+  },
+  "wearTile": {
+    "$description": "KNOWN GAP, recorded 25 Oct 2026, not fixed (a visible change needs the owner). The watch tile (NextPrayerTileService.kt) writes its own three colours and its comment says they are the phone's dark values; they are not (phone dark primary #4FC48F, onSurface #E7EAE8, onSurfaceVariant #A9B2AE). DesignTokensTest holds these values so they cannot change silently; aligning them is an owner decision.",
+    "COLOUR_PRIMARY": {
+      "$type": "color",
+      "$value": "#7FD1AE",
+      "usage": "Tile headline (prayer name)"
+    },
+    "COLOUR_ON_SURFACE": {
+      "$type": "color",
+      "$value": "#E8EEEA",
+      "usage": "Tile detail line"
+    },
+    "COLOUR_MUTED": {
+      "$type": "color",
+      "$value": "#B3C2BA",
+      "usage": "Tile label"
+    }
+  },
+  "assets": {
+    "$description": "Colours written into assets and the PDF rather than the theme. Each names the file that must contain it; DesignTokensTest checks the file still does. They do not follow primary on purpose.",
+    "iconGreen": {
+      "$type": "color",
+      "$value": "#0E6B4F",
+      "files": [
+        "app/src/main/res/drawable/ic_launcher_background.xml",
+        "app/src/main/res/drawable/widget_mark.xml",
+        "app/src/main/java/com/sajdatime/app/pdf/PrayerPdfExporter.kt"
+      ],
+      "usage": "Launcher icon background, the widget mark tile, the PDF logo and wordmark, the store icon. Moves only with an icon refresh."
+    },
+    "iconSand": {
+      "$type": "color",
+      "$value": "#F0D69A",
+      "files": [
+        "app/src/main/res/drawable/ic_launcher_foreground.xml",
+        "app/src/main/res/drawable/widget_mark.xml"
+      ],
+      "usage": "The mihrab and minarets mark on the icon. 4.57:1 on the icon green."
+    },
+    "legacyIconGreen": {
+      "$type": "color",
+      "$value": "#14624B",
+      "files": [
+        "app/src/main/res/mipmap/ic_launcher.xml",
+        "app/src/main/res/mipmap/ic_launcher_round.xml",
+        "wear/src/main/res/mipmap/ic_launcher.xml"
+      ],
+      "usage": "KNOWN GAP: the older green, still on the Android 7 launcher icon and the watch's own (non adaptive) icon."
+    },
+    "pdfTagline": {
+      "$type": "color",
+      "$value": "#6B6B6B",
+      "files": [
+        "app/src/main/java/com/sajdatime/app/pdf/PrayerPdfExporter.kt"
+      ],
+      "usage": "PDF tagline."
+    },
+    "pdfNote": {
+      "$type": "color",
+      "$value": "#555555",
+      "files": [
+        "app/src/main/java/com/sajdatime/app/pdf/PrayerPdfExporter.kt"
+      ],
+      "usage": "PDF notes, meta line, sub labels."
+    },
+    "pdfHairline": {
+      "$type": "color",
+      "$value": "#AAAAAA",
+      "files": [
+        "app/src/main/java/com/sajdatime/app/pdf/PrayerPdfExporter.kt"
+      ],
+      "usage": "PDF row separators, 0.4pt."
+    },
+    "pdfFooter": {
+      "$type": "color",
+      "$value": "#777777",
+      "files": [
+        "app/src/main/java/com/sajdatime/app/pdf/PrayerPdfExporter.kt"
+      ],
+      "usage": "PDF footer."
+    }
+  }
+}

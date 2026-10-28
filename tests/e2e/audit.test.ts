@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { launchExtension, screenshot, seedSettings } from './extension';
+import { launchExtension, screenshot, seedSettings, setTheme } from './extension';
 
 async function openSettings(page: import('@playwright/test').Page) {
   await page.getByRole('button', { name: 'Settings' }).click();
@@ -80,9 +80,8 @@ test('dark mode keeps every link readable', async () => {
   const extension = await launchExtension();
   try {
     await seedSettings(extension);
-    await extension.page.emulateMedia({ colorScheme: 'dark' });
-    await extension.page.reload();
     await openSettings(extension.page);
+    await setTheme(extension.page, 'dark');
     const privacy = extension.page.getByRole('link', { name: 'Privacy policy' });
     await privacy.scrollIntoViewIfNeeded();
     const colours = await privacy.evaluate((element) => {

@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { launchExtension, screenshot, seedSettings } from './extension';
+import { launchExtension, screenshot, seedSettings, setTheme } from './extension';
 import { countdownLineCount, undersizedControls } from './measures';
 
 test('shows the place, the next prayer and all six times', async () => {
@@ -126,6 +126,8 @@ test('first run asks for location, then saves the town it found', async () => {
     await expect(extension.page.locator('.welcome-note')).not.toContainText('keeps your location');
     await expect(extension.page.locator('.welcome-note')).not.toContainText('never leaves');
     await screenshot(extension.page, 'docs/images/first-run-light.png');
+    await setTheme(extension.page, 'dark');
+    await screenshot(extension.page, 'docs/images/first-run-dark.png');
 
     // The browser's own permission bubble cannot be driven from Playwright for an
     // extension origin, so this test supplies a known fix and checks what we do with it.
@@ -153,6 +155,8 @@ test('first run asks for location, then saves the town it found', async () => {
     const goOn = panel.getByRole('button', { name: 'Continue' });
     await expect(goOn).toBeFocused();
     await screenshot(extension.page, 'docs/images/location-found-light.png');
+    await setTheme(extension.page, 'dark');
+    await screenshot(extension.page, 'docs/images/location-found-dark.png');
 
     await goOn.click();
     await extension.page.waitForSelector('.next-card', { timeout: 20_000 });
@@ -225,6 +229,8 @@ test('keeps Settings visible and opens the sheet', async () => {
     await expect(extension.page.getByRole('heading', { name: 'Settings' })).toBeVisible();
     await expect(extension.page.getByRole('heading', { name: 'Place' })).toBeVisible();
     await screenshot(extension.page, 'docs/images/settings-light.png');
+    await setTheme(extension.page, 'dark');
+    await screenshot(extension.page, 'docs/images/settings-dark.png');
   } finally {
     await extension.close();
   }

@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
-import { launchExtension, screenshot, seedSettings } from './extension';
+import { launchExtension, screenshot, seedSettings, setTheme } from './extension';
 
 /** Leeds, because the bundled city list names it and its country is GB. */
 const LEEDS = { latitude: 53.8, longitude: -1.55 };
@@ -42,6 +42,8 @@ test('the Location sheet confirms the town and Done goes back to Settings', asyn
     const done = panel.getByRole('button', { name: 'Done' });
     await expect(done).toBeFocused();
     await screenshot(extension.page, 'docs/images/location-found-settings-light.png');
+    await setTheme(extension.page, 'dark');
+    await screenshot(extension.page, 'docs/images/location-found-settings-dark.png');
 
     await done.click();
     await expect(extension.page.getByRole('heading', { name: 'Settings' })).toBeVisible();

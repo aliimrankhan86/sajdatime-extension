@@ -1,48 +1,125 @@
+/**
+ * SajdaTime tokens, named by Material role.
+ *
+ * Every colour here is copied from the phone's design system, Quiet Glass:
+ * SajdaTime/docs/design-system/tokens/color.json. tests/unit/tokens.test.ts fails
+ * the build if a value drifts from tests/fixtures/color.json.
+ *
+ * One switch turns the theme: `data-theme` on <html>. Light is the base; dark
+ * overrides the same role names, so component CSS never asks which theme it is in.
+ * The markup sets data-theme before the first render, in src/popup/theme.ts.
+ *
+ * The token names below are the Material role names from color.json, in kebab case.
+ * `--cta` and `--on-cta` come from the `brand` block of the same file: the dark CTA is
+ * its own green (#17805A) because dark primary (#4FC48F) cannot carry white text.
+ */
+
 :root {
-  color-scheme: light dark;
-  --paper: #f7f5ef;
-  --surface: #ffffff;
-  --surface-soft: #eef2ed;
-  --ink: #1b1f1d;
-  --ink-muted: #5f6963;
-  --ink-hero-muted: #4b554f;
+  color-scheme: light;
+
+  /* Roles, light. */
   --primary: #0b5a43;
-  --primary-strong: #17805a;
-  --primary-hover: #094b38;
-  --primary-soft: #dcebe2;
   --on-primary: #ffffff;
-  --line: #d9dfd9;
-  --line-strong: #c9cfc9;
-  --warning: #9a6208;
-  --warning-surface: #fbf1dc;
-  --hero-a: #d6e8dc;
-  --hero-b: #dde2ce;
-  --hero-c: #e4d2b4;
-  --focus: #8a5a06;
-  --shadow: 0 10px 28px rgba(27, 31, 29, 0.1);
+  --primary-container: #d7eae0;
+  --on-primary-container: #0f2a1f;
+  --secondary: #3e5c4c;
+  --on-secondary: #ffffff;
+  --secondary-container: #cde3d7;
+  --on-secondary-container: #12372a;
+  --accent: #9a6208;
+  --on-accent: #ffffff;
+  --accent-container: #fbf1dc;
+  --on-accent-container: #5a4408;
+  --background: #f7f5f3;
+  --on-background: #1b211e;
+  --surface: #fdfcfb;
+  --on-surface: #1b211e;
+  --surface-variant: #edefe8;
+  --on-surface-variant: #5a605c;
+  --outline: #757c77;
+  --outline-variant: #c9cfc9;
+  --error: #b3261e;
+  --on-error: #ffffff;
+  --surface-container-lowest: #ffffff;
+  --surface-container-low: #faf8f5;
+  --surface-container: #f1eee8;
+  --surface-container-high: #edefe8;
+  --surface-container-highest: #e7e4de;
+  --surface-bright: #fdfcfb;
+  --surface-dim: #e7e4de;
+  --inverse-surface: #2a322e;
+  --inverse-on-surface: #f0f2ee;
+  --inverse-primary: #4fc48f;
+
+  /* Hero card: one fixed gradient, never tied to the time of day (PLAN.md section 3.1). */
+  --hero-gradient-start: #d6e8dc;
+  --hero-gradient-middle: #dde2ce;
+  --hero-gradient-end: #e4d2b4;
+  --on-hero: #0a2419;
+  --on-hero-label: #2c4a3c;
+  --on-hero-secondary: #3e5c4c;
+
+  /* Brand call to action, light. */
+  --cta: #0b5a43;
+  --on-cta: #ffffff;
+
+  /* Not colour roles: the level 1 card shadow and the thumb's drop shadow. */
+  --shadow: 0 10px 28px rgb(27 33 30 / 0.1);
+  --shadow-thumb: 0 1px 2px rgb(0 0 0 / 0.25);
+  --card-outline: transparent;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --paper: #0e1512;
-    --surface: #16201b;
-    --surface-soft: #1b2a23;
-    --ink: #f1f5f2;
-    --ink-muted: #aab7ae;
-    --ink-hero-muted: #d6dfd9;
-    --primary: #7fd1b0;
-    --primary-strong: #17805a;
-    --primary-hover: #146b4a;
-    --primary-soft: #1c3a2d;
-    --on-primary: #ffffff;
-    --line: #2a3931;
-    --line-strong: #3b4c43;
-    --warning: #f0c26a;
-    --warning-surface: #33270f;
-    --hero-a: #16352a;
-    --hero-b: #1d3328;
-    --hero-c: #3a2f1d;
-    --focus: #f0c26a;
-    --shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
-  }
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  /* Roles, dark. */
+  --primary: #4fc48f;
+  --on-primary: #062117;
+  --primary-container: #143028;
+  --on-primary-container: #8fd9b8;
+  --secondary: #b8c4be;
+  --on-secondary: #1f352c;
+  --secondary-container: #1e4034;
+  --on-secondary-container: #8fd9b8;
+  --accent: #e8b14a;
+  --on-accent: #3a2a00;
+  --accent-container: #2a2113;
+  --on-accent-container: #f3e4c5;
+  --background: #101312;
+  --on-background: #e7eae8;
+  --surface: #171b1a;
+  --on-surface: #e7eae8;
+  --surface-variant: #161a19;
+  --on-surface-variant: #a9b2ae;
+  --outline: #8b948f;
+  --outline-variant: #2a312e;
+  --error: #f2b8b5;
+  --on-error: #601410;
+  --surface-container-lowest: #0b0d0c;
+  --surface-container-low: #141817;
+  --surface-container: #171b1a;
+  --surface-container-high: #1e2321;
+  --surface-container-highest: #262c29;
+  --surface-bright: #2e3532;
+  --surface-dim: #101312;
+  --inverse-surface: #e7eae8;
+  --inverse-on-surface: #171b1a;
+  --inverse-primary: #0b5a43;
+
+  /* Hero card, dark: the middle stop is the primary container role. */
+  --hero-gradient-start: #18382d;
+  --hero-gradient-middle: #143028;
+  --hero-gradient-end: #0f241d;
+  --on-hero: #e7eae8;
+  --on-hero-label: #8fd9b8;
+  --on-hero-secondary: #b8c4be;
+
+  /* Brand call to action, dark. Its own green: primary cannot carry white text. */
+  --cta: #17805a;
+  --on-cta: #ffffff;
+
+  /* Dark cards are a hairline outline, never a shadow. */
+  --shadow: none;
+  --shadow-thumb: 0 1px 2px rgb(0 0 0 / 0.25);
+  --card-outline: #2a312e;
 }

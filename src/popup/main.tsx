@@ -1,6 +1,20 @@
 import { render } from 'preact';
 import { Popup } from './Popup';
+import { applyTheme } from './theme';
+import { loadSettings } from '../settings/storage';
 import './tokens.css';
 import './styles.css';
 
-render(<Popup />, document.getElementById('app') as HTMLElement);
+// docs/SECURITY.md R2 forbids inline script, so the theme is set by this bundle instead.
+// System is resolved synchronously, so the default already paints correctly. A stored
+// Light or Dark is applied when the settings load, before any content renders, so the
+// popup never paints the wrong theme. Only the bare window background can use the
+// system colour for the few milliseconds the storage read takes.
+applyTheme('system');
+
+void loadSettings()
+  .catch(() => null)
+  .then((settings) => {
+    applyTheme(settings?.theme ?? 'system');
+    render(<Popup initial={settings} />, document.getElementById('app') as HTMLElement);
+  });

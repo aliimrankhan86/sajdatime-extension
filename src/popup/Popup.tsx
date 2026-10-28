@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'preact/hooks';
+import { useEffect, useLayoutEffect, useRef, useState } from 'preact/hooks';
 import {
   SLOTS,
   computeDay,
@@ -26,6 +26,7 @@ import { firstSettings } from '../settings/create';
 import { MAKKAH, placeFromCity, placeFromGeolocation } from '../settings/place';
 import { clearSettings, loadSettings, saveSettings, watchSettings } from '../settings/storage';
 import type { Place, Settings } from '../settings/types';
+import { applyTheme, watchSystemTheme } from './theme';
 import { CitySearch } from './CitySearch';
 import { Brand } from './Brand';
 import { LocationFound } from './LocationFound';
@@ -88,8 +89,9 @@ function countdownNote(slot: Prayer, inRamadan: boolean): string {
   return `until ${LABELS[slot]}`;
 }
 
-export function Popup() {
-  const [settings, setSettings] = useState<Settings | null | undefined>(undefined);
+export function Popup({ initial }: { initial?: Settings | null }) {
+  // main.tsx preloads the settings so the first paint already has the stored theme.
+  const [settings, setSettings] = useState<Settings | null | undefined>(initial);
   const [screen, setScreen] = useState<'times' | 'settings'>('times');
   const previousScreen = useRef(screen);
 
@@ -101,6 +103,15 @@ export function Popup() {
     }
     previousScreen.current = screen;
   }, [screen]);
+
+  // data-theme lives on <html>, so it is set before paint, not after. A System choice
+  // also follows the computer while the popup stays open.
+  useLayoutEffect(() => {
+    const theme = settings?.theme ?? 'system';
+    applyTheme(theme);
+    if (theme !== 'system') return undefined;
+    return watchSystemTheme(() => applyTheme('system'));
+  }, [settings?.theme]);
 
   useEffect(() => {
     let alive = true;

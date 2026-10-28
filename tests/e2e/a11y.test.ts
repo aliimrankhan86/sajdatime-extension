@@ -1,7 +1,7 @@
 import { createRequire } from 'node:module';
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
-import { launchExtension, LONDON, seedSettings } from './extension';
+import { launchExtension, LONDON, seedSettings, setTheme } from './extension';
 
 const axePath = createRequire(import.meta.url).resolve('axe-core/axe.min.js');
 
@@ -47,7 +47,7 @@ test('Times has no WCAG 2.2 AA violations', async () => {
     await seedSettings(extension);
     expectNoViolations(await audit(extension.page));
 
-    await extension.page.emulateMedia({ colorScheme: 'dark' });
+    await setTheme(extension.page, 'dark');
     expectNoViolations(await audit(extension.page));
   } finally {
     await extension.close();
@@ -62,7 +62,7 @@ test('Settings and Location have no WCAG 2.2 AA violations', async () => {
     await extension.page.getByRole('button', { name: 'Settings' }).click();
     expectNoViolations(await audit(extension.page));
 
-    await extension.page.emulateMedia({ colorScheme: 'dark' });
+    await setTheme(extension.page, 'dark');
     expectNoViolations(await audit(extension.page));
 
     await extension.page.getByRole('button', { name: 'Change' }).click();
@@ -102,7 +102,7 @@ test('Settings with the Alerts group open has no WCAG 2.2 AA violations', async 
     await expect(extension.page.getByRole('heading', { name: 'Sound' })).toBeVisible();
     expectNoViolations(await audit(extension.page));
 
-    await extension.page.emulateMedia({ colorScheme: 'dark' });
+    await setTheme(extension.page, 'dark');
     expectNoViolations(await audit(extension.page));
   } finally {
     await extension.close();
@@ -128,7 +128,7 @@ test('the location found panel has no WCAG 2.2 AA violations', async () => {
     await expect(extension.page.getByRole('status')).toContainText('Leeds, United Kingdom');
     expectNoViolations(await audit(extension.page));
 
-    await extension.page.emulateMedia({ colorScheme: 'dark' });
+    await setTheme(extension.page, 'dark');
     expectNoViolations(await audit(extension.page));
   } finally {
     await extension.close();

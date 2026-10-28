@@ -7,8 +7,15 @@ import { parseAlertMessage, soundMessageType } from '../core/messages';
 import { PRAYERS, type MethodId, type Sect } from '../core/types';
 import { dateInZone, ramadanInfo, showsSettings } from '../core';
 import { saveSettings } from '../settings/storage';
-import type { Settings as SettingsValue } from '../settings/types';
+import { THEMES, type Settings as SettingsValue, type Theme } from '../settings/types';
+import { applyTheme } from './theme';
 import { LocationSheet } from './LocationSheet';
+
+const THEME_LABELS: Record<Theme, string> = {
+  system: 'System',
+  light: 'Light',
+  dark: 'Dark',
+};
 
 const METHOD_LABELS: Record<MethodId, string> = {
   moonsighting: 'Moonsighting Committee',
@@ -132,6 +139,13 @@ export function Settings({ settings, onClose, onSaved }: Props) {
     wasChangingPlace.current = changingPlace;
   }, [changingPlace]);
 
+  // Paint the chosen theme at once, then save it. The save is what survives a reopen.
+  function changeTheme(theme: Theme) {
+    if (busy) return;
+    applyTheme(theme);
+    update({ theme });
+  }
+
   function update(patch: Partial<Omit<SettingsValue, 'version'>>) {
     if (saving.current) return;
     saving.current = true;
@@ -254,6 +268,26 @@ export function Settings({ settings, onClose, onSaved }: Props) {
           >
             Change
           </button>
+        </div>
+      </section>
+
+      <section class="settings-group" aria-labelledby="theme-heading">
+        <h2 class="group-title" id="theme-heading">
+          Theme
+        </h2>
+        <div class="segmented" role="group" aria-labelledby="theme-heading">
+          {THEMES.map((theme) => (
+            <button
+              class={settings.theme === theme ? 'segment is-selected' : 'segment'}
+              type="button"
+              key={theme}
+              aria-pressed={settings.theme === theme}
+              aria-disabled={busy}
+              onClick={() => changeTheme(theme)}
+            >
+              {THEME_LABELS[theme]}
+            </button>
+          ))}
         </div>
       </section>
 

@@ -17,6 +17,7 @@ function settings(overrides: Partial<Settings> = {}): Settings {
     hijriOffsetDays: 0,
     alerts: { enabled: true, prayers: PRAYERS_ON, sound: 'beep' },
     ramadanCard: true,
+    theme: 'system',
     ...overrides,
   };
 }
