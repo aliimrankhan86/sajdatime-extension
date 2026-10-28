@@ -267,10 +267,13 @@ export function Settings({ settings, onClose, onSaved }: Props) {
 
   const suggestion = suggestMethod(settings.place.countryCode, settings.sect);
   const shiaMethod = isShiaMethod(settings.method);
-  const placeValue =
+  // The Place row is only the name, so it stays bare. The method sheet puts the country
+  // inside a sentence, so it takes "the" where English wants it (D-039, meta.ts).
+  const countryText =
     settings.place.countryCode === 'ZZ'
-      ? 'From this computer'
+      ? 'your country'
       : countryName(settings.place.countryCode, locale);
+  const placeValue = settings.place.countryCode === 'ZZ' ? 'From this computer' : countryText;
   const hijriValue =
     settings.hijriOffsetDays === 0
       ? 'No change'
@@ -307,7 +310,7 @@ export function Settings({ settings, onClose, onSaved }: Props) {
     suggestion.suggested,
     suggestion.alternatives,
     offeredMethods,
-    placeValue,
+    countryText,
   );
 
   if (sheet) {

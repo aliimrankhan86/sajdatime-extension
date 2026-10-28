@@ -588,6 +588,16 @@ button {
   outline-offset: 2px;
 }
 
+/* A step heading is a focus target for a screen reader only (tabIndex -1 plus
+   data-autofocus), never a control. Chrome draws :focus-visible on a script focused
+   element, which painted a green box around every first-run heading, so a heading never
+   draws a ring. A Tab press still lands on a real control, which keeps the ring above.
+   Ali's Step 8 review, 28 October 2026. */
+[data-autofocus]:focus,
+[data-autofocus]:focus-visible {
+  outline: none;
+}
+
 /* Location and Settings sheets */
 
 .sheet {
@@ -1398,7 +1408,8 @@ button {
   line-height: 1.4;
 }
 
-.method-row.is-selected .method-hint {
+.method-row.is-selected .method-hint,
+.first-run-method-row.is-selected .method-hint {
   color: var(--on-primary-container);
 }
 
@@ -1408,9 +1419,7 @@ button {
   gap: 8px 16px;
   margin-top: 4px;
   font-variant-numeric: tabular-nums;
-}
-
-.method-time {
+}.method-time {
   font-size: 14px;
   font-weight: 600;
 }
@@ -1527,10 +1536,19 @@ button {
   gap: 8px;
 }
 
-.first-run-foot .action,
-.first-run-method-actions .action {
+.first-run-foot .action {
   flex: 1;
   min-height: 56px;
+}
+
+/* "Match my mosque" and "Other methods" stack full width, 48 px each, 8 px apart, so
+   neither label wraps onto a second line at 380 px (Step 8 review, 28 October 2026). */
+.first-run-method-actions {
+  flex-direction: column;
+}
+
+.first-run-method-actions .action {
+  min-height: 48px;
 }
 
 /* A step's Continue is disabled until a choice is made (the madhab step). Faded, not
@@ -1685,6 +1703,19 @@ button {
   color: var(--on-primary-container);
   background: var(--primary-container);
   border-color: var(--primary-container);
+}
+
+/* The method step now names each row after its method, adds the suggestion as a hint
+   line under the first one, and stacks two 48 px buttons. To stay inside the 600 px
+   popup the rows take 2 px less padding each and their times sit 4 px closer. Scoped to
+   the first-run step so the Settings method sheet does not move. */
+.first-run-method-row {
+  padding: 8px 14px;
+}
+
+.first-run-method-row .method-times,
+.first-run-method-card .method-times {
+  margin-top: 0;
 }
 
 .method-times-large .method-time {

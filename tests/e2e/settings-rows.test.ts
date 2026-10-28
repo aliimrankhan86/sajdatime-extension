@@ -169,8 +169,9 @@ test('a Sunni method list names each method once and never a Shia one', async ()
     expect(names).not.toContain('Institute of Geophysics, Tehran');
     expect(groups).not.toContain('Shia');
 
-    // The UK suggestion opens the list, then the regions hold the rest once.
-    expect(groups[0]).toBe('Suggested for United Kingdom');
+    // The UK suggestion opens the list, then the regions hold the rest once. The country
+    // sits inside a sentence here, so it takes "the" (D-039).
+    expect(groups[0]).toBe('Suggested for the United Kingdom');
     expect(names.slice(0, 3)).toEqual([
       'Moonsighting Committee',
       'ISNA, North America',

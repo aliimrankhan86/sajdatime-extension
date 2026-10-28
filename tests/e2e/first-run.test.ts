@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
+import { METHOD_NAMES } from '../../src/popup/meta';
 import { launchExtension, screenshot, setTheme, walkToLocation } from './extension';
 import { undersizedControls } from './measures';
 
@@ -204,6 +205,187 @@ test('Match my mosque shows the closest methods and flags a far time', async () 
     await expect(extension.page.getByRole('note')).toContainText(
       'None of the methods is close to your mosque',
     );
+  } finally {
+    await extension.close();
+  }
+});
+
+/**
+ * The Step 8 review found that every first-run heading drew the green focus ring when
+ * the step opened, because Chrome paints :focus-visible on a script focused element.
+ * The heading still takes focus for a screen reader; it just draws no ring, and a Tab
+ * press lands on a real control that does. This walks every step and both sub screens.
+ */
+async function expectHeadingFocus(page: Page, name: string): Promise<void> {
+  await page.waitForFunction(() => {
+    const active = document.activeElement as HTMLElement | null;
+    return !!active && active.hasAttribute('data-autofocus');
+  });
+  const heading = await page.evaluate(() => {
+    const active = document.activeElement as HTMLElement;
+    return { outline: getComputedStyle(active).outlineStyle };
+  });
+  expect(heading.outline, `${name}: the heading draws no focus ring`).toBe('none');
+
+  await page.keyboard.press('Tab');
+  const ring = await page.evaluate(() => {
+    const active = document.activeElement as HTMLElement | null;
+    if (!active) return { tag: '', outline: '', width: '' };
+    const style = getComputedStyle(active);
+    return { tag: active.tagName, outline: style.outlineStyle, width: style.outlineWidth };
+  });
+  expect(['BUTTON', 'INPUT'], `${name}: Tab reaches a control`).toContain(ring.tag);
+  expect(ring.outline, `${name}: Tab draws the ring`).toBe('solid');
+  expect(ring.width, `${name}: the ring is 3 px`).toBe('3px');
+}
+
+test('every first-run heading takes focus without a ring and Tab draws one', async () => {
+  const extension = await launchExtension();
+  const page = extension.page;
+  try {
+    await page.evaluate(async () => chrome.storage.local.clear());
+    await page.addInitScript(mockPosition);
+    await page.clock.install({ time: new Date('2026-10-27T11:00:00Z') });
+    await page.reload();
+
+    await expectHeadingFocus(page, 'welcome');
+
+    await page.getByRole('button', { name: 'Begin' }).click();
+    await expectHeadingFocus(page, 'disclaimer');
+
+    await page.getByRole('button', { name: 'Read in full' }).click();
+    await expectHeadingFocus(page, 'full disclaimer');
+    await page.getByRole('button', { name: 'Back' }).click();
+    await expectHeadingFocus(page, 'disclaimer after full');
+
+    await page.getByRole('button', { name: 'I understand' }).click();
+    await expectHeadingFocus(page, 'school');
+    await page.getByRole('button', { name: 'Sunni' }).click();
+    await page.getByRole('button', { name: 'Continue' }).click();
+
+    await expectHeadingFocus(page, 'madhab');
+    await page.getByRole('button', { name: "Shafi'i" }).click();
+    await page.getByRole('button', { name: 'Continue' }).click();
+
+    await expectHeadingFocus(page, 'location');
+    await page.getByRole('button', { name: 'Allow location' }).click();
+    await expect(page.getByRole('status')).toContainText('Leeds');
+    await expectHeadingFocus(page, 'location found');
+
+    await page.getByRole('button', { name: 'Continue' }).click();
+    await expectHeadingFocus(page, 'method');
+
+    await page.getByRole('button', { name: 'Match my mosque' }).click();
+    await expectHeadingFocus(page, 'match my mosque');
+    await page.getByRole('button', { name: 'Back' }).click();
+    await expectHeadingFocus(page, 'method after match');
+
+    await page.getByRole('button', { name: 'Other methods' }).click();
+    await expectHeadingFocus(page, 'other methods');
+    await page.getByRole('button', { name: 'Back' }).click();
+    await expectHeadingFocus(page, 'method after other');
+
+    await page.getByRole('button', { name: 'Continue' }).click();
+    await expectHeadingFocus(page, 'alerts');
+  } finally {
+    await extension.close();
+  }
+});
+
+/**
+ * The Step 8 review: the suggested method row used "Suggested for United Kingdom" as
+ * its title, so no row was named after its method. Every row title is now a method
+ * name, and the suggestion moves to the hint line under it. The hint also carries the
+ * "the" that English wants inside a sentence (D-039), and the same group title is used
+ * by the Other methods sheet, which shares meta.methodGroupsFor.
+ */
+test('every method row is named after its method and the suggestion is the hint line', async () => {
+  const extension = await launchExtension();
+  const page = extension.page;
+  try {
+    await page.evaluate(async () => chrome.storage.local.clear());
+    await page.addInitScript(mockPosition);
+    await page.clock.install({ time: new Date('2026-10-27T11:00:00Z') });
+    await page.reload();
+    await walkToLocation(extension);
+    await page.getByRole('button', { name: 'Allow location' }).click();
+    await page.getByRole('button', { name: 'Continue' }).click(); // method step
+
+    const known = new Set(Object.values(METHOD_NAMES));
+
+    const stepNames = await page.locator('.first-run-method-row .method-name').allTextContents();
+    expect(stepNames.length, 'the UK offers three methods').toBe(3);
+    for (const name of stepNames) expect(known.has(name), `"${name}" is a method name`).toBe(true);
+
+    const stepHints = page.locator('.first-run-method-row .method-hint');
+    await expect(stepHints).toHaveCount(1);
+    await expect(stepHints).toHaveText('Suggested for the United Kingdom');
+    await expect(page.locator('.first-run-method-row').first()).toContainText(
+      'Suggested for the United Kingdom',
+    );
+
+    await page.getByRole('button', { name: 'Other methods' }).click();
+    await expect(page.getByRole('heading', { name: 'Other methods' })).toBeVisible();
+    await expect(page.locator('.method-group-title').first()).toHaveText(
+      'Suggested for the United Kingdom',
+    );
+
+    const sheetNames = await page.locator('.method-row .method-name').allTextContents();
+    expect(sheetNames.length).toBeGreaterThan(stepNames.length);
+    for (const name of sheetNames) expect(known.has(name), `"${name}" is a method name`).toBe(true);
+    for (const name of stepNames) expect(sheetNames).toContain(name);
+  } finally {
+    await extension.close();
+  }
+});
+
+/**
+ * The Step 8 review: "Match my mosque" and "Other methods" wrapped onto two lines side
+ * by side. They now stack full width, 48 px tall, 8 px apart, and each label is one
+ * line in both themes. Measured, because the label width depends on the font.
+ */
+test('the two method buttons stack full width on one line in both themes', async () => {
+  const extension = await launchExtension();
+  const page = extension.page;
+  try {
+    await page.evaluate(async () => chrome.storage.local.clear());
+    await page.addInitScript(mockPosition);
+    await page.clock.install({ time: new Date('2026-10-27T11:00:00Z') });
+    await page.reload();
+    await walkToLocation(extension);
+    await page.getByRole('button', { name: 'Allow location' }).click();
+    await page.getByRole('button', { name: 'Continue' }).click(); // method step
+
+    for (const theme of ['light', 'dark'] as const) {
+      await setTheme(page, theme);
+      const metrics = await page.evaluate(() => {
+        const buttons = [...document.querySelectorAll<HTMLElement>('.first-run-method-actions .action')];
+        return buttons.map((button) => {
+          const rect = button.getBoundingClientRect();
+          const range = document.createRange();
+          range.selectNodeContents(button);
+          return {
+            height: rect.height,
+            width: rect.width,
+            top: rect.top,
+            left: rect.left,
+            lines: range.getClientRects().length,
+          };
+        });
+      });
+      expect(metrics, `${theme}: two buttons`).toHaveLength(2);
+      const [first, second] = metrics;
+      if (!first || !second) throw new Error(`${theme}: both method buttons must exist`);
+      for (const metric of metrics) {
+        expect(metric.height, `${theme}: button height`).toBe(48);
+        expect(metric.lines, `${theme}: label lines`).toBe(1);
+      }
+      expect(second.top - (first.top + first.height), `${theme}: gap`).toBe(8);
+      expect(first.left, `${theme}: both start at the same edge`).toBe(second.left);
+      expect(first.width, `${theme}: both are the same width`).toBe(second.width);
+      expect(first.width, `${theme}: full width inside the 20 px padding`).toBeGreaterThan(300);
+    }
+    await setTheme(page, 'light');
   } finally {
     await extension.close();
   }

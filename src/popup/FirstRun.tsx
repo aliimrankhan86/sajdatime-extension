@@ -20,6 +20,7 @@ import { FULL_DISCLAIMER, SHORT_DISCLAIMER } from './disclaimer';
 import { CheckMark, GlobeIcon, PlayIcon } from './icons';
 import {
   browserName,
+  countryInSentence,
   METHOD_HINTS,
   METHOD_NAMES,
   methodGroupsFor,
@@ -188,10 +189,13 @@ export function FirstRun({ onSaved }: { onSaved: (settings: Settings) => void })
   const today = dateInZone(new Date(), draft.place.timeZone);
   const suggestion = suggestMethod(draft.place.countryCode, draft.sect);
   const offered = methodsOfferedTo(draft.sect);
-  const placeValue =
+  // A country inside a sentence takes "the" where English wants it (D-039). A bare line
+  // that is only the name, such as the location confirmation, does not.
+  const countryText =
     draft.place.countryCode === 'ZZ'
-      ? 'From this computer'
+      ? 'your country'
       : countryName(draft.place.countryCode, locale);
+  const placeValue = countryInSentence(countryText);
   const methodGroups = methodGroupsFor(
     draft.sect,
     suggestion.suggested,
@@ -630,10 +634,10 @@ export function FirstRun({ onSaved }: { onSaved: (settings: Settings) => void })
           <h1 class="first-run-title" data-autofocus tabIndex={-1}>
             Calculation method
           </h1>
-          <p class="field-hint">Suggested for {placeValue}.</p>
           <div class="method-row is-selected first-run-method-card">
             <span class="method-copy">
               <span class="method-name">{METHOD_NAMES[draft.method]}</span>
+              <span class="method-hint">Suggested for {placeValue}</span>
               {times ? (
                 <span class="method-times method-times-large">
                   <span class="method-time">Fajr {times.fajr}</span>
@@ -677,10 +681,7 @@ export function FirstRun({ onSaved }: { onSaved: (settings: Settings) => void })
         <h1 class="first-run-title" data-autofocus tabIndex={-1}>
           Calculation method
         </h1>
-        <p class="field-hint">
-          Mosques in {placeValue} work out Fajr and Isha differently. Today's times are shown
-          for each one, so you can pick the method closest to your mosque.
-        </p>
+        <p class="field-hint">Mosques in {placeValue} work out Fajr and Isha differently.</p>
         <div class="choices" role="radiogroup" aria-label="Calculation method">
           {methods.map((method, index) => {
             const times = todayFor(method);
@@ -695,9 +696,10 @@ export function FirstRun({ onSaved }: { onSaved: (settings: Settings) => void })
                 onClick={() => chooseMethod(method)}
               >
                 <span class="method-copy">
-                  <span class="method-name">
-                    {index === 0 ? `Suggested for ${placeValue}` : METHOD_NAMES[method]}
-                  </span>
+                  <span class="method-name">{METHOD_NAMES[method]}</span>
+                  {index === 0 ? (
+                    <span class="method-hint">Suggested for {placeValue}</span>
+                  ) : null}
                   {times ? (
                     <span class="method-times">
                       <span class="method-time">Fajr {times.fajr}</span>

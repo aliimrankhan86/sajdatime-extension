@@ -73,6 +73,39 @@ export function browserName(): 'Edge' | 'Chrome' {
 }
 
 /**
+ * The country names that English puts "the" before when the name sits inside a sentence
+ * ("Suggested for the United Kingdom") but not when the name stands alone ("United
+ * Kingdom"). Ali's Step 8 review, 28 October 2026. The set holds the names `Intl` gives
+ * for those codes in English, lowercased.
+ */
+const COUNTRIES_WITH_THE: ReadonlySet<string> = new Set([
+  'united kingdom',
+  'united states',
+  'united arab emirates',
+  'netherlands',
+  'philippines',
+  'czech republic',
+  'maldives',
+  'bahamas',
+  'gambia',
+  'central african republic',
+  'dominican republic',
+  'comoros',
+]);
+
+/**
+ * A country name as it reads inside a sentence: "the Netherlands", "the United Kingdom",
+ * but "Pakistan" and "Saudi Arabia" bare. Use it wherever a country sits inside a
+ * sentence, and never for a line that is only the name. Safe to call twice, so a name
+ * that already carries "the" is left alone.
+ */
+export function countryInSentence(name: string): string {
+  const trimmed = name.trim();
+  if (trimmed.length === 0) return trimmed;
+  return COUNTRIES_WITH_THE.has(trimmed.toLowerCase()) ? `the ${trimmed}` : trimmed;
+}
+
+/**
  * The "Other methods" list, grouped the same way the Settings method sheet does. The
  * suggested methods form the first group and are left out of the region groups below,
  * so the UK does not see Moonsighting, ISNA and Karachi twice. A Sunni list never
@@ -93,7 +126,8 @@ export function methodGroupsFor(
   const first = [suggested, ...alternatives].filter((method) => offered.includes(method));
   const shown = new Set<MethodId>(first);
   if (first.length > 0) {
-    groups.push({ title: `Suggested for ${placeValue}`, methods: first });
+    // A country inside a sentence takes "the" where English wants it (D-039).
+    groups.push({ title: `Suggested for ${countryInSentence(placeValue)}`, methods: first });
   }
   for (const group of REGION_GROUPS) {
     if (group.title === 'Shia') continue;
