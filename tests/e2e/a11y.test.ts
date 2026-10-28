@@ -95,6 +95,74 @@ test('first run and its search results have no WCAG 2.2 AA violations', async ()
   }
 });
 
+test('every first-run step has no WCAG 2.2 AA violations in both themes', async () => {
+  const extension = await launchExtension();
+  const page = extension.page;
+  try {
+    await page.evaluate(async () => chrome.storage.local.clear());
+    await page.addInitScript({ path: axePath });
+    await page.addInitScript(() => {
+      Object.defineProperty(navigator, 'geolocation', {
+        configurable: true,
+        value: {
+          getCurrentPosition: (ok: (position: unknown) => void) =>
+            ok({ coords: { latitude: 53.8, longitude: -1.55 } }),
+        },
+      });
+    });
+    await page.reload();
+
+    const check = async () => {
+      expectNoViolations(await audit(page));
+      await setTheme(page, 'dark');
+      expectNoViolations(await audit(page));
+      await setTheme(page, 'light');
+    };
+
+    await expect(page.getByRole('button', { name: 'Begin' })).toBeVisible();
+    await check(); // welcome
+
+    await page.getByRole('button', { name: 'English' }).click();
+    await expect(page.getByRole('heading', { name: 'Language' })).toBeVisible();
+    await check(); // language sheet
+    await page.getByRole('button', { name: 'Back' }).click();
+
+    await page.getByRole('button', { name: 'Begin' }).click();
+    await check(); // disclaimer
+    await page.getByRole('button', { name: 'Read in full' }).click();
+    await expect(page.getByRole('heading', { name: 'Disclaimer' })).toBeVisible();
+    await check(); // full disclaimer
+    await page.getByRole('button', { name: 'Back' }).click();
+
+    await page.getByRole('button', { name: 'I understand' }).click();
+    await check(); // school
+
+    await page.getByRole('button', { name: 'Sunni' }).click();
+    await page.getByRole('button', { name: 'Continue' }).click();
+    await check(); // madhab
+
+    await page.getByRole('button', { name: "Shafi'i" }).click();
+    await page.getByRole('button', { name: 'Continue' }).click();
+    await check(); // location
+
+    await page.getByRole('button', { name: 'Allow location' }).click();
+    await expect(page.getByRole('status')).toContainText('Leeds');
+    await check(); // location found
+
+    await page.getByRole('button', { name: 'Continue' }).click();
+    await check(); // method
+
+    await page.getByRole('button', { name: 'Continue' }).click();
+    await check(); // alerts
+
+    await page.getByRole('button', { name: 'Finish' }).click();
+    await page.waitForSelector('.next-card', { timeout: 20_000 });
+    await check(); // times
+  } finally {
+    await extension.close();
+  }
+});
+
 test('Settings with the Alerts group open has no WCAG 2.2 AA violations', async () => {
   const extension = await launchExtension();
   try {
