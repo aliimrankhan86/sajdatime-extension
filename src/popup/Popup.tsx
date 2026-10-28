@@ -334,7 +334,7 @@ function Times({
   const nextNote = countdownNote(next.slot, inRamadan);
 
   return (
-    <main class={inRamadan ? 'is-ramadan' : undefined}>
+    <main>
       <header class="hero">
         <div class="hero-top">
           <Brand />
@@ -344,9 +344,6 @@ function Times({
         </div>
         <h1 class="place">{settings.place.name}</h1>
         {hijri ? <p class="hijri">{hijri}</p> : null}
-        {inRamadan && ramadan?.dayNumber ? (
-          <p class="ramadan-day">Ramadan, day {ramadan.dayNumber}</p>
-        ) : null}
       </header>
 
       <section class="next-card" aria-labelledby="next-label">

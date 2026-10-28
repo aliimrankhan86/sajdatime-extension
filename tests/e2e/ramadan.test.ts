@@ -13,9 +13,15 @@ test('inside Ramadan the hero and rows change to suhoor and iftar', async () => 
     await expect(extension.page.locator('.countdown-note')).toHaveText('until you break your fast');
     await expect(extension.page.locator('[data-slot="fajr"] .time-label')).toContainText('Suhoor ends');
     await expect(extension.page.locator('[data-slot="maghrib"] .time-label')).toContainText('Iftar');
-    await expect(extension.page.locator('.ramadan-day')).toHaveText('Ramadan, day 13');
+    // The Hijri date already reads "13 Ramadan 1448", so "Ramadan" appears once in the header.
+    await expect(extension.page.locator('.hijri')).toHaveText('13 Ramadan 1448');
+    const headerRamadanMentions = await extension.page.locator('.hero').evaluate((el) => {
+      const text = el.textContent ?? '';
+      return (text.match(/Ramadan/g) ?? []).length;
+    });
+    expect(headerRamadanMentions).toBe(1);
 
-    // The extra header line must not push the popup past 600 pixels.
+    // The Times view must still fit the 600 pixel popup.
     const sizes = await extension.page.evaluate(() => ({
       scrollHeight: document.documentElement.scrollHeight,
       clientHeight: document.documentElement.clientHeight,

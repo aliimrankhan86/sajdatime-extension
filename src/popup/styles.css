@@ -97,35 +97,6 @@ button {
   font-variant-numeric: tabular-nums;
 }
 
-.ramadan-day {
-  margin: 4px 0 0;
-  color: var(--ink-hero-muted);
-  font-size: 14px;
-  font-variant-numeric: tabular-nums;
-}
-
-/* In Ramadan the header grows by one line, so the header and the gaps below it
-   tighten to keep the whole Times view inside the 600 pixel popup. */
-main.is-ramadan .hero {
-  padding-bottom: 12px;
-}
-
-main.is-ramadan .place {
-  margin-top: 4px;
-}
-
-main.is-ramadan .times {
-  margin-top: 4px;
-}
-
-main.is-ramadan .footer {
-  margin: 4px 20px 8px;
-}
-
-main.is-ramadan .countdown {
-  margin-top: 6px;
-}
-
 .next-card {
   position: relative;
   z-index: 1;

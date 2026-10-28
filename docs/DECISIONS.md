@@ -253,8 +253,16 @@ The badge and "time until the next prayer" reminders are deferred.
 
 ## D-028: Ramadan relabels Fajr and Maghrib, and the card is on by default
 
-**Decided:** while today is inside Ramadan on Umm al-Qura (with the user's Hijri shift) and the `ramadanCard` setting is on, the Times screen reads Fajr as "Suhoor ends" and Maghrib as "Iftar". The hero names the next prayer "Suhoor ends" or "Iftar", the countdown note reads "until suhoor ends" or "until you break your fast", and a "Ramadan, day N" line sits under the Hijri date. Every other prayer keeps its name. Settings gains a "Ramadan" group above Alerts, shown while the card would ever apply (inside Ramadan or up to three days before), with one "Ramadan card" switch and no hint. The card defaults to on; turning it off returns all six times to their normal names.
+**Decided:** while today is inside Ramadan on Umm al-Qura (with the user's Hijri shift) and the `ramadanCard` setting is on, the Times screen reads Fajr as "Suhoor ends" and Maghrib as "Iftar". The hero names the next prayer "Suhoor ends" or "Iftar", the countdown note reads "until suhoor ends" or "until you break your fast". The Hijri date already names the day, so no separate day line is added. Every other prayer keeps its name. Settings gains a "Ramadan" group above Alerts, shown while the card would ever apply (inside Ramadan or up to three days before), with one "Ramadan card" switch and no hint. The card defaults to on; turning it off returns all six times to their normal names.
 
 **Why:** the two prayers that bound the fast matter more than their names during Ramadan, so the automatic reading Ali asked for renames only those two and leaves the rest alone. The switch exists for someone who prefers the plain prayer names, but the default follows the brief's automatic behaviour. The notice window (three days before and the first two days) and the timetable are deferred to Step 3b. The Umm al-Qura Isha plus thirty minutes rule was already in the engine and is untouched.
 
 **Revisit if:** Ali asks for the labels always on, or for a suhoor or iftar reminder, which would turn the card into a fuller Ramadan view.
+
+## D-029: the header shows the day once
+
+**Decided:** the review of Step 3a asked to remove the "Ramadan, day N" line that D-028 added under the Hijri date. The Hijri date already reads "13 Ramadan 1448", so the second line repeated the same fact and pushed the header against the hero card. The line and the `is-ramadan` spacing rules that tightened around it are removed, and the e2e test now asserts the Hijri date shows "Ramadan" and that the day appears only once in the header.
+
+**Why:** a screen must not repeat a fact it already shows, and the extra line cost the header its normal gaps. The Hijri date is enough on its own.
+
+**Revisit if:** a later design wants the day number shown separately in the header, which would need a different layout, not a second text line.

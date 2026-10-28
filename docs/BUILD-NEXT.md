@@ -191,13 +191,13 @@ Add `ramadanCard: boolean` to the settings, default `true`, with a migration and
 1. **In Ramadan** (`contains(info, today)`) and with `ramadanCard` on, on Times:
    - The hero label reads **Suhoor ends** when Fajr is next and **Iftar** when Maghrib is next. Under the countdown: **until suhoor ends** or **until you break your fast**. Other prayers are unchanged.
    - In the list, the Fajr row is labelled **Suhoor ends** and the Maghrib row **Iftar**.
-   - Under the Hijri date in the header, a line: **Ramadan, day 5** (the day number).
+   - The Hijri date in the header already shows the day number (for example **13 Ramadan 1448**), so no separate "day" line is added.
 2. **Settings, Ramadan group**, shown while `showsSettings(info, today)` is true, placed above Alerts: heading **Ramadan**, one switch **Ramadan card**, on by default. Turning it off returns Times to the normal labels.
 3. Umm al-Qura Isha plus 30 minutes in Ramadan already exists (`engine.ts`). Do not touch it.
 
 ### Tests
 
-- e2e with Playwright's clock set inside Ramadan 2027: the hero says Iftar in the afternoon and Suhoor ends after Isha; the Fajr and Maghrib rows are relabelled; the header shows the day number; turning the Ramadan card off restores the normal labels; outside Ramadan nothing changes.
+- e2e with Playwright's clock set inside Ramadan 2027: the hero says Iftar in the afternoon and Suhoor ends after Isha; the Fajr and Maghrib rows are relabelled; the header's Hijri date shows the day number and no separate day line appears; turning the Ramadan card off restores the normal labels; outside Ramadan nothing changes.
 - Unit, only for a helper you extended: dates around 1 Ramadan 1448 and 1 Shawwal 1448, with shifts of minus 1 and plus 1, checked against the phone's Umm al-Qura values, not against this code.
 - Screenshots of Times in Ramadan, light and dark, only with `SAJDATIME_SCREENSHOTS=1`, for Ali.
 
