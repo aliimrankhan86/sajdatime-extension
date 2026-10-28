@@ -231,7 +231,7 @@ test('keeps Settings visible and opens the sheet', async () => {
 
     await button.click();
     await expect(extension.page.getByRole('heading', { name: 'Settings' })).toBeVisible();
-    await expect(extension.page.getByRole('heading', { name: 'Place' })).toBeVisible();
+    await expect(extension.page.locator('[data-row="place"]')).toBeVisible();
     await screenshot(extension.page, 'docs/images/settings-light.png');
     await setTheme(extension.page, 'dark');
     await screenshot(extension.page, 'docs/images/settings-dark.png');

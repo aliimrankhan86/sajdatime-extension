@@ -255,13 +255,16 @@ test('the Alerts group shows five switches and keeps the chosen sound', async ()
   try {
     await seedSettings(extension, new Date('2026-10-27T11:00:00Z'), LONDON);
     await extension.page.getByRole('button', { name: 'Settings' }).click();
-    await expect(extension.page.getByRole('heading', { name: 'Alerts' })).toBeVisible();
+    // While alerts are off the group holds the master switch alone, so it has no heading.
+    await expect(extension.page.getByRole('switch', { name: 'Prayer alerts' })).toBeVisible();
+    await expect(extension.page.getByRole('heading', { name: 'Alerts' })).toBeHidden();
 
     // The group is hidden beyond the master switch while alerts are off.
     await expect(extension.page.getByRole('button', { name: 'Sound, Soft beep' })).toBeHidden();
     await expect(extension.page.getByRole('button', { name: 'Send a test alert' })).toBeHidden();
 
     await extension.page.getByRole('switch', { name: 'Prayer alerts' }).click();
+    await expect(extension.page.getByRole('heading', { name: 'Alerts' })).toBeVisible();
     await expect(extension.page.getByRole('button', { name: 'Sound, Soft beep' })).toBeVisible();
     for (const prayer of ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha']) {
       await expect(extension.page.getByRole('switch', { name: prayer })).toHaveAttribute(

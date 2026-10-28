@@ -53,7 +53,7 @@ test('turning the Ramadan card off restores the normal labels', async () => {
   try {
     await seedSettings(extension, new Date('2027-02-20T16:00:00Z'), LONDON);
     await extension.page.getByRole('button', { name: 'Settings' }).click();
-    await expect(extension.page.getByRole('heading', { name: 'Ramadan' })).toBeVisible();
+    await expect(extension.page.getByRole('switch', { name: 'Ramadan card' })).toBeVisible();
 
     const card = extension.page.getByRole('switch', { name: 'Ramadan card' });
     await card.click();
@@ -79,7 +79,7 @@ test('outside Ramadan nothing changes', async () => {
     await expect(extension.page.locator('.ramadan-day')).toHaveCount(0);
 
     await extension.page.getByRole('button', { name: 'Settings' }).click();
-    await expect(extension.page.getByRole('heading', { name: 'Ramadan' })).toBeHidden();
+    await expect(extension.page.getByRole('switch', { name: 'Ramadan card' })).toBeHidden();
   } finally {
     await extension.close();
   }

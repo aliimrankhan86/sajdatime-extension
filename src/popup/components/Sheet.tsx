@@ -14,9 +14,11 @@ interface SheetProps {
   doneLabel?: string;
   /** Rendered instead of the foot, for sheets with no action (e.g. the method list). */
   noFoot?: boolean;
+  /** A compact action in the header, beside the title (the Sound sheet's Play). */
+  action?: ComponentChildren;
 }
 
-export function Sheet({ title, onClose, children, doneLabel = 'Done', noFoot = false }: SheetProps) {
+export function Sheet({ title, onClose, children, doneLabel = 'Done', noFoot = false, action }: SheetProps) {
   const titleRef = useRef<HTMLHeadingElement>(null);
 
   useEffect(() => {
@@ -40,6 +42,7 @@ export function Sheet({ title, onClose, children, doneLabel = 'Done', noFoot = f
         <h1 class="sheet-title" id="sheet-title" tabIndex={-1} ref={titleRef}>
           {title}
         </h1>
+        {action ? <div class="sheet-action">{action}</div> : null}
         <button class="icon-button" type="button" aria-label="Close" onClick={onClose}>
           <span aria-hidden="true">×</span>
         </button>

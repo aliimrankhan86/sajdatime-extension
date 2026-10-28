@@ -1,3 +1,4 @@
+import type { ComponentChildren } from 'preact';
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { countryName } from '../core/cities';
 import { isMethodOfferedTo, isShiaMethod, methodsOfferedTo } from '../core/methods';
@@ -31,6 +32,34 @@ import {
   TuneIcon,
   WarningMark,
 } from './icons';
+
+/**
+ * One Settings group. A group of two or more rows carries a heading; a group of one
+ * row does not, because a heading over a single row only repeats it ("Disclaimer"
+ * over "Disclaimer", "Place" over "London"). `rows` is that count, passed in rather
+ * than derived from children so a conditional row cannot silently change the rule.
+ */
+function Group({
+  title,
+  id,
+  rows,
+  children,
+}: {
+  title: string;
+  id: string;
+  rows: number;
+  children: ComponentChildren;
+}) {
+  if (rows < 2) return <div class="group-card">{children}</div>;
+  return (
+    <section class="group-card" aria-labelledby={id}>
+      <h2 class="group-title" id={id}>
+        {title}
+      </h2>
+      {children}
+    </section>
+  );
+}
 
 const THEME_LABELS: Record<Theme, string> = {
   system: 'System',
@@ -300,17 +329,34 @@ export function Settings({ settings, onClose, onSaved }: Props) {
   }
 
   const offeredMethods = methodsOfferedTo(settings.sect);
-  const methodGroups: ReadonlyArray<{ title: string; methods: ReadonlyArray<MethodId> }> =
-    settings.sect === 'shia'
-      ? [{ title: 'Shia', methods: ['jafari', 'tehran'] }]
-      : [
-          {
-            title: `Suggested for ${placeValue}`,
-            methods: [suggestion.suggested, ...suggestion.alternatives],
-          },
-          ...REGION_GROUPS.filter((group) => group.title !== 'Shia'),
-          { title: 'Shia', methods: ['jafari', 'tehran'] },
-        ];
+
+  /*
+   * The method sheet lists each method exactly once. The suggested ones form the
+   * first group and are left out of the region groups below, so the UK does not see
+   * Moonsighting, ISNA and Karachi twice. A Sunni list never reaches the Shia group,
+   * and a group left empty is dropped rather than shown as a heading over nothing.
+   */
+  const methodGroups: Array<{ title: string; methods: ReadonlyArray<MethodId> }> = [];
+  if (settings.sect === 'shia') {
+    methodGroups.push({ title: 'Shia', methods: ['jafari', 'tehran'] });
+  } else {
+    const first = [suggestion.suggested, ...suggestion.alternatives].filter((method) =>
+      offeredMethods.includes(method),
+    );
+    const shown = new Set<MethodId>(first);
+    if (first.length > 0) {
+      methodGroups.push({ title: `Suggested for ${placeValue}`, methods: first });
+    }
+    for (const group of REGION_GROUPS) {
+      if (group.title === 'Shia') continue;
+      const rest = group.methods.filter(
+        (method) => offeredMethods.includes(method) && !shown.has(method),
+      );
+      if (rest.length === 0) continue;
+      for (const method of rest) shown.add(method);
+      methodGroups.push({ title: group.title, methods: rest });
+    }
+  }
 
   if (sheet) {
     return renderSheet();
@@ -347,10 +393,7 @@ export function Settings({ settings, onClose, onSaved }: Props) {
       ) : null}
 
       <div class="settings-scroll">
-        <section class="group-card" aria-labelledby="disclaimer-heading">
-          <h2 class="group-title" id="disclaimer-heading">
-            Disclaimer
-          </h2>
+        <Group title="Disclaimer" id="disclaimer-heading" rows={1}>
           <Row
             icon={<InfoIcon />}
             title="Disclaimer"
@@ -358,12 +401,9 @@ export function Settings({ settings, onClose, onSaved }: Props) {
             rowId="disclaimer"
             onClick={() => openSheet('disclaimer')}
           />
-        </section>
+        </Group>
 
-        <section class="group-card" aria-labelledby="place-heading">
-          <h2 class="group-title" id="place-heading">
-            Place
-          </h2>
+        <Group title="Place" id="place-heading" rows={1}>
           <Row
             icon={<PinIcon />}
             title={settings.place.name}
@@ -371,12 +411,9 @@ export function Settings({ settings, onClose, onSaved }: Props) {
             rowId="place"
             onClick={() => setChangingPlace(true)}
           />
-        </section>
+        </Group>
 
-        <section class="group-card" aria-labelledby="prayer-times-heading">
-          <h2 class="group-title" id="prayer-times-heading">
-            Prayer times
-          </h2>
+        <Group title="Prayer times" id="prayer-times-heading" rows={shiaMethod ? 3 : 4}>
           <Row
             icon={<SchoolIcon />}
             title="School"
@@ -407,13 +444,10 @@ export function Settings({ settings, onClose, onSaved }: Props) {
             rowId="hijri"
             onClick={() => openSheet('hijri')}
           />
-        </section>
+        </Group>
 
         {showRamadan ? (
-          <section class="group-card" aria-labelledby="ramadan-heading">
-            <h2 class="group-title" id="ramadan-heading">
-              Ramadan
-            </h2>
+          <Group title="Ramadan" id="ramadan-heading" rows={1}>
             <div class="switch-row">
               <div class="switch-copy">
                 <p class="switch-title">Ramadan card</p>
@@ -425,13 +459,10 @@ export function Settings({ settings, onClose, onSaved }: Props) {
                 onToggle={() => update({ ramadanCard: !settings.ramadanCard })}
               />
             </div>
-          </section>
+          </Group>
         ) : null}
 
-        <section class="group-card" aria-labelledby="alerts-heading">
-          <h2 class="group-title" id="alerts-heading">
-            Alerts
-          </h2>
+        <Group title="Alerts" id="alerts-heading" rows={settings.alerts.enabled ? 7 : 1}>
 
           {blocked ? (
             <Notice
@@ -501,12 +532,9 @@ export function Settings({ settings, onClose, onSaved }: Props) {
               />
             </>
           ) : null}
-        </section>
+        </Group>
 
-        <section class="group-card" aria-labelledby="appearance-heading">
-          <h2 class="group-title" id="appearance-heading">
-            Appearance
-          </h2>
+        <Group title="Appearance" id="appearance-heading" rows={1}>
           <Row
             icon={<ContrastIcon />}
             title="Theme"
@@ -514,12 +542,9 @@ export function Settings({ settings, onClose, onSaved }: Props) {
             rowId="theme"
             onClick={() => openSheet('theme')}
           />
-        </section>
+        </Group>
 
-        <section class="group-card" aria-labelledby="about-heading">
-          <h2 class="group-title" id="about-heading">
-            About
-          </h2>
+        <Group title="About" id="about-heading" rows={3}>
           <Row
             icon={<LockIcon />}
             title="Privacy policy"
@@ -536,7 +561,7 @@ export function Settings({ settings, onClose, onSaved }: Props) {
             onClick={() => openSheet('credits')}
           />
           <Row icon={<PhoneIcon />} title="Version" value="SajdaTime 0.1.0" chevron={false} />
-        </section>
+        </Group>
       </div>
     </main>
   );
@@ -705,13 +730,18 @@ export function Settings({ settings, onClose, onSaved }: Props) {
 
       case 'sound':
         return (
-          <Sheet title="Sound" onClose={() => closeSheet('sound')}>
-            <div class="sheet-body">
-              {settings.alerts.sound !== 'silent' ? (
+          <Sheet
+            title="Sound"
+            onClose={() => closeSheet('sound')}
+            action={
+              settings.alerts.sound !== 'silent' ? (
                 <button class="compact-button" type="button" aria-disabled={busy} onClick={togglePlay}>
                   {playing ? 'Stop' : 'Play'}
                 </button>
-              ) : null}
+              ) : null
+            }
+          >
+            <div class="sheet-body">
               <div class="choices" role="group" aria-labelledby="sheet-title">
                 <ChoiceRow
                   selected={settings.alerts.sound === 'beep'}

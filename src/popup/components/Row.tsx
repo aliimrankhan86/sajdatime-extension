@@ -22,16 +22,15 @@ export function Row({ icon, title, value, chevron = true, onClick, rowId }: RowP
         {icon}
       </span>
       <span class="row-copy">
-        <span class="row-title">{title}</span>
-        {value ? (
-          <>
-            {/* A zero-width space keeps the title and value as separate words for
-                WCAG 2.5.3 (Label in Name). The flex column gap is visual only, so
-                without it the two spans read as one word and axe fails the mismatch. */}
-            {'\u200B'}
-            <span class="row-value">{value}</span>
-          </>
-        ) : null}
+        {/*
+          A zero-width space keeps the title and value as separate words for
+          WCAG 2.5.3 (Label in Name). It lives inside the title span, not between
+          the spans: a bare text node between them becomes an anonymous flex item
+          in the column and claims a whole line box plus two column gaps, so every
+          row with a value grows by about 27px.
+        */}
+        <span class="row-title">{value ? `${title}\u200B` : title}</span>
+        {value ? <span class="row-value">{value}</span> : null}
       </span>
       {chevron ? (
         <svg
