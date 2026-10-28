@@ -4,9 +4,40 @@
 
 This file says what is true now. It is written for the next person or AI who opens the repository. Read it before the plan. The plan describes the whole build. This file describes the part that exists.
 
+## 📍 State of play, 28 October 2026 evening (read this first)
+
+**The build for version 1.0.0 is finished and reviewed. DeepSeek's work is done: no more DeepSeek sessions are planned.** Next is Ali's store work, guided by Claude one screen at a time.
+
+Reviewed and passed by Claude (Opus), each with its own clean clone, `npm run check`, `npm run test:e2e` and screenshots read by eye:
+
+| Commit | What | Result |
+| --- | --- | --- |
+| `b433496` | Step 8 fixes: no focus box on headings, method rows named after their method, "the United Kingdom", stacked buttons, steady popup size test | Pass |
+| `55aa1ff` | Step 9, Save as PDF: one A4 page per month, clock change note, Ramadan timetable, no new permission | Pass |
+| `4ade8d8` | Step 10, five languages, right to left for Urdu and Arabic, disclaimer from the phone's own translations | Pass |
+| `b6a40c7` | Step 11 preparation: version 1.0.0, listing text, privacy page, store images, zip test, `npm run release-check` | Pass, all five gates |
+| `0c0fce6` | Method step: "Choose another method" dropdown row opening "All methods" (decided by Claude on Ali's request, D-041 area), today in bold on the PDF, Indonesian "Simpan PDF", phone disclaimer wording | Pass, 353 unit and 109 e2e tests |
+| `a6f64f5` | Claude retook the method and Urdu store images | Images only |
+
+**Ali's standing decisions from today:**
+- **No more language work** (Ali, 28 Oct 2026: "we dont need to target multiple language for browser extensions if the work is done then leave it"). The five languages stay as built. Known gaps, accepted, not to be fixed unless Ali asks: on the Urdu and Arabic method step "Step 5 of 6", "Fajr" and "Isha" still read in English; the four translated disclaimers keep the phone's sentences about battery, "time or direction" and Match my mosque adjusting by hand, which the English extension text leaves out. These add caution and soften nothing. New sentences still go into all five files because `npm run check` requires it.
+- Method choice on the first run: the three suggested methods stay inline because the step has no room for more, and a dropdown style row opens the full list with today's Fajr and Isha. A native select was rejected because it cannot show those times.
+- DeepSeek was the builder for Steps 1 to 11 under Claude's review. That arrangement has ended.
+
+**Left, all Ali's, nothing for an AI to build:**
+1. Approve the screenshots: first run (`docs/images/first-run-*`), the Urdu and Arabic screens (`docs/images/i18n/`) and the store images (`docs/store/images/`).
+2. Chrome Web Store: the developer account is open. Upload `artifacts/sajdatime-1.0.0.zip` (made by `npm run package`), paste the text from `docs/store/listing.md`, answer the data use form as `docs/store/PUBLISHING.md` says (Location only), and press Submit.
+3. Microsoft Edge: open the free Partner Center account (personal Microsoft account), then the same upload.
+4. Make `docs/privacy.html` live at a public address and put that link in both listings.
+5. After both are live: store links into the Rate row and the privacy page, then update this file and GBrain.
+
+Claude walks Ali through each store one screen at a time from his screenshots, and never presses Submit, pays, or touches his credentials.
+
+---
+
 ## Where this is
 
-The repository was empty on 27 October 2026. It now has a working scaffold, a tested prayer engine, a Times popup, city search, a six-step first run that ends on the Times screen, a Settings screen, a location step that names the town it found and confirms it, optional prayer alerts from a background worker, a toolbar badge showing the time to the next prayer, a quiet reminder before each prayer, a Ramadan suhoor reminder, Ramadan labels for Suhoor and Iftar, one brand mark on every screen including both Location states, and a printable month of prayer times that the popup footer opens as "Save as PDF", with a Ramadan timetable variant, and the whole of it in English, Urdu, Arabic, Turkish and Indonesian, with Urdu and Arabic reading right to left and every time staying left to right inside them. It is **not in any store**. Version 0.1.0 in the manifest is a development version.
+The repository was empty on 27 October 2026. It now has a working scaffold, a tested prayer engine, a Times popup, city search, a six-step first run that ends on the Times screen, a Settings screen, a location step that names the town it found and confirms it, optional prayer alerts from a background worker, a toolbar badge showing the time to the next prayer, a quiet reminder before each prayer, a Ramadan suhoor reminder, Ramadan labels for Suhoor and Iftar, one brand mark on every screen including both Location states, and a printable month of prayer times that the popup footer opens as "Save as PDF", with a Ramadan timetable variant, and the whole of it in English, Urdu, Arabic, Turkish and Indonesian, with Urdu and Arabic reading right to left and every time staying left to right inside them. It is **not in any store**. Version 1.0.0 is in the manifest and package.json, ready to submit.
 
 The Chrome Web Store developer account is open. The Edge Partner Center account is not. Ali opens accounts and presses Submit. Nobody else handles his credentials or payment.
 
