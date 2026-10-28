@@ -1470,6 +1470,7 @@ button {
 
 /* Chevrons and the back arrow mirror in a right-to-left reading direction. */
 [dir='rtl'] .row-chevron,
+[dir='rtl'] .method-chooser-chevron,
 [dir='rtl'] .back-button svg {
   transform: scaleX(-1);
 }
@@ -1585,14 +1586,50 @@ button {
   min-height: 56px;
 }
 
-/* "Match my mosque" and "Other methods" stack full width, 48 px each, 8 px apart, so
-   neither label wraps onto a second line at 380 px (Step 8 review, 28 October 2026). */
+/* "Match my mosque" and the method select stack full width, 48 px each, 8 px apart, so
+   neither label wraps onto a second line at 380 px (Step 8 review, 28 October 2026).
+   The select is outlined rather than solid: it opens a list, so it reads as a field
+   beside the screen's one solid action, and the chevron says it opens something. */
 .first-run-method-actions {
   flex-direction: column;
 }
 
 .first-run-method-actions .action {
   min-height: 48px;
+}
+
+.method-chooser {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-height: 48px;
+  padding: 0 16px;
+  color: var(--on-surface);
+  background: var(--surface);
+  border: 1px solid var(--outline-variant);
+  border-radius: 14px;
+  font-size: 16px;
+  font-weight: 600;
+  text-align: start;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.method-chooser:hover {
+  background: var(--surface-container);
+}
+
+.method-chooser-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.method-chooser-chevron {
+  flex: none;
+  color: var(--on-surface-variant);
 }
 
 /* A step's Continue is disabled until a choice is made (the madhab step). Faded, not

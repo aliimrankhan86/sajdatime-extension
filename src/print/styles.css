@@ -138,6 +138,12 @@ button {
   direction: ltr;
 }
 
+/* The heading sits over its numbers: end aligned on screen and on paper, which becomes
+   the left edge in Urdu and Arabic exactly as it does for the numbers themselves. */
+.print-table th.time {
+  text-align: end;
+}
+
 .print-table td.hijri {
   white-space: nowrap;
 }
@@ -240,8 +246,14 @@ button {
     border-bottom: 2px solid black;
   }
 
+  /* The shaded row must still be shaded on paper: browsers drop background colours when
+     printing unless asked not to, and the bold weight alone does not say which row is
+     today in a photocopy. */
   .print-table tr.is-today td {
     background: whitesmoke;
+    font-weight: 700;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
 
   .print-note,

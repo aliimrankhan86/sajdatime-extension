@@ -37,24 +37,36 @@ export interface PrintProps {
   initialKind: TimetableKind;
 }
 
+/** A column heading, and whether the column beneath it holds times. */
+interface PrintHeader {
+  label: string;
+  /** A time column, aligned the same way as the numbers below it. */
+  time?: boolean;
+}
+
 /** The month table's headings, read at render time so they follow the language. */
-function monthHeaders(): string[] {
-  return [t('print.date'), t('print.day'), t('print.hijri'), ...SLOTS.map((slot) => slotLabel(slot))];
+function monthHeaders(): PrintHeader[] {
+  return [
+    { label: t('print.date') },
+    { label: t('print.day') },
+    { label: t('print.hijri') },
+    ...SLOTS.map((slot) => ({ label: slotLabel(slot), time: true })),
+  ];
 }
 
 // Ramadan renames two columns and puts the day of Ramadan first. The six times keep
 // their order, so the same body cells serve both tables.
-function ramadanHeaders(): string[] {
+function ramadanHeaders(): PrintHeader[] {
   return [
-    t('print.ramadanDay'),
-    t('print.date'),
-    t('print.day'),
-    t('slot.suhoor'),
-    slotLabel('sunrise'),
-    slotLabel('dhuhr'),
-    slotLabel('asr'),
-    t('slot.iftar'),
-    slotLabel('isha'),
+    { label: t('print.ramadanDay') },
+    { label: t('print.date') },
+    { label: t('print.day') },
+    { label: t('slot.suhoor'), time: true },
+    { label: slotLabel('sunrise'), time: true },
+    { label: slotLabel('dhuhr'), time: true },
+    { label: slotLabel('asr'), time: true },
+    { label: t('slot.iftar'), time: true },
+    { label: slotLabel('isha'), time: true },
   ];
 }
 
@@ -203,8 +215,8 @@ export function Print({ settings, initialMonth, initialKind }: PrintProps) {
         <thead>
           <tr>
             {(viewing ? ramadanHeaders() : monthHeaders()).map((header) => (
-              <th scope="col" key={header}>
-                {header}
+              <th scope="col" key={header.label} class={header.time ? 'time' : undefined}>
+                {header.label}
               </th>
             ))}
           </tr>

@@ -142,7 +142,7 @@ async function methodStepShot(executablePath) {
     await page.getByRole('button', { name: 'Continue', exact: true }).click();
     // The method step opens on the suggested method. Open the full list, which is the screen that
     // shows all thirteen methods and their times.
-    await page.getByRole('button', { name: 'Other methods', exact: true }).click();
+    await page.locator('.method-chooser').click();
     await page.waitForSelector('.method-row');
     await page.evaluate(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done))));
     const buffer = await page.screenshot({ type: 'png' });

@@ -615,7 +615,7 @@ export function FirstRun({ onSaved }: { onSaved: (settings: Settings) => void })
             <span>{playing ? t('common.stop') : t('common.play')}</span>
           </button>
         </div>
-        <div class="choices" role="group" aria-label="Sound">
+        <div class="choices" role="group" aria-label={t('settings.sound')}>
           {SOUNDS.map((sound) => (
             <ChoiceRow
               key={sound}
@@ -637,6 +637,40 @@ export function FirstRun({ onSaved }: { onSaved: (settings: Settings) => void })
     );
   }
 
+  /**
+   * The full method list opens from a select, not from a second solid action: the
+   * screen already has one action (Match my mosque), and a field beside it reads as
+   * "the list of methods" rather than as a competing choice. The count is spoken in
+   * the label so a screen reader knows how many options the list holds.
+   */
+  function renderMethodChooser() {
+    return (
+      <button
+        class="method-chooser"
+        type="button"
+        aria-label={`${t('method.chooseAnother')}, ${t('method.count', { n: offered.length })}`}
+        onClick={() => setSub('methods')}
+      >
+        <span class="method-chooser-label">{t('method.chooseAnother')}</span>
+        <svg
+          class="method-chooser-chevron"
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <path d="M9 6l6 6-6 6" />
+        </svg>
+      </button>
+    );
+  }
+
   function renderMethodStep() {
     const isSingle = suggestion.alternatives.length === 0;
     if (isSingle) {
@@ -649,7 +683,9 @@ export function FirstRun({ onSaved }: { onSaved: (settings: Settings) => void })
           <div class="method-row is-selected first-run-method-card">
             <span class="method-copy">
               <span class="method-name">{methodName(draft.method)}</span>
-              <span class="method-hint">Suggested for {placeValue}</span>
+              <span class="method-hint">
+                {t('method.suggestedFor', { country: placeValue })}
+              </span>
               {times ? (
                 <span class="method-times method-times-large">
                   <span class="method-time">Fajr {times.fajr}</span>
@@ -677,9 +713,7 @@ export function FirstRun({ onSaved }: { onSaved: (settings: Settings) => void })
             <button class="action" type="button" onClick={openMatch}>
               {t('firstRun.matchTitle')}
             </button>
-            <button class="action" type="button" onClick={() => setSub('methods')}>
-              {t('method.other')}
-            </button>
+            {renderMethodChooser()}
           </div>
         </>
       );
@@ -693,7 +727,7 @@ export function FirstRun({ onSaved }: { onSaved: (settings: Settings) => void })
         <h1 class="first-run-title" data-autofocus tabIndex={-1}>
           {t('firstRun.methodTitle')}
         </h1>
-        <p class="field-hint">Mosques in {placeValue} work out Fajr and Isha differently.</p>
+        <p class="field-hint">{t('firstRun.methodNote', { place: placeValue })}</p>
         <div class="choices" role="radiogroup" aria-label={t('firstRun.methodTitle')}>
           {methods.map((method, index) => {
             const times = todayFor(method);
@@ -710,7 +744,9 @@ export function FirstRun({ onSaved }: { onSaved: (settings: Settings) => void })
                 <span class="method-copy">
                   <span class="method-name">{methodName(method)}</span>
                   {index === 0 ? (
-                    <span class="method-hint">Suggested for {placeValue}</span>
+                    <span class="method-hint">
+                      {t('method.suggestedFor', { country: placeValue })}
+                    </span>
                   ) : null}
                   {times ? (
                     <span class="method-times">
@@ -744,9 +780,7 @@ export function FirstRun({ onSaved }: { onSaved: (settings: Settings) => void })
           <button class="action" type="button" onClick={openMatch}>
             {t('firstRun.matchTitle')}
           </button>
-          <button class="action" type="button" onClick={() => setSub('methods')}>
-            {t('method.other')}
-          </button>
+          {renderMethodChooser()}
         </div>
       </>
     );
@@ -758,13 +792,12 @@ export function FirstRun({ onSaved }: { onSaved: (settings: Settings) => void })
         <header class="first-run-sheet-head">
           <BackArrow label={t('common.back')} onClick={closeSub} />
           <h1 class="first-run-sheet-title" data-autofocus tabIndex={-1}>
-            {t('method.other')}
+            {t('method.all')}
           </h1>
         </header>
         <div class="first-run-sheet-body method-body">
           <p class="field-hint">
-            Today's Fajr and Isha in {draft.place.name} are shown for each one, so you can compare
-            with your mosque.
+            {t('settings.methodHintTimes', { place: draft.place.name })}
           </p>
           {methodGroups.map((group) => (
             <div class="method-group" key={group.title}>

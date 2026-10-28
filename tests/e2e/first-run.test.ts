@@ -122,10 +122,10 @@ test('the six step journey fits and keeps full size targets at each step', async
     await shot(page, 'first-run-match');
     await page.getByRole('button', { name: 'Back' }).click();
 
-    // Other methods sheet (scrolls like the Settings method sheet).
-    await page.getByRole('button', { name: 'Other methods' }).click();
-    await expect(page.getByRole('heading', { name: 'Other methods' })).toBeVisible();
-    await checkSheetFits(page, 'other methods');
+    // All methods sheet (scrolls like the Settings method sheet).
+    await page.locator('.method-chooser').click();
+    await expect(page.getByRole('heading', { name: 'All methods' })).toBeVisible();
+    await checkSheetFits(page, 'all methods');
     await shot(page, 'first-run-methods');
     await page.getByRole('button', { name: 'Back' }).click();
 
@@ -280,10 +280,10 @@ test('every first-run heading takes focus without a ring and Tab draws one', asy
     await page.getByRole('button', { name: 'Back' }).click();
     await expectHeadingFocus(page, 'method after match');
 
-    await page.getByRole('button', { name: 'Other methods' }).click();
-    await expectHeadingFocus(page, 'other methods');
+    await page.locator('.method-chooser').click();
+    await expectHeadingFocus(page, 'all methods');
     await page.getByRole('button', { name: 'Back' }).click();
-    await expectHeadingFocus(page, 'method after other');
+    await expectHeadingFocus(page, 'method after choosing another');
 
     await page.getByRole('button', { name: 'Continue' }).click();
     await expectHeadingFocus(page, 'alerts');
@@ -297,7 +297,7 @@ test('every first-run heading takes focus without a ring and Tab draws one', asy
  * its title, so no row was named after its method. Every row title is now a method
  * name, and the suggestion moves to the hint line under it. The hint also carries the
  * "the" that English wants inside a sentence (D-039), and the same group title is used
- * by the Other methods sheet, which shares meta.methodGroupsFor.
+ * by the All methods sheet, which shares meta.methodGroupsFor.
  */
 test('every method row is named after its method and the suggestion is the hint line', async () => {
   const extension = await launchExtension();
@@ -324,8 +324,8 @@ test('every method row is named after its method and the suggestion is the hint 
       'Suggested for the United Kingdom',
     );
 
-    await page.getByRole('button', { name: 'Other methods' }).click();
-    await expect(page.getByRole('heading', { name: 'Other methods' })).toBeVisible();
+    await page.locator('.method-chooser').click();
+    await expect(page.getByRole('heading', { name: 'All methods' })).toBeVisible();
     await expect(page.locator('.method-group-title').first()).toHaveText(
       'Suggested for the United Kingdom',
     );
@@ -340,11 +340,13 @@ test('every method row is named after its method and the suggestion is the hint 
 });
 
 /**
- * The Step 8 review: "Match my mosque" and "Other methods" wrapped onto two lines side
+ * The Step 8 review: "Match my mosque" and the method list wrapped onto two lines side
  * by side. They now stack full width, 48 px tall, 8 px apart, and each label is one
- * line in both themes. Measured, because the label width depends on the font.
+ * line in both themes. The second control is a select, not an action, so the selector
+ * is every child of the actions row. Measured, because the label width depends on the
+ * font.
  */
-test('the two method buttons stack full width on one line in both themes', async () => {
+test('the Match button and the method select stack full width on one line in both themes', async () => {
   const extension = await launchExtension();
   const page = extension.page;
   try {
@@ -359,11 +361,13 @@ test('the two method buttons stack full width on one line in both themes', async
     for (const theme of ['light', 'dark'] as const) {
       await setTheme(page, theme);
       const metrics = await page.evaluate(() => {
-        const buttons = [...document.querySelectorAll<HTMLElement>('.first-run-method-actions .action')];
+        const buttons = [...document.querySelectorAll<HTMLElement>('.first-run-method-actions > *')];
         return buttons.map((button) => {
           const rect = button.getBoundingClientRect();
           const range = document.createRange();
-          range.selectNodeContents(button);
+          // The select holds a label and a chevron, so measure its label; an action is
+          // plain text.
+          range.selectNodeContents(button.querySelector('.method-chooser-label') ?? button);
           return {
             height: rect.height,
             width: rect.width,
@@ -373,11 +377,11 @@ test('the two method buttons stack full width on one line in both themes', async
           };
         });
       });
-      expect(metrics, `${theme}: two buttons`).toHaveLength(2);
+      expect(metrics, `${theme}: two controls`).toHaveLength(2);
       const [first, second] = metrics;
-      if (!first || !second) throw new Error(`${theme}: both method buttons must exist`);
+      if (!first || !second) throw new Error(`${theme}: both method controls must exist`);
       for (const metric of metrics) {
-        expect(metric.height, `${theme}: button height`).toBe(48);
+        expect(metric.height, `${theme}: control height`).toBe(48);
         expect(metric.lines, `${theme}: label lines`).toBe(1);
       }
       expect(second.top - (first.top + first.height), `${theme}: gap`).toBe(8);

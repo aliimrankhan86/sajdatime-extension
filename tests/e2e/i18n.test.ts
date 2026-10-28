@@ -120,6 +120,41 @@ test('the Times screen never scrolls sideways in any language', async () => {
   }
 });
 
+test('both footer buttons keep one line and cut no word in every language', async () => {
+  // "Save as PDF" is the widest translated label in the popup, and the two footer buttons
+  // share the width, so this is where a language either fits or is cut. Measured, because
+  // the width depends on the font and on the translation.
+  for (const language of LANGS) {
+    const extension = await launchExtension();
+    try {
+      await seedSettings(extension, undefined, withLanguage(language));
+      const buttons = await extension.page.evaluate(() =>
+        [...document.querySelectorAll<HTMLElement>('.footer-actions button')].map((button) => {
+          const range = document.createRange();
+          range.selectNodeContents(button);
+          const runTops = [...range.getClientRects()].map((rect) => Math.round(rect.top));
+          return {
+            label: (button.textContent ?? '').trim(),
+            clipped: button.scrollWidth - button.clientWidth,
+            // A mixed direction label ("PDF محفوظ کریں") makes one rectangle per script
+            // run on the same line, so count the lines by where they sit, not how many
+            // rectangles there are.
+            lines: new Set(runTops).size,
+          };
+        }),
+      );
+      expect(buttons, language).toHaveLength(2);
+      for (const button of buttons) {
+        expect(button.label, `${language} label`).not.toBe('');
+        expect(button.clipped, `${language} "${button.label}" clipped`).toBeLessThanOrEqual(0);
+        expect(button.lines, `${language} "${button.label}" lines`).toBe(1);
+      }
+    } finally {
+      await extension.close();
+    }
+  }
+});
+
 test('nothing is clipped at 200 per cent zoom in Indonesian and Turkish', async () => {
   for (const language of ['id', 'tr'] as const) {
     const extension = await launchExtension();
@@ -249,6 +284,81 @@ test('the method sheet fits the popup and cuts no word in any language', async (
       expect(report.sideways, language).toBeLessThanOrEqual(0);
     } finally {
       await extension.close();
+    }
+  }
+});
+
+/**
+ * The screenshots for the human check, for the two right to left languages only, in both
+ * themes: Settings, the short first run disclaimer, the first run method step with the new
+ * select, the full method list it opens, and the printable timetable. Rewritten only when
+ * SAJDATIME_SCREENSHOTS=1, so a normal run leaves the checkout alone.
+ */
+test('captures the right to left screens when asked', async () => {
+  test.skip(process.env['SAJDATIME_SCREENSHOTS'] !== '1', 'screenshots are opt in');
+  const NATIVE = { ur: 'اردو', ar: 'العربية' } as const;
+
+  for (const language of ['ur', 'ar'] as const) {
+    for (const theme of ['light', 'dark'] as const) {
+      // Settings and the timetable come from saved settings.
+      const extension = await launchExtension();
+      try {
+        await seedSettings(extension, undefined, withLanguage(language));
+        await setTheme(extension.page, theme);
+        await extension.page.locator('.footer-settings').click();
+        await extension.page.waitForSelector('.back-button');
+        await screenshot(extension.page, `docs/images/i18n/settings-${language}-${theme}.png`);
+
+        const print = await extension.context.newPage();
+        // The timetable is laid out for A4, so it needs a page wide enough to hold all
+        // seven columns before it is worth looking at.
+        await print.setViewportSize({ width: 900, height: 1200 });
+        await print.clock.install({ time: new Date('2026-10-27T11:00:00Z') });
+        await print.goto(`chrome-extension://${extension.id}/print/index.html`);
+        await print.waitForSelector('table.print-table');
+        await setTheme(print, theme);
+        await screenshot(print, `docs/images/i18n/pdf-${language}-${theme}.png`, { fullPage: true });
+        await print.close();
+      } finally {
+        await extension.close();
+      }
+
+      // The first run is walked with the language chosen at its first step, so every word
+      // on the way, including the new select, is in the language of the screenshot.
+      const run = await launchExtension();
+      const page = run.page;
+      try {
+        await page.evaluate(() => chrome.storage.local.clear());
+        await page.clock.install({ time: new Date('2026-10-27T11:00:00Z') });
+        await page.reload();
+        await page.waitForSelector('.language-button');
+        await page.locator('.language-button').click();
+        await page.locator('.choice-row').filter({ hasText: NATIVE[language] }).click();
+        await page.locator('.back-button').click();
+        await setTheme(page, theme);
+
+        await page.locator('.first-run-primary').click(); // Begin
+        await screenshot(page, `docs/images/i18n/first-run-disclaimer-${language}-${theme}.png`);
+
+        await page.locator('.first-run-primary').click(); // I understand
+        await page.locator('.choice-card').first().click(); // Sunni
+        await page.locator('.first-run-foot .action').last().click(); // Continue
+        await page.locator('.choice-card').first().click(); // the first madhab
+        await page.locator('.first-run-foot .action').last().click(); // Continue
+        await page.locator('.first-run-skip button').click(); // Makkah
+        await expect(page.locator('.first-run-foot .action').last()).toBeEnabled();
+        await page.locator('.first-run-foot .action').last().click(); // Continue to method
+
+        await page.waitForSelector('.method-chooser');
+        await screenshot(page, `docs/images/i18n/first-run-method-${language}-${theme}.png`);
+
+        await page.locator('.method-chooser').click();
+        await page.waitForSelector('.method-body');
+        await page.evaluate(() => window.scrollTo(0, 0));
+        await screenshot(page, `docs/images/i18n/all-methods-${language}-${theme}.png`);
+      } finally {
+        await run.close();
+      }
     }
   }
 });

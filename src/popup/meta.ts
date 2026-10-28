@@ -4,7 +4,7 @@ import type { Settings } from '../settings/types';
 
 /**
  * The method names, hints, region groups, sound labels and the browser name, shared by
- * the Settings method sheet and the first-run "Other methods" step. The strings are the
+ * the Settings method sheet and the first-run "All methods" step. The strings are the
  * phone's own (Ali's words), copied into the language files, so both screens can never
  * drift apart.
  *
@@ -56,7 +56,7 @@ export function soundHint(sound: Settings['alerts']['sound']): string {
 /** The three regions below "Suggested for", in the order the method sheet shows them. */
 export type RegionId = 'europe' | 'middleEast' | 'asia' | 'shia';
 
-// PLAN 6.3 "Other methods": the region groups that the method sheet shows below the
+// PLAN 6.3 "All methods": the region groups that the method sheet shows below the
 // "Suggested for <country>" group. North America has no group of its own in the plan, so
 // ISNA sits with the other western far-from-the-equator methods under Europe (D-034).
 export const REGION_GROUPS: ReadonlyArray<{ id: RegionId; methods: ReadonlyArray<MethodId> }> = [
@@ -115,7 +115,7 @@ export function countryInSentence(name: string): string {
 }
 
 /**
- * The "Other methods" list, grouped the same way the Settings method sheet does. The
+ * The "All methods" list, grouped the same way the Settings method sheet does. The
  * suggested methods form the first group and are left out of the region groups below,
  * so the UK does not see Moonsighting, ISNA and Karachi twice. A Sunni list never
  * reaches the Shia group; Shia gets the Shia group alone. PLAN 6.3 and D-034.
