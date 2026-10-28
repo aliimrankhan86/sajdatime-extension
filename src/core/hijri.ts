@@ -137,6 +137,15 @@ export function showsNotice(info: RamadanInfo, today: string): boolean {
   return days >= -(NOTICE_LAST_DAY_NUMBER - 1) && days <= NOTICE_LEAD_DAYS;
 }
 
+/**
+ * The coming notice: one to three days before Ramadan starts, never on its days.
+ * The first-two-days "Shift the date" notice is deferred, so this stops at day zero.
+ */
+export function showsComingNotice(info: RamadanInfo, today: string): boolean {
+  const days = daysUntilStart(info, today);
+  return days >= 1 && days <= NOTICE_LEAD_DAYS;
+}
+
 export function showsSettings(info: RamadanInfo, today: string): boolean {
   const days = daysUntilStart(info, today);
   return contains(info, today) || (days >= 1 && days <= NOTICE_LEAD_DAYS);

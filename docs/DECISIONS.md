@@ -266,3 +266,13 @@ The badge and "time until the next prayer" reminders are deferred.
 **Why:** a screen must not repeat a fact it already shows, and the extra line cost the header its normal gaps. The Hijri date is enough on its own.
 
 **Revisit if:** a later design wants the day number shown separately in the header, which would need a different layout, not a second text line.
+
+## D-030: the Ramadan notice, Eid and the iftar wording
+
+**Decided:** on the one, two and three days before Ramadan (not on the days of Ramadan) the Times screen shows a closable coming notice between the header and the hero card: title "Ramadan begins on <date>", line "From the first day, the Ramadan card shows suhoor and iftar times here. You can turn it off in Settings.", and no action button. Closing it stores `true` under `sajdatime.notice.ramadan.<hijriYear>`, so it stays closed for that Ramadan only. On the two Eids (`eidOn(today)` set) the Times screen shows a closable notice with the title "Eid Mubarak" and the line "Follow your mosque for the date of Eid."; closing stores `sajdatime.notice.eid.<eid>.<hijriYear>`. While alerts are on and the Ramadan card is on, the Maghrib alert message is "It is time for Maghrib. You can break your fast."; every other prayer, and Maghrib outside Ramadan, keep "It is time for <prayer> in <place>."
+
+**Why:** the three pieces all name the Ramadan moment: warn the user three days before, greet the Eid, and say the Maghrib call is the time to break the fast. The notices use the quiet (soft green) tone because they are invitations, not problems. The dismissed keys are separate from `sajdatime.settings.v1`, so closing a notice never touches settings. The coming notice and the Eid notice cannot show together, because coming days are before the first day and the Eid is the first Shawwal.
+
+**Known gap:** the base Times screen fills 380 by 600 exactly, so the notice pushes the popup taller than 600 px and it scrolls. Making the whole popup fit 380 by 600 with no scroll, notice included, is Step 5 (the Times screen re-plan), which also builds the full `Notice` component (round mark and a row of solid buttons).
+
+**Revisit if:** Ali wants the deferred "Shift the date" notice on the first two days of Ramadan, or a different close control than the "Close" text link.

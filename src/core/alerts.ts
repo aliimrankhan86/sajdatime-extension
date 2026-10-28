@@ -29,6 +29,12 @@ export function prayerAlarmName(date: string, slot: Prayer): string {
   return `prayer:${date}:${slot}`;
 }
 
+/** The body of a prayer alert; in Ramadan the Maghrib alert is the iftar call. */
+export function prayerAlertMessage(slot: Prayer, placeName: string, inRamadan: boolean): string {
+  if (inRamadan && slot === 'maghrib') return 'It is time for Maghrib. You can break your fast.';
+  return `It is time for ${PRAYER_NAMES[slot]} in ${placeName}.`;
+}
+
 export function isLate(nowMs: number, scheduledMs: number): boolean {
   return nowMs - scheduledMs > LATE_MS;
 }

@@ -54,6 +54,7 @@ describe('token contrast', () => {
     it(`keeps links readable in ${scheme}`, () => {
       expect(ratio(token(block, 'primary'), token(block, 'surface'))).toBeGreaterThanOrEqual(4.5);
       expect(ratio(token(block, 'primary'), token(block, 'surface-soft'))).toBeGreaterThanOrEqual(4.5);
+      expect(ratio(token(block, 'primary'), token(block, 'primary-soft'))).toBeGreaterThanOrEqual(4.5);
     });
 
     it(`keeps the hero date readable over every gradient stop in ${scheme}`, () => {

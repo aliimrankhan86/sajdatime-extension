@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isLate, parseAlarmName, scheduledAlarms } from '../../src/core/alerts';
+import { isLate, parseAlarmName, prayerAlertMessage, scheduledAlarms } from '../../src/core/alerts';
 import { computeDay } from '../../src/core/engine';
 import type { Settings } from '../../src/settings/types';
 
@@ -107,5 +107,18 @@ describe('parseAlarmName', () => {
     expect(parseAlarmName('prayer:2026-10-27:asr:extra')).toEqual({ kind: 'unknown' });
     expect(parseAlarmName('prayer:2026-10-27:ASR')).toEqual({ kind: 'unknown' });
     expect(parseAlarmName('clear:')).toEqual({ kind: 'unknown' });
+  });
+});
+
+describe('prayerAlertMessage', () => {
+  it('is the iftar wording for Maghrib in Ramadan', () => {
+    expect(prayerAlertMessage('maghrib', 'London', true)).toBe(
+      'It is time for Maghrib. You can break your fast.',
+    );
+  });
+
+  it('keeps the ordinary wording outside Ramadan and for other prayers', () => {
+    expect(prayerAlertMessage('maghrib', 'London', false)).toBe('It is time for Maghrib in London.');
+    expect(prayerAlertMessage('fajr', 'London', true)).toBe('It is time for Fajr in London.');
   });
 });

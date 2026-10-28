@@ -8,6 +8,7 @@ import {
   isRamadan,
   offersTimetable,
   ramadanInfo,
+  showsComingNotice,
   showsNotice,
   showsSettings,
 } from '../../src/core/hijri';
@@ -73,6 +74,17 @@ describe('Ramadan', () => {
     expect(showsNotice(info, '2026-02-14')).toBe(false);
     expect(showsNotice(info, '2026-02-19')).toBe(true);
     expect(showsNotice(info, '2026-02-20')).toBe(false);
+  });
+
+  it('shows the coming notice only in the three days before Ramadan', () => {
+    const info = ramadanInfo('2027-02-08');
+    if (!info) throw new Error('expected Ramadan');
+    expect(showsComingNotice(info, '2027-02-05')).toBe(true);
+    expect(showsComingNotice(info, '2027-02-06')).toBe(true);
+    expect(showsComingNotice(info, '2027-02-07')).toBe(true);
+    expect(showsComingNotice(info, '2027-02-04')).toBe(false);
+    expect(showsComingNotice(info, '2027-02-08')).toBe(false);
+    expect(showsComingNotice(info, '2027-02-09')).toBe(false);
   });
 
   it('shows Ramadan settings inside it and in the three days before', () => {

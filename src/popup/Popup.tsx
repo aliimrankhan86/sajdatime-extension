@@ -5,9 +5,16 @@ import {
   contains,
   currentPrayer,
   dateInZone,
+  dismissNotice,
+  eidNoticeKey,
+  eidOn,
+  formatNoticeDate,
   hijriFor,
+  isNoticeDismissed,
   nextPrayer,
   ramadanInfo,
+  ramadanNoticeKey,
+  showsComingNotice,
   type DayTimes,
   type NextPrayer,
   type Prayer,
@@ -275,6 +282,47 @@ function FirstRun({ onSaved }: { onSaved: (settings: Settings) => void }) {
   );
 }
 
+function DismissableNotice({
+  title,
+  line,
+  storageKey,
+}: {
+  title: string;
+  line: string;
+  storageKey: string;
+}) {
+  const [dismissed, setDismissed] = useState(false);
+
+  useEffect(() => {
+    let alive = true;
+    void isNoticeDismissed(storageKey)
+      .then((value) => {
+        if (alive) setDismissed(value);
+      })
+      .catch(() => undefined);
+    return () => {
+      alive = false;
+    };
+  }, [storageKey]);
+
+  function close(): void {
+    void dismissNotice(storageKey).catch(() => undefined);
+    setDismissed(true);
+  }
+
+  if (dismissed) return null;
+
+  return (
+    <section class="notice">
+      <h2 class="notice-title">{title}</h2>
+      <p class="notice-line">{line}</p>
+      <button class="notice-close" type="button" onClick={close}>
+        Close
+      </button>
+    </section>
+  );
+}
+
 function Times({
   settings,
   onReset,
@@ -297,6 +345,7 @@ function Times({
     timeZone: settings.place.timeZone,
     hijriOffsetDays: settings.hijriOffsetDays,
   };
+  const locale = navigator.language || 'en-GB';
 
   let today: string;
   let day: DayTimes;
@@ -311,7 +360,6 @@ function Times({
     // The browser's own 12 or 24 hour style for its language. A stored language
     // will take over when the language screen lands. In 24 hour style the hour
     // keeps its leading zero, so the column of times lines up.
-    const locale = navigator.language || 'en-GB';
     clock = clockFormatter(prefs.timeZone, locale);
   } catch {
     return (
@@ -333,6 +381,11 @@ function Times({
   const nextName = slotLabel(next.slot, inRamadan);
   const nextNote = countdownNote(next.slot, inRamadan);
 
+  const eid = eidOn(today, settings.hijriOffsetDays);
+  const comingKey =
+    ramadan !== null && showsComingNotice(ramadan, today) ? ramadanNoticeKey(ramadan.hijriYear) : null;
+  const eidKey = eid !== null ? eidNoticeKey(eid.eid, eid.hijriYear) : null;
+
   return (
     <main>
       <header class="hero">
@@ -345,6 +398,21 @@ function Times({
         <h1 class="place">{settings.place.name}</h1>
         {hijri ? <p class="hijri">{hijri}</p> : null}
       </header>
+
+      {comingKey !== null && ramadan !== null ? (
+        <DismissableNotice
+          title={`Ramadan begins on ${formatNoticeDate(ramadan.firstDay, locale)}`}
+          line="From the first day, the Ramadan card shows suhoor and iftar times here. You can turn it off in Settings."
+          storageKey={comingKey}
+        />
+      ) : null}
+      {eidKey !== null ? (
+        <DismissableNotice
+          title="Eid Mubarak"
+          line="Follow your mosque for the date of Eid."
+          storageKey={eidKey}
+        />
+      ) : null}
 
       <section class="next-card" aria-labelledby="next-label">
         <p class="next-label" id="next-label">

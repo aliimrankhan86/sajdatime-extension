@@ -93,13 +93,15 @@ Read `docs/DECISIONS.md`. The five that matter most:
 
 ## Next step
 
-Steps 2 and 3a of [`docs/BUILD-NEXT.md`](BUILD-NEXT.md) are built and waiting for review. The brief builds the remaining steps one at a time, with a review between each:
+Steps 2 and 3a of [`docs/BUILD-NEXT.md`](BUILD-NEXT.md) are accepted, and Step 3b (the Ramadan notice, Eid and the iftar alert) is built and waiting for review. The brief builds the remaining steps one at a time, with a review between each:
 
-- Step 3b: the Ramadan notice, Eid and the iftar alert.
+- Step 4: the design foundation (U1, U2, U3, U12 and the §5 tests) of `docs/UX-PLAN.md`.
 - After the brief, the rest of the first-run journey and Settings in `docs/PLAN.md`: the school and madhab steps, a language choice and the six-step sequence. Keep the Times popup unchanged while those screens are built.
 - Add the store screenshots and the final listing, then hand Ali the submission checks.
 
-Do not start Step 3b until Step 3a is reviewed. The worker is written once, against the stable `alerts` settings shape; the badge and reminders stay deferred.
+Do not start Step 4 until Step 3b is reviewed. The worker is written once, against the stable `alerts` settings shape; the badge and reminders stay deferred.
+
+**Known in Step 3b:** the coming and Eid notices push the popup taller than 600 px, so it scrolls. Making the whole popup fit 380 by 600 with no scroll, notice included, is Step 5 (the Times screen re-plan).
 
 ## How to pick this up
 

@@ -1,6 +1,7 @@
-import { PRAYER_NAMES, isLate, parseAlarmName, scheduledAlarms } from '../core/alerts';
+import { PRAYER_NAMES, isLate, parseAlarmName, prayerAlertMessage, scheduledAlarms } from '../core/alerts';
 import { formatClockTime } from '../core/clock';
 import { computeDay } from '../core/engine';
+import { isRamadan } from '../core/hijri';
 import { parseAlertMessage, soundMessageType, type AlertMessageType } from '../core/messages';
 import type { Prayer, Sect } from '../core/types';
 import { loadSettings } from '../settings/storage';
@@ -75,12 +76,13 @@ async function firePrayer(date: string, slot: Prayer): Promise<void> {
   const notificationId = `prayer:${date}:${slot}`;
   const placeName = settings.place.name.slice(0, 60);
   const locale = navigator.language || 'en-GB';
+  const inRamadan = settings.ramadanCard && isRamadan(date, settings.hijriOffsetDays);
   try {
     await chrome.notifications.create(notificationId, {
       type: 'basic',
       iconUrl: NOTIFICATION_ICON,
       title: `${PRAYER_NAMES[slot]}, ${formatClockTime(scheduled, settings.place.timeZone, locale)}`,
-      message: `It is time for ${PRAYER_NAMES[slot]} in ${placeName}.`,
+      message: prayerAlertMessage(slot, placeName, inRamadan),
       silent: true,
       requireInteraction: true,
       ...(settings.alerts.sound === 'adhan' ? { buttons: [{ title: 'Stop sound' }] } : {}),
