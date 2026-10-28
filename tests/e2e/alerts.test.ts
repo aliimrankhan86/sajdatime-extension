@@ -186,6 +186,37 @@ test('the adhan plays through an offscreen document', async () => {
   }
 });
 
+test('starting a new sound over a playing one keeps Play on Stop', async () => {
+  const extension = await launchExtension();
+  try {
+    await seedSettings(extension, new Date('2026-10-27T11:00:00Z'), {
+      ...LONDON,
+      alerts: { ...LONDON.alerts, enabled: true, sound: 'adhan' },
+    });
+
+    // A prayer fires now and its adhan starts playing through the offscreen page.
+    await extension.worker.evaluate(async () => {
+      await chrome.alarms.create('prayer:2099-01-01:fajr', { when: Date.now() });
+    });
+    const offscreenCount = () =>
+      extension.worker.evaluate(async () =>
+        (await chrome.runtime.getContexts({ contextTypes: ['OFFSCREEN_DOCUMENT'] })).length,
+      );
+    await expect.poll(offscreenCount).toBeGreaterThan(0);
+
+    await extension.page.getByRole('button', { name: 'Settings' }).click();
+    await expect(extension.page.getByRole('heading', { name: 'Alerts' })).toBeVisible();
+
+    // Play starts a second adhan over the first. The replaced adhan must not report its
+    // end, or this flips straight back to Play while the new adhan is still sounding.
+    await extension.page.getByRole('button', { name: 'Play' }).click();
+    await extension.page.waitForTimeout(1500);
+    await expect(extension.page.getByRole('button', { name: 'Stop' })).toBeVisible();
+  } finally {
+    await extension.close();
+  }
+});
+
 test('a settings change clears only prayer alarms, never a pending clear alarm', async () => {
   const extension = await launchExtension();
   try {

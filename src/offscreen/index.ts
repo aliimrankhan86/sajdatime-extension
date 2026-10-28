@@ -1,33 +1,41 @@
 import { parseAlertMessage } from '../core/messages';
 
 let audio: HTMLAudioElement | null = null;
+// Every sound gets its own id. A timer or event reports the end only if it is still the
+// current sound, so a replaced beep's 1.2 second timer can never report a newer sound.
+let soundId = 0;
 
-function ended(): void {
+function ended(id: number): void {
+  if (id !== soundId) return;
   void chrome.runtime.sendMessage({ type: 'sound-ended' }).catch(() => {});
 }
 
+// Stop the current sound without reporting its end. A replaced sound must not send
+// sound-ended, or the popup flips back to Play while the new sound is still going.
 function stop(): void {
+  soundId += 1;
   if (audio) {
     audio.pause();
     audio.currentTime = 0;
     audio = null;
-    ended();
   }
 }
 
 function playFile(url: string): void {
   stop();
+  const id = ++soundId;
   const next = new Audio(url);
   audio = next;
-  next.addEventListener('ended', ended);
+  next.addEventListener('ended', () => ended(id));
   void next.play().catch(() => {
-    if (audio === next) audio = null;
-    ended();
+    if (id === soundId) audio = null;
+    ended(id);
   });
 }
 
 function playBeep(): void {
   stop();
+  const id = ++soundId;
   const context = new AudioContext();
   const master = context.createGain();
   master.connect(context.destination);
@@ -52,7 +60,7 @@ function playBeep(): void {
 
   setTimeout(() => {
     void context.close();
-    ended();
+    ended(id);
   }, 1200);
 }
 
@@ -78,7 +86,9 @@ chrome.runtime.onMessage.addListener((message, sender) => {
       playFile(chrome.runtime.getURL('audio/adhan_shia.ogg'));
       break;
     case 'stop':
+      // A real user stop reports the end, unlike the internal stop() before a new sound.
       stop();
+      ended(soundId);
       break;
     default:
       break;

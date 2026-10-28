@@ -242,3 +242,11 @@ The badge and "time until the next prayer" reminders are deferred.
 **Why:** an alarm name is also the notification id and the self-clear id, so a blanket `clearAll` destroys another part's bookkeeping. Owning one prefix keeps the worker from touching alarms it did not create, and emitting a distinct `sound-ended` type keeps the popup in sync without the worker having to track playback. Each is a single fixed string, never a message field, so R4 still holds.
 
 **Revisit if:** a future feature needs its own alarm prefix or a second sound source that must also report its end.
+
+## D-027: a replaced sound does not report its end
+
+**Decided:** the offscreen page gives each sound an incrementing id and sends `sound-ended` only when the current sound genuinely ends (the audio `ended` event, a play failure, the beep's 1.2 second timer, or a real user stop). The internal `stop()` that `playFile` and `playBeep` call before starting a new sound pauses and resets the old one but does not report it, and it advances the id so a stale timer or event for a replaced sound is ignored. Starting a new sound over a playing one therefore keeps the Play button on Stop.
+
+**Why:** before this, `stop()` sent `sound-ended`, so pressing Play while a prayer's adhan was playing flipped the button straight back to Play while the new sound was still sounding. Reporting only the current sound, keyed by id, makes a timer or event unable to end a sound it did not own.
+
+**Revisit if:** a sound ever needs to overlap another on purpose, for example a layered alert, which would need a different ownership model.
