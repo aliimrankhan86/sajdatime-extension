@@ -112,7 +112,9 @@ export const LONDON = {
     enabled: false,
     sound: 'beep',
     prayers: { fajr: true, dhuhr: true, asr: true, maghrib: true, isha: true },
+    reminder: { enabled: false, minutes: 10 },
   },
+  suhoorReminder: { enabled: false, minutes: 30 },
   ramadanCard: true,
   theme: 'system',
 };

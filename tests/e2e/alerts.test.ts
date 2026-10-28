@@ -11,21 +11,26 @@ test('the worker schedules prayer alarms when alerts turn on and clears them whe
     });
 
     const alarmNames = () =>
-      extension.worker.evaluate(async () => (await chrome.alarms.getAll()).map((alarm) => alarm.name));
+      extension.worker.evaluate(async () =>
+        (await chrome.alarms.getAll()).map((alarm) => alarm.name).sort(),
+      );
 
     await expect.poll(alarmNames).toContain('refresh');
     const names = await alarmNames();
     expect(names.length).toBeGreaterThan(1);
     for (const name of names) {
       const valid =
-        name === 'refresh' || /^prayer:\d{4}-\d{2}-\d{2}:(fajr|dhuhr|asr|maghrib|isha)$/.test(name);
+        name === 'refresh' ||
+        name === 'badge' ||
+        /^prayer:\d{4}-\d{2}-\d{2}:(fajr|dhuhr|asr|maghrib|isha)$/.test(name);
       expect(valid).toBe(true);
     }
 
     await extension.page.evaluate(async (stored) => {
       await chrome.storage.local.set({ 'sajdatime.settings.v1': stored });
     }, { ...LONDON, alerts: { ...LONDON.alerts, enabled: false } });
-    await expect.poll(alarmNames).toEqual([]);
+    // Alerts off clears the prayer alarms, but the badge runs on its own, always.
+    await expect.poll(alarmNames).toEqual(['badge']);
   } finally {
     await extension.close();
   }
@@ -230,7 +235,9 @@ test('a settings change clears only prayer alarms, never a pending clear alarm',
       alerts: { ...LONDON.alerts, enabled: true },
     });
     const alarmNames = () =>
-      extension.worker.evaluate(async () => (await chrome.alarms.getAll()).map((alarm) => alarm.name));
+      extension.worker.evaluate(async () =>
+        (await chrome.alarms.getAll()).map((alarm) => alarm.name).sort(),
+      );
     await expect.poll(alarmNames).toContain('refresh');
 
     // An alert just fired: its clear:<id> alarm waits 60 seconds to clear the notification.
@@ -239,12 +246,13 @@ test('a settings change clears only prayer alarms, never a pending clear alarm',
     });
     await expect.poll(alarmNames).toContain('clear:prayer:2099-01-01:fajr');
 
-    // Turning alerts off forces a rebuild that must clear the prayer alarms only.
+    // Turning alerts off forces a rebuild that must clear the prayer alarms only, and
+    // leaves the pending clear alarm and the always-on badge in place.
     await extension.page.evaluate(async (stored) => {
       await chrome.storage.local.set({ 'sajdatime.settings.v1': stored });
     }, { ...LONDON, alerts: { ...LONDON.alerts, enabled: false } });
 
-    await expect.poll(alarmNames).toEqual(['clear:prayer:2099-01-01:fajr']);
+    await expect.poll(alarmNames).toEqual(['badge', 'clear:prayer:2099-01-01:fajr']);
   } finally {
     await extension.close();
   }

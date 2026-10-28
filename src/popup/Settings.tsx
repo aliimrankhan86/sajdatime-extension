@@ -9,7 +9,13 @@ import { PRAYERS, type MethodId, type Sect } from '../core/types';
 import { computeDay, dateInZone, ramadanInfo, showsSettings } from '../core';
 import { clockFormatter } from '../core/clock';
 import { saveSettings } from '../settings/storage';
-import { THEMES, type Settings as SettingsValue, type Theme } from '../settings/types';
+import {
+  REMINDER_MINUTES,
+  SUHOOR_MINUTES,
+  THEMES,
+  type Settings as SettingsValue,
+  type Theme,
+} from '../settings/types';
 import { applyTheme } from './theme';
 import { LocationSheet } from './LocationSheet';
 import { Row } from './components/Row';
@@ -143,7 +149,17 @@ function Switch(props: { label: string; checked: boolean; disabled: boolean; onT
   );
 }
 
-type SheetKind = 'disclaimer' | 'school' | 'asr' | 'method' | 'hijri' | 'sound' | 'theme' | 'credits';
+type SheetKind =
+  | 'disclaimer'
+  | 'school'
+  | 'asr'
+  | 'method'
+  | 'hijri'
+  | 'sound'
+  | 'reminder'
+  | 'suhoor'
+  | 'theme'
+  | 'credits';
 
 interface Props {
   settings: SettingsValue;
@@ -311,6 +327,12 @@ export function Settings({ settings, onClose, onSaved }: Props) {
           Math.abs(settings.hijriOffsetDays) === 1 ? 'day' : 'days'
         }`;
   const soundValue = SOUND_LABELS[settings.alerts.sound];
+  const reminderValue = settings.alerts.reminder.enabled
+    ? `${settings.alerts.reminder.minutes} minutes before`
+    : 'Off';
+  const suhoorValue = settings.suhoorReminder.enabled
+    ? `${settings.suhoorReminder.minutes} minutes before Fajr`
+    : 'Off';
 
   // Today's Fajr and Isha for one method, to put beside each choice in the method sheet.
   const clock = clockFormatter(settings.place.timeZone, locale);
@@ -397,7 +419,7 @@ export function Settings({ settings, onClose, onSaved }: Props) {
           <Row
             icon={<InfoIcon />}
             title="Disclaimer"
-            value="A helper, not a religious authority. Worth reading."
+            value="A helper, not a religious authority."
             rowId="disclaimer"
             onClick={() => openSheet('disclaimer')}
           />
@@ -447,7 +469,7 @@ export function Settings({ settings, onClose, onSaved }: Props) {
         </Group>
 
         {showRamadan ? (
-          <Group title="Ramadan" id="ramadan-heading" rows={1}>
+          <Group title="Ramadan" id="ramadan-heading" rows={2}>
             <div class="switch-row">
               <div class="switch-copy">
                 <p class="switch-title">Ramadan card</p>
@@ -459,10 +481,17 @@ export function Settings({ settings, onClose, onSaved }: Props) {
                 onToggle={() => update({ ramadanCard: !settings.ramadanCard })}
               />
             </div>
+            <Row
+              icon={<NoteIcon />}
+              title="Suhoor reminder"
+              value={suhoorValue}
+              rowId="suhoor"
+              onClick={() => openSheet('suhoor')}
+            />
           </Group>
         ) : null}
 
-        <Group title="Alerts" id="alerts-heading" rows={settings.alerts.enabled ? 7 : 1}>
+        <Group title="Alerts" id="alerts-heading" rows={settings.alerts.enabled ? 8 : 1}>
 
           {blocked ? (
             <Notice
@@ -508,6 +537,14 @@ export function Settings({ settings, onClose, onSaved }: Props) {
                   />
                 </div>
               ))}
+
+              <Row
+                icon={<ClockIcon />}
+                title="Reminder before prayer"
+                value={reminderValue}
+                rowId="reminder"
+                onClick={() => openSheet('reminder')}
+              />
 
               <Row
                 icon={<NoteIcon />}
@@ -764,6 +801,67 @@ export function Settings({ settings, onClose, onSaved }: Props) {
                   disabled={busy}
                   onSelect={() => update({ alerts: { ...settings.alerts, sound: 'silent' } })}
                 />
+              </div>
+            </div>
+          </Sheet>
+        );
+
+      case 'reminder':
+        return (
+          <Sheet title="Reminder before prayer" onClose={() => closeSheet('reminder')}>
+            <div class="sheet-body">
+              <div class="choices" role="group" aria-labelledby="sheet-title">
+                <ChoiceRow
+                  selected={!settings.alerts.reminder.enabled}
+                  title="Off"
+                  disabled={busy}
+                  onSelect={() =>
+                    update({
+                      alerts: {
+                        ...settings.alerts,
+                        reminder: { ...settings.alerts.reminder, enabled: false },
+                      },
+                    })
+                  }
+                />
+                {REMINDER_MINUTES.map((minutes) => (
+                  <ChoiceRow
+                    key={minutes}
+                    selected={settings.alerts.reminder.enabled && settings.alerts.reminder.minutes === minutes}
+                    title={`${minutes} minutes before`}
+                    disabled={busy}
+                    onSelect={() =>
+                      update({
+                        alerts: { ...settings.alerts, reminder: { enabled: true, minutes } },
+                      })
+                    }
+                  />
+                ))}
+              </div>
+            </div>
+          </Sheet>
+        );
+
+      case 'suhoor':
+        return (
+          <Sheet title="Suhoor reminder" onClose={() => closeSheet('suhoor')}>
+            <div class="sheet-body">
+              <div class="choices" role="group" aria-labelledby="sheet-title">
+                <ChoiceRow
+                  selected={!settings.suhoorReminder.enabled}
+                  title="Off"
+                  disabled={busy}
+                  onSelect={() => update({ suhoorReminder: { ...settings.suhoorReminder, enabled: false } })}
+                />
+                {SUHOOR_MINUTES.map((minutes) => (
+                  <ChoiceRow
+                    key={minutes}
+                    selected={settings.suhoorReminder.enabled && settings.suhoorReminder.minutes === minutes}
+                    title={`${minutes} minutes before Fajr`}
+                    disabled={busy}
+                    onSelect={() => update({ suhoorReminder: { enabled: true, minutes } })}
+                  />
+                ))}
               </div>
             </div>
           </Sheet>

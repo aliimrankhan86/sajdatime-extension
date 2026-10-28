@@ -15,7 +15,8 @@ function settings(overrides: Partial<Settings> = {}): Settings {
     method: 'mwl',
     madhab: 'shafii',
     hijriOffsetDays: 0,
-    alerts: { enabled: true, prayers: PRAYERS_ON, sound: 'beep' },
+    alerts: { enabled: true, prayers: PRAYERS_ON, sound: 'beep', reminder: { enabled: false, minutes: 10 } },
+    suhoorReminder: { enabled: false, minutes: 30 },
     ramadanCard: true,
     theme: 'system',
     ...overrides,
@@ -47,7 +48,14 @@ describe('scheduledAlarms', () => {
 
   it('leaves out a prayer the user turned off', () => {
     const names = scheduledAlarms(
-      settings({ alerts: { enabled: true, prayers: { ...PRAYERS_ON, asr: false }, sound: 'beep' } }),
+      settings({
+        alerts: {
+          enabled: true,
+          prayers: { ...PRAYERS_ON, asr: false },
+          sound: 'beep',
+          reminder: { enabled: false, minutes: 10 },
+        },
+      }),
       NOW,
     ).map((alarm) => alarm.name);
     expect(names).not.toContain('prayer:2026-10-27:asr');
@@ -56,8 +64,74 @@ describe('scheduledAlarms', () => {
 
   it('gives nothing when alerts are off', () => {
     expect(
-      scheduledAlarms(settings({ alerts: { enabled: false, prayers: PRAYERS_ON, sound: 'beep' } }), NOW),
+      scheduledAlarms(
+        settings({
+          alerts: {
+            enabled: false,
+            prayers: PRAYERS_ON,
+            sound: 'beep',
+            reminder: { enabled: false, minutes: 10 },
+          },
+        }),
+        NOW,
+      ),
     ).toEqual([]);
+  });
+
+  it('adds a quiet reminder before each remaining prayer when it is on', () => {
+    const names = scheduledAlarms(
+      settings({
+        alerts: {
+          enabled: true,
+          prayers: PRAYERS_ON,
+          sound: 'beep',
+          reminder: { enabled: true, minutes: 10 },
+        },
+      }),
+      NOW,
+    ).map((alarm) => alarm.name);
+    for (const slot of ['dhuhr', 'asr', 'maghrib', 'isha']) {
+      expect(names).toContain(`reminder:2026-10-27:${slot}`);
+    }
+    expect(names).not.toContain('reminder:2026-10-27:fajr');
+  });
+
+  it('leaves the reminder off when prayer alerts are off', () => {
+    const names = scheduledAlarms(
+      settings({
+        alerts: {
+          enabled: false,
+          prayers: PRAYERS_ON,
+          sound: 'beep',
+          reminder: { enabled: true, minutes: 10 },
+        },
+      }),
+      NOW,
+    ).map((alarm) => alarm.name);
+    expect(names.filter((name) => name.startsWith('reminder:'))).toEqual([]);
+  });
+
+  it('adds a suhoor reminder only on the days of Ramadan', () => {
+    // 20 February 2027 is in Ramadan 1448. Suhoor is its own setting, so it fires with
+    // prayer alerts off.
+    const ramadanNow = new Date('2027-02-20T16:00:00Z');
+    const names = scheduledAlarms(
+      settings({
+        alerts: { enabled: false, prayers: PRAYERS_ON, sound: 'beep', reminder: { enabled: false, minutes: 10 } },
+        suhoorReminder: { enabled: true, minutes: 30 },
+      }),
+      ramadanNow,
+    ).map((alarm) => alarm.name);
+    expect(names).toContain('suhoor:2027-02-21');
+    expect(names.filter((name) => name.startsWith('suhoor:'))).toEqual(['suhoor:2027-02-21']);
+  });
+
+  it('never schedules a suhoor reminder outside Ramadan', () => {
+    const names = scheduledAlarms(
+      settings({ suhoorReminder: { enabled: true, minutes: 30 } }),
+      NOW,
+    ).map((alarm) => alarm.name);
+    expect(names.filter((name) => name.startsWith('suhoor:'))).toEqual([]);
   });
 
   it('puts a Shia Maghrib alarm at the Shia Maghrib', () => {
@@ -92,15 +166,28 @@ describe('parseAlarmName', () => {
     });
   });
 
-  it('reads refresh and clear names back', () => {
+  it('reads refresh, badge and clear names back', () => {
     expect(parseAlarmName('refresh')).toEqual({ kind: 'refresh' });
+    expect(parseAlarmName('badge')).toEqual({ kind: 'badge' });
     expect(parseAlarmName('clear:prayer:2026-10-27:asr')).toEqual({
       kind: 'clear',
       notificationId: 'prayer:2026-10-27:asr',
     });
   });
 
-  it('rejects names that are not a prayer, a refresh or a clear', () => {
+  it('reads a reminder name back', () => {
+    expect(parseAlarmName('reminder:2026-10-27:asr')).toEqual({
+      kind: 'reminder',
+      date: '2026-10-27',
+      slot: 'asr',
+    });
+  });
+
+  it('reads a suhoor name back', () => {
+    expect(parseAlarmName('suhoor:2026-10-27')).toEqual({ kind: 'suhoor', date: '2026-10-27' });
+  });
+
+  it('rejects names that are not a known alarm shape', () => {
     expect(parseAlarmName('')).toEqual({ kind: 'unknown' });
     expect(parseAlarmName('prayer:2026-10-27:sunrise')).toEqual({ kind: 'unknown' });
     expect(parseAlarmName('prayer:2026-13-99:asr')).toEqual({ kind: 'unknown' });
@@ -108,6 +195,13 @@ describe('parseAlarmName', () => {
     expect(parseAlarmName('prayer:2026-10-27:asr:extra')).toEqual({ kind: 'unknown' });
     expect(parseAlarmName('prayer:2026-10-27:ASR')).toEqual({ kind: 'unknown' });
     expect(parseAlarmName('clear:')).toEqual({ kind: 'unknown' });
+    expect(parseAlarmName('reminder:2026-10-27:sunrise')).toEqual({ kind: 'unknown' });
+    expect(parseAlarmName('reminder:2026-10-27')).toEqual({ kind: 'unknown' });
+    expect(parseAlarmName('reminder:2026-13-99:asr')).toEqual({ kind: 'unknown' });
+    expect(parseAlarmName('reminder:2026-10-27:asr:extra')).toEqual({ kind: 'unknown' });
+    expect(parseAlarmName('suhoor:')).toEqual({ kind: 'unknown' });
+    expect(parseAlarmName('suhoor:2026-13-99')).toEqual({ kind: 'unknown' });
+    expect(parseAlarmName('suhoor:2026-10-27:extra')).toEqual({ kind: 'unknown' });
   });
 });
 

@@ -1,4 +1,5 @@
 import { addDaysISO, computeDay, dateInZone, parseISODate } from './engine';
+import { isRamadan } from './hijri';
 import { PRAYERS, type CalculationPrefs, type Prayer } from './types';
 import type { Settings } from '../settings/types';
 
@@ -9,6 +10,9 @@ export interface ScheduledAlarm {
 
 export type AlarmName =
   | { kind: 'prayer'; date: string; slot: Prayer }
+  | { kind: 'reminder'; date: string; slot: Prayer }
+  | { kind: 'suhoor'; date: string }
+  | { kind: 'badge' }
   | { kind: 'refresh' }
   | { kind: 'clear'; notificationId: string }
   | { kind: 'unknown' };
@@ -29,6 +33,14 @@ export function prayerAlarmName(date: string, slot: Prayer): string {
   return `prayer:${date}:${slot}`;
 }
 
+export function reminderAlarmName(date: string, slot: Prayer): string {
+  return `reminder:${date}:${slot}`;
+}
+
+export function suhoorAlarmName(date: string): string {
+  return `suhoor:${date}`;
+}
+
 /** The body of a prayer alert; in Ramadan the Maghrib alert is the iftar call. */
 export function prayerAlertMessage(slot: Prayer, placeName: string, inRamadan: boolean): string {
   if (inRamadan && slot === 'maghrib') return 'It is time for Maghrib. You can break your fast.';
@@ -41,11 +53,12 @@ export function isLate(nowMs: number, scheduledMs: number): boolean {
 
 /**
  * The alarms that make today's and tomorrow's remaining prayers fire, plus the once a
- * day refresh that rebuilds the list when the civil date rolls over. Sunrise is shown on
- * the Times screen but is not a prayer, so it is never scheduled.
+ * day refresh that rebuilds the list when the civil date rolls over, plus the quiet
+ * "before prayer" reminder when it is on. Sunrise is shown on the Times screen but is not
+ * a prayer, so it is never scheduled. The suhoor reminder is its own setting and fires in
+ * Ramadan even when the prayer alerts are off.
  */
 export function scheduledAlarms(settings: Settings, now: Date): ScheduledAlarm[] {
-  if (!settings.alerts.enabled) return [];
   const prefs: CalculationPrefs = {
     method: settings.method,
     madhab: settings.madhab,
@@ -54,16 +67,35 @@ export function scheduledAlarms(settings: Settings, now: Date): ScheduledAlarm[]
   const today = dateInZone(now, settings.place.timeZone);
   const tomorrow = addDaysISO(today, 1);
   const alarms: ScheduledAlarm[] = [];
-  for (const date of [today, tomorrow]) {
-    const day = computeDay(settings.place, date, prefs);
-    for (const prayer of PRAYERS) {
-      if (!settings.alerts.prayers[prayer]) continue;
-      const at = day.times[prayer];
-      if (at.getTime() <= now.getTime()) continue;
-      alarms.push({ name: prayerAlarmName(date, prayer), when: at });
+
+  if (settings.alerts.enabled) {
+    for (const date of [today, tomorrow]) {
+      const day = computeDay(settings.place, date, prefs);
+      for (const prayer of PRAYERS) {
+        if (!settings.alerts.prayers[prayer]) continue;
+        const at = day.times[prayer].getTime();
+        if (at <= now.getTime()) continue;
+        alarms.push({ name: prayerAlarmName(date, prayer), when: new Date(at) });
+        if (settings.alerts.reminder.enabled) {
+          const reminderAt = at - settings.alerts.reminder.minutes * 60 * 1000;
+          if (reminderAt > now.getTime()) {
+            alarms.push({ name: reminderAlarmName(date, prayer), when: new Date(reminderAt) });
+          }
+        }
+      }
+    }
+    alarms.push({ name: 'refresh', when: refreshTime(now, settings.place.timeZone) });
+  }
+
+  if (settings.suhoorReminder.enabled) {
+    for (const date of [today, tomorrow]) {
+      if (!isRamadan(date, settings.hijriOffsetDays)) continue;
+      const fajr = computeDay(settings.place, date, prefs).times.fajr.getTime();
+      const at = fajr - settings.suhoorReminder.minutes * 60 * 1000;
+      if (at > now.getTime()) alarms.push({ name: suhoorAlarmName(date), when: new Date(at) });
     }
   }
-  alarms.push({ name: 'refresh', when: refreshTime(now, settings.place.timeZone) });
+
   return alarms;
 }
 
@@ -98,14 +130,38 @@ function zoneOffsetMs(instant: number, timeZone: string): number {
 }
 
 /**
- * Strict read of an alarm name (SECURITY.md R11). Only the three shapes the worker
- * creates are accepted; anything else is ignored rather than used.
+ * Strict read of an alarm name (SECURITY.md R11). Only the shapes the worker creates are
+ * accepted; anything else is ignored rather than used.
  */
 export function parseAlarmName(name: string): AlarmName {
   if (name === 'refresh') return { kind: 'refresh' };
+  if (name === 'badge') return { kind: 'badge' };
   if (name.startsWith('clear:')) {
     const notificationId = name.slice('clear:'.length);
     return notificationId.length > 0 ? { kind: 'clear', notificationId } : { kind: 'unknown' };
+  }
+  if (name.startsWith('reminder:')) {
+    const parts = name.slice('reminder:'.length).split(':');
+    if (parts.length !== 2) return { kind: 'unknown' };
+    const [date, slot] = parts;
+    if (!date || !slot) return { kind: 'unknown' };
+    if (!PRAYERS.includes(slot as Prayer)) return { kind: 'unknown' };
+    try {
+      parseISODate(date);
+    } catch {
+      return { kind: 'unknown' };
+    }
+    return { kind: 'reminder', date, slot: slot as Prayer };
+  }
+  if (name.startsWith('suhoor:')) {
+    const date = name.slice('suhoor:'.length);
+    if (!date) return { kind: 'unknown' };
+    try {
+      parseISODate(date);
+    } catch {
+      return { kind: 'unknown' };
+    }
+    return { kind: 'suhoor', date };
   }
   if (!name.startsWith('prayer:')) return { kind: 'unknown' };
   const parts = name.slice('prayer:'.length).split(':');

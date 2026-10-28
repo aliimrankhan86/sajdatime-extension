@@ -20,18 +20,43 @@ export const ALERT_SOUNDS = ['beep', 'adhan', 'silent'] as const;
 
 export type AlertSound = (typeof ALERT_SOUNDS)[number];
 
+/** The quiet "before each prayer" reminder, off by default (PLAN.md §7). */
+export const REMINDER_MINUTES = [5, 10, 15, 20, 30] as const;
+
+export type ReminderMinutes = (typeof REMINDER_MINUTES)[number];
+
+export interface ReminderSetting {
+  /** Off until the user turns it on in Settings, inside the Alerts group. */
+  enabled: boolean;
+  minutes: ReminderMinutes;
+}
+
+/** The suhoor reminder, off by default and 30 minutes before Fajr when on (PLAN.md §7). */
+export const SUHOOR_MINUTES = [15, 30, 45, 60] as const;
+
+export type SuhoorMinutes = (typeof SUHOOR_MINUTES)[number];
+
+export interface SuhoorSetting {
+  enabled: boolean;
+  minutes: SuhoorMinutes;
+}
+
 export interface AlertsSettings {
   /** Alerts do nothing until the user turns them on in Settings. */
   enabled: boolean;
   sound: AlertSound;
   prayers: Record<Prayer, boolean>;
+  reminder: ReminderSetting;
 }
 
 export const DEFAULT_ALERTS: AlertsSettings = {
   enabled: false,
   sound: 'beep',
   prayers: { fajr: true, dhuhr: true, asr: true, maghrib: true, isha: true },
+  reminder: { enabled: false, minutes: 10 },
 };
+
+export const DEFAULT_SUHOOR_REMINDER: SuhoorSetting = { enabled: false, minutes: 30 };
 
 export interface Settings {
   version: 1;
@@ -42,6 +67,7 @@ export interface Settings {
   hijriOffsetDays: number;
   alerts: AlertsSettings;
   ramadanCard: boolean;
+  suhoorReminder: SuhoorSetting;
   /** System follows the computer. System is the default, and a migration adds it. */
   theme: Theme;
 }
@@ -64,9 +90,23 @@ export function migrateSettings(value: unknown): unknown {
   let result = value;
   if (candidate.alerts === undefined) {
     result = { ...result, alerts: DEFAULT_ALERTS };
+  } else if (
+    typeof candidate.alerts === 'object' &&
+    candidate.alerts !== null &&
+    (candidate.alerts as Partial<AlertsSettings>).reminder === undefined
+  ) {
+    // An alerts object written before the reminder shipped keeps its own choices and
+    // gains the off-by-default reminder.
+    result = {
+      ...result,
+      alerts: { ...(candidate.alerts as AlertsSettings), reminder: DEFAULT_ALERTS.reminder },
+    };
   }
   if (candidate.ramadanCard === undefined) {
     result = { ...result, ramadanCard: true };
+  }
+  if (candidate.suhoorReminder === undefined) {
+    result = { ...result, suhoorReminder: DEFAULT_SUHOOR_REMINDER };
   }
   if (candidate.theme === undefined) {
     result = { ...result, theme: 'system' };
@@ -103,6 +143,7 @@ export function isSettings(value: unknown): value is Settings {
     candidate.hijriOffsetDays <= 2 &&
     isAlertsSettings(candidate.alerts) &&
     typeof candidate.ramadanCard === 'boolean' &&
+    isSuhoorSetting(candidate.suhoorReminder) &&
     THEMES.includes(candidate.theme as Theme)
   );
 }
@@ -119,7 +160,25 @@ function isAlertsSettings(value: unknown): value is AlertsSettings {
   for (const prayer of PRAYERS) {
     if (typeof (prayers as Record<string, unknown>)[prayer] !== 'boolean') return false;
   }
-  return true;
+  return isReminderSetting(candidate.reminder);
+}
+
+function isReminderSetting(value: unknown): value is ReminderSetting {
+  if (!value || typeof value !== 'object') return false;
+  const candidate = value as Partial<ReminderSetting>;
+  return (
+    typeof candidate.enabled === 'boolean' &&
+    REMINDER_MINUTES.includes(candidate.minutes as ReminderMinutes)
+  );
+}
+
+function isSuhoorSetting(value: unknown): value is SuhoorSetting {
+  if (!value || typeof value !== 'object') return false;
+  const candidate = value as Partial<SuhoorSetting>;
+  return (
+    typeof candidate.enabled === 'boolean' &&
+    SUHOOR_MINUTES.includes(candidate.minutes as SuhoorMinutes)
+  );
 }
 
 function isValidTimeZone(timeZone: string): boolean {

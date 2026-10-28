@@ -386,3 +386,29 @@ The method Sheet (U13) is the only one without a Done button: choosing a method 
 **Verified:** `npm run check` passes (strict typecheck, 250 unit tests, build, bundle scan). `npm run test:e2e` passes **77** tests, four of them new. `docs/images/settings-{light,dark,zoom-200}.png`, `docs/images/sheet-method-{light,dark}.png` and `docs/images/sheet-sound-{light,dark}.png` are regenerated. The other twelve sheet images and `docs/images/zoom-200.png` decode to **identical pixels** before and after (checked by converting both to BMP and comparing bytes), so the frozen Times screen did not move.
 
 **Revisit if:** Ali wants a long value to wrap, in which case that row exceeds 64 px and the height test needs to allow it.
+
+## D-036: the badge and reminders (Step 7)
+
+**Decided:** Step 7 of `docs/UX-PLAN.md` (Badge and reminders, `PLAN.md` §7) ships the toolbar badge, the Reminder before prayer setting and the Suhoor reminder, plus two P3 fixes carried over from the Step 6 PASS review. One commit.
+
+1. **Toolbar badge.** `src/core/badge.ts` builds the badge from `nextPrayer`: the text is the wait rounded up to the nearest minute, "54m", "5m" or "1m" under an hour, "1h54" or "9h05" from an hour to under ten, "11h" from ten hours, never "0m" and never more than four characters. The background and the white text are built in code from their RGB parts (0x0b, 0x5a, 0x43 and white) with a local `hex()` helper, because the bundle scan forbids a literal colour outside `tokens.css`. The tooltip is "SajdaTime: Maghrib in 1 hour 54 minutes (5:59 pm)". Before setup the badge text is cleared and the tooltip reads "SajdaTime: set up your prayer times". The badge is a repeating one minute `badge` alarm that the worker keeps alive on every rebuild, so the countdown stays current even when prayer alerts are off.
+
+2. **Reminder before prayer.** A new Alerts group Row, off by default, offering 5, 10, 15, 20 or 30 minutes in a Sheet built on the Step 6 Row, Sheet and ChoiceRow components. It fires a silent notification (no sound, no requireInteraction) that many minutes ahead of a prayer the user enabled, only while alerts are on.
+
+3. **Suhoor reminder.** A new Row in the Ramadan group, off by default, offering 15, 30, 45 or 60 minutes before Fajr. It is independent of the alerts master switch and is scheduled for today and tomorrow whenever `isRamadan` holds, firing at Fajr minus the minutes. The notification plays the chosen sound and carries a "Stop sound" button, like a prayer alert.
+
+4. **Alarm names.** The `AlarmName` union grew three kinds, all built from fixed words and parsed strictly before any `prayer:` fallback: `badge` (one fixed word), `reminder:<date>:<slot>` and `suhoor:<date>`. `SECURITY.md` R11 is unchanged; `parseAlarmName` handles the new kinds and the unit tests cover malformed names.
+
+**Wording (flag to reviewer, two places).** The reminder title is "<Prayer> in <n> minutes" and its body "<Prayer> begins at <time>", which follows `PLAN.md` §7's "Asr in 15 minutes style" rather than the phone's "Asr at <time>" notification title. The suhoor title is "Suhoor ends at <time>" and its body "Fajr begins in <n> minutes", spelling "minutes" in full because the extension has no "%d minute(s)" plural helper; the phone spells it "minute(s)". Neither wording is invented: both are `PLAN.md` §7 or the phone's own strings.
+
+**Two P3 fixes from the Step 6 PASS review, done here.**
+
+5. **Disclaimer value fits.** The Disclaimer row value is shortened to "A helper, not a religious authority." (dropping "Worth reading."), so it draws at 228 px wide and no longer ends in an ellipsis. The full disclaimer text, which keeps "Worth reading.", is untouched. The Credits value ("GeoNames, adhan-js, adhan recordings", 256 px) still ends in an ellipsis; that was not in the review's ask.
+
+6. **Every group title uses one inset.** The `.switch-row` had no horizontal padding, so the "Prayer alerts" switch title sat at about 24 px while the group headings sat at about 33 px and the rows at about 36 px. `.switch-row` now has `padding: 8px 12px`, the same as `.row`, so switch content lines up with every other row's content. The group headings keep their 8 px padding, so a heading draws about 3 px left of its card's rows; that small hanging offset is the design already in place for every group and was not part of the review's complaint.
+
+**Not done, deliberately:** `PLAN.md` §7 also writes that the Makkah-fallback badge tooltip ends "for Makkah". The extension does not store whether the place came from the fallback or was chosen by name, so there is no flag to hang that wording on; the badge simply works for Makkah like any other place. Adding a stored "fallback" flag would widen the storage schema for a tooltip, which was not in the Step 7 scope.
+
+**Verified:** `npm run check` passes (strict typecheck, 270 unit tests in 15 files, build, `check-bundle: 7 bundle files and the source are clean`). `npm run test:e2e` passes **78** tests, two of them new (the Suhoor reminder sheet in Ramadan, and the reminder sheet already counted in the sheets loop). The badge boundaries are unit-tested in `tests/unit/badge.test.ts` (over an hour, under an hour, under a minute, across midnight). `docs/privacy.html` now reads "your alert and reminder choices, and other display settings."
+
+**Revisit if:** Ali wants the Makkah-fallback tooltip wording, which means first storing a flag for how the place was chosen.

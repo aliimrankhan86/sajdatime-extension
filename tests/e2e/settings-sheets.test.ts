@@ -15,6 +15,7 @@ const SHEETS = [
   { row: 'method', title: 'Calculation method', file: 'sheet-method' },
   { row: 'hijri', title: 'Hijri date', file: 'sheet-hijri' },
   { row: 'sound', title: 'Sound', file: 'sheet-sound' },
+  { row: 'reminder', title: 'Reminder before prayer', file: 'sheet-reminder' },
   { row: 'theme', title: 'Theme', file: 'sheet-theme' },
   { row: 'credits', title: 'Credits', file: 'sheet-credits' },
 ] as const;
@@ -47,6 +48,31 @@ test('every Settings row opens its sheet, Escape closes, and focus returns', asy
       await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible();
       await expect(row).toBeFocused();
     }
+  } finally {
+    await extension.close();
+  }
+});
+
+test('the Suhoor reminder sheet opens in Ramadan', async () => {
+  const extension = await launchExtension();
+  const page = extension.page;
+  try {
+    // The Ramadan group only appears in Ramadan, so the Suhoor row needs its own seed.
+    await seedSettings(extension, new Date('2027-02-20T16:00:00Z'), LONDON);
+    await page.getByRole('button', { name: 'Settings' }).click();
+    await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible();
+
+    const row = page.locator('[data-row="suhoor"]');
+    await row.click();
+    const heading = page.getByRole('heading', { name: 'Suhoor reminder' });
+    await expect(heading).toBeVisible();
+    await expect(heading).toBeFocused();
+    await screenshot(page, 'docs/images/sheet-suhoor-light.png', { fullPage: true });
+    await setTheme(page, 'dark');
+    await screenshot(page, 'docs/images/sheet-suhoor-dark.png', { fullPage: true });
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible();
+    await expect(row).toBeFocused();
   } finally {
     await extension.close();
   }

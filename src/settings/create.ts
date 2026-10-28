@@ -1,5 +1,5 @@
 import { suggestMethod } from '../core/suggestions';
-import { DEFAULT_ALERTS, type Place, type Settings } from './types';
+import { DEFAULT_ALERTS, DEFAULT_SUHOOR_REMINDER, type Place, type Settings } from './types';
 
 /**
  * A first place from the browser's own location.
@@ -21,6 +21,7 @@ export function firstSettings(place: Place): Settings {
     hijriOffsetDays: 0,
     alerts: DEFAULT_ALERTS,
     ramadanCard: true,
+    suhoorReminder: DEFAULT_SUHOOR_REMINDER,
     theme: 'system',
   };
 }
