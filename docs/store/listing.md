@@ -1,130 +1,178 @@
-# Store listing draft
+# Store listing
 
-**Status:** working draft, 27 October 2026. Nothing here has been submitted. Every claim must be checked against the build before Ali uploads it.
+**Status:** ready for Ali to read, not submitted. Written 28 October 2026 for version 1.0.0.
+Every claim in this file is true of the build in this commit, and `tests/unit/listing.test.ts`
+fails if a limit is broken or a required phrase goes missing.
+
+Both stores take the same zip. Chrome's short summary is 132 characters and its description
+16,000. Edge's description must be between 250 and 10,000, so the text below stays under 10,000
+and works in both.
 
 ## Name
 
 SajdaTime
 
-## Summary, Chrome Web Store
+## Short summary, Chrome Web Store
 
-Limit: 132 characters.
+Limit: 132 characters. The line below is the one to paste, and it is **101 characters**.
 
-> Quiet prayer times in your browser, with a countdown and the Hijri date. No account, no ads, no tracking.
-
-That is 107 characters.
+> Prayer times in your browser, with the next prayer, a quiet countdown and the Hijri date.
 
 ## Detailed description
 
-Limit: 16,000 characters on Chrome. Edge allows 250 to 10,000.
+Limit: 16,000 characters on Chrome, 250 to 10,000 on Edge. The text below is **under 4,000
+characters**, so the same paste works in both stores.
 
-> **Prayer times, without the noise.**
->
-> SajdaTime sits in your browser toolbar and shows the next prayer, a calm countdown and the whole day at a glance. Open it, see where you are in the day, close it.
->
-> **What you get**
->
-> - Fajr, Sunrise, Dhuhr, Asr, Maghrib and Isha for your place.
-> - The next prayer with a countdown that updates every second.
-> - The Hijri date from the Umm al-Qura calendar.
-> - A place chosen from your location or an offline search of about 70,000 towns and cities, with a clear fallback to Makkah.
-> - A Settings screen for your place, 13 calculation methods, the Hanafi or Shafi'i Asr school, and a Hijri date shift.
-> - Light and dark themes that follow your computer.
-> - A popup designed to fit without scrolling, with large readable times.
->
-> **Private by design**
->
-> SajdaTime makes no network requests. Prayer times are worked out on your computer with the open source adhan-js library. The city list is built into the extension, so searching a town is also offline. There is no account, no advertising, no analytics and no remote code.
->
-> Your place and settings are stored in your browser's local extension storage. When you choose **Use my location**, the browser supplies the coordinates and SajdaTime keeps them on your computer. SajdaTime does not send them anywhere.
->
-> **A helper, not a religious authority**
->
-> Prayer times are an aid. They can differ from your mosque by a minute or two because of the method, the rounding or the high latitude rule. Follow your mosque where the two differ. If you are unsure, ask a scholar you trust.
->
-> SajdaTime is free and has no ads. It is a separate product from the SajdaTime app for Android.
->
-> **Coming next**
->
-> Prayer alerts, a countdown badge, a Ramadan timetable, and Urdu, Arabic, Turkish and Indonesian. The listing will be updated when those are ready. Do not install this build expecting them yet.
+```
+SajdaTime shows the day's prayer times in your browser toolbar. Open it, see the next prayer
+and where you are in the day, close it. No account, no advertising, and no analytics.
 
-## What is new
+What you get
 
-First development build. Not for public use yet.
+- Fajr, Sunrise, Dhuhr, Asr, Maghrib and Isha for your place.
+- The next prayer with a countdown that updates every second.
+- The Hijri date from the Umm al-Qura calendar, with an optional day shift.
+- A place from your location, or an offline search of about 70,000 towns and cities, with a
+  clearly labelled Makkah fallback.
+- 13 calculation methods, the Hanafi or Shafi'i Asr school, and a hint that suggests the
+  method for your country.
+- A printable month of times, opened with Save as PDF from the popup footer. One A4 sheet, one
+  page, and a Ramadan timetable that renames Fajr to Suhoor ends and Maghrib to Iftar.
+- Prayer alerts with a short reminder before each prayer, a beep or one of two adhan recordings,
+  and a suhoor reminder in Ramadan.
+- A toolbar badge with the time to the next prayer.
+- English, Urdu, Arabic, Turkish and Indonesian. Urdu and Arabic read right to left, and times
+  stay left to right inside them.
+- Light and dark themes that follow your computer.
 
-## Permission explanations
+Private by design
 
-Chrome shows these in the install prompt and asks for a reason during review.
+SajdaTime makes no network requests. Prayer times are worked out on your computer with the open
+source adhan-js library. The city list is built into the extension, so searching a town works
+offline too. There is no account, no analytics, no advertising and no remote code.
 
-| Permission | Why SajdaTime asks | When it is used |
-| --- | --- | --- |
-| `storage` | Save your place and settings in the browser profile. | When you finish first run or change a setting. |
-| `geolocation` | Work out times for where you are when you choose **Use my location**. | Only after you press that button and grant permission. |
+Your place and settings are stored in your browser's local extension storage. When you press Use
+my location, the browser supplies the coordinates and SajdaTime keeps them on your computer.
+SajdaTime does not send them anywhere. The developer never receives them.
 
-No host permissions. No content scripts. No access to tabs, history, bookmarks or page content. Alerts are not in this build, so the extension does not ask for alarm, notification or audio permission yet.
+A helper, not a religious authority
+
+The times are an aid and they are not supplied by any mosque, scholar or authority. They can
+differ from your mosque by a minute or two because of the method, the rounding or the high
+latitude rule. Follow your mosque where the two differ, and ask a scholar you trust if you are
+unsure.
+
+Free, with no ads
+
+SajdaTime is free, has no advertising, and is a separate product from the SajdaTime app for
+Android.
+
+Built with
+
+adhan-js 4.4.6, MIT licence, by Batoul Apps.
+Preact, MIT licence.
+City data from GeoNames, Creative Commons Attribution 4.0 International licence.
+Sunni adhan recording by Adam-synagda, CC0. Shia adhan sung by Saeed Hatamzadeh-Varmazyar,
+CC BY-SA 4.0, both via Wikimedia Commons.
+The full notices ship inside the extension.
+```
+
+## What is new in 1.0.0
+
+First public version. Prayer times, the next prayer and countdown, a printable month with a
+Ramadan timetable, prayer alerts and a reminder before each prayer, the toolbar badge, five
+languages with right to left for Urdu and Arabic, and light and dark themes.
 
 ## Single purpose
 
-Show the user's daily prayer times in a browser popup, with the next prayer and a countdown.
+Use this statement exactly. It is PLAN.md section 12 and Chrome asks for it in its own box.
 
-## Privacy practices answers, Chrome Web Store
+> Shows Islamic prayer times for the user's location and alerts at each prayer.
 
-These are the answers to the dashboard's data and privacy form. They must match `docs/privacy.html` and the build.
+## Permission reasons
+
+Chrome and Edge ask for a reason for each permission. Use these words, which are PLAN.md
+section 12, and which match the build.
+
+| Permission | Reason to paste |
+| --- | --- |
+| `alarms` | To alert at prayer times and refresh the countdown. |
+| `notifications` | To show the prayer alert. |
+| `storage` | To keep settings on this computer. |
+| `offscreen` | To play the alert sound, which a service worker cannot do. |
+| `geolocation` | To work out prayer times for where the user is, only when the user asks. |
+
+There are no host permissions and no content scripts. The install warning should name storage,
+location, alarms and notifications only. If it mentions reading data on websites, stop and say
+so: the manifest is wrong.
+
+## Data use answers, Chrome Web Store
+
+Chrome counts data that stays on the device as handled, so **Location** is ticked and nothing
+else is. This is `docs/SECURITY.md` R10 and PLAN.md section 12.
 
 - **Single purpose:** as above.
-- **Location:** yes. Used to calculate prayer times for the user's place. Stored locally in `chrome.storage.local`. Not transmitted to the developer or any third party. Not sold. Not used for advertising.
-- **Personally identifiable information:** no.
-- **Health information:** no.
-- **Financial and payment information:** no.
-- **Authentication information:** no.
-- **Personal communications:** no.
-- **Web history:** no.
-- **User activity:** no.
-- **Website content:** no.
+- **Location:** ticked. Used to calculate prayer times for the user's place, stored in
+  `chrome.storage.local` on this computer, never sent to the developer or anyone else, never
+  sold, never used for advertising.
+- **Personally identifiable information, health, financial, authentication, personal
+  communications, web history, user activity, website content:** not collected.
 - **Remote code:** no. All code is in the uploaded package.
-- **Selling data:** no.
-- **Using data for unrelated purposes:** no.
-- **Using data to decide creditworthiness:** no.
-- **Privacy policy URL:** `https://aliimrankhan86.github.io/sajdatime-extension/privacy.html` (live from the `docs` folder on `main`).
+- **Sell or transfer to third parties:** no.
+- **Use or transfer for purposes unrelated to the single purpose:** no.
+- **Use to decide creditworthiness or for lending:** no.
+- **Privacy policy URL:** `https://aliimrankhan86.github.io/sajdatime-extension/privacy.html`
 
-The dashboard wording changes from time to time. Answer the question it asks, using these facts. Do not tick "no data" just because the data never leaves the computer. Location is handled by the extension and must be declared.
+Then tick the three certifications the form asks for. In plain words: the data is not sold, it is
+not used or transferred for anything outside the single purpose, and it is not used for
+creditworthiness or lending. The data is stored on the user's own computer and the developer
+never receives it. Edge asks the same questions in its own words, so answer from this list.
 
 ## Screenshots
 
-Chrome needs at least one, up to five, at 1280 by 800. Edge accepts the same set. Five planned:
+Five at 1280 by 800, generated from the built extension by `npm run store-images`, in
+`docs/store/images/`. They show the current build and nothing drawn by hand.
 
-1. **Times, light.** The whole popup, next prayer and countdown. Caption: "The next prayer, the whole day, and a quiet countdown."
-2. **Times, dark.** The same screen in dark mode. Caption: "Follows your computer's light or dark theme."
-3. **First run.** The location step with city search. Caption: "Use your location, or find a town offline."
-4. **Settings.** Method and Asr school. Caption: "13 methods, Hanafi or Shafi'i Asr, and a place of your choice."
-5. **Ramadan.** The timetable month. Caption: "A Ramadan timetable that prints." **Only when that screen exists.**
-
-Until screenshot 5 is real, submit the four that exist. The store needs at least one.
+| File | What it shows | Caption to paste |
+| --- | --- | --- |
+| `times-light.png` | Times in the light theme | The next prayer, the whole day, and a quiet countdown. |
+| `times-dark.png` | Times in the dark theme | Follows your computer's light or dark theme. |
+| `method-step.png` | The first run's method step | 13 methods, with a suggestion for your country. |
+| `ramadan.png` | Times during Ramadan | Suhoor ends and Iftar, next to the usual times. |
+| `times-urdu.png` | Times in Urdu, right to left | Urdu and Arabic read right to left. Times do not. |
 
 ## Promotional images
 
-- Chrome small promo tile: 440 by 280, PNG or JPEG. Use the green field, the sand mihrab mark and the words SajdaTime.
-- Edge logo: 300 by 300. Reuse `public/icons/icon-300.png`.
-- No video until the alerts work.
+- Chrome small promo tile: 440 by 280, `docs/store/images/promo-tile-440x280.png`, built from the
+  extension's own green, mark and name.
+- Edge store logo: 300 by 300, `docs/store/images/logo-300.png`, copied from the extension's own
+  `icon-300.png`.
+- No video.
 
 ## Listing languages
 
-At submission: English first. Add Arabic, Turkish and Indonesian once the UI has those languages. Urdu is added where the store offers it. Do not publish a listing language the extension cannot show.
+English, Arabic, Turkish and Indonesian in both stores, from
+`public/_locales/{en,ar,tr,id}/messages.json`. **Urdu is added only if the store offers Urdu as
+an interface language.** Chrome does not (R13), and the extension's Urdu is complete inside the
+popup either way. Do not publish a listing language the extension cannot show.
 
 ## Review notes for the reviewer
 
-Short note in the submission form:
+The submission form has a box for notes. Paste this:
 
-> SajdaTime calculates prayer times locally with adhan-js. It makes no network requests, has no analytics and no ads. Location is used only after the user presses "Use my location" and is stored in local extension storage. If the user refuses location, the extension offers a built-in offline city search and a clearly labelled Makkah fallback. The privacy policy explains local storage and the browser's own location service.
+> SajdaTime calculates prayer times locally with adhan-js and makes no network requests. It has
+> no analytics and no advertising. Location is used only after the user presses Use my location,
+> and it is stored in local extension storage. If the user refuses location, the extension offers
+> an offline city search and a clearly labelled Makkah fallback. Alerts are off until the user
+> turns them on; they use alarms, notifications and an offscreen page for the sound. The privacy
+> policy explains local storage and the browser's own location service.
 
-This build asks only for `storage` and `geolocation`. Alarm, notification and audio permissions are added with the first working alert, not before.
+## Before pressing Submit
 
-## Before hitting Submit
-
-- [ ] Every feature named in the description exists in the build.
+- [ ] The zip is `artifacts/sajdatime-1.0.0.zip` and `npm run release-check` passed in this commit.
+- [ ] The version in `package.json` and `src/manifest.json` both read 1.0.0.
 - [ ] The privacy policy URL loads in a private window with no sign in.
-- [ ] The privacy answers match `docs/privacy.html`.
-- [ ] Screenshots show the current build, not an older one.
-- [ ] The zip contains no source maps, no test files, no `node_modules`, no `.DS_Store`.
-- [ ] Version in `manifest.json` and `package.json` agree.
-- [ ] Ali has read the listing and pressed Submit himself.
+- [ ] The privacy answers above match `docs/privacy.html`.
+- [ ] The screenshots show this build, not an older one.
+- [ ] The description claims nothing that is not in the build.
+- [ ] Ali has read the listing and presses Submit himself.

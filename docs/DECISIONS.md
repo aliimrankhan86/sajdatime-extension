@@ -510,3 +510,90 @@ The method Sheet (U13) is the only one without a Done button: choosing a method 
 **Not tested:** no native speaker has read any of the translated sentences. No real screen reader was used, so Urdu and Arabic are checked by direction, geometry and axe rather than by hearing them. Windows fonts for Urdu are not on this machine. The print sheet in Arabic and Urdu was measured through the shared CSS and the shared clock, not printed to paper.
 
 **Revisit if:** Ali finds a translation he wants changed, a user reports one, or the extension ever needs a language outside these five (the list is one array and five files).
+## D-042: the store pack is built by scripts, and the zip is tested by loading it
+
+**Decided:** version 1.0.0 is the first public version, and everything a store submission needs is
+produced by a command rather than by hand. `npm run store-images` captures the real built extension
+and composes the seven store images. `npm run package` writes `artifacts/sajdatime-1.0.0.zip`.
+`npm run release-check` runs the type check, unit tests, build, bundle scan, whole browser suite,
+language files, listing limits and manifest, and prints one verdict line per check. The listing,
+the data use answers and the privacy page are documents Ali pastes from while he is signed in to
+his own accounts.
+
+**Why the version moves to 1.0.0 now:** the build has shipped every section of PLAN section 12:
+prayer times, the next prayer and countdown, a printable month with a Ramadan timetable, alerts and
+a reminder, the badge, five languages with right to left, and both themes. A store upload with a
+0.1 version number invites a reviewer to assume the package is a preview.
+
+**Why one description serves both stores:** Chrome allows 16,000 characters and Edge allows 250 to
+10,000. A description under 10,000 is valid in both, so there is one text to keep true instead of
+two that drift. `tests/unit/listing.test.ts` reads the fenced block out of `docs/store/listing.md`
+and fails if it leaves either limit, if the summary passes 132 characters, if the single purpose
+sentence stops matching PLAN section 12, or if a required phrase disappears. Those phrases are the
+authority sentence, the network claim and the four credits with their licence names, because those
+are exactly the sentences a reviewer checks against the build.
+
+**Why Location is ticked although nothing is sent:** Chrome's data use form treats data that stays
+on the device as handled. The extension reads the browser's coordinates, keeps them in
+`chrome.storage.local` and sends them nowhere, which still counts. `docs/store/PUBLISHING.md`
+records the answers and `docs/SECURITY.md` R10 is the rule. The sentence "the data stays on the
+user's computer and the developer never receives it" is written next to the answers so the form and
+the privacy page cannot disagree.
+
+**Why the store images are composed rather than drawn:** the popup is 380 by 600 and the stores
+want 1280 by 800. Screenshotting wider would show a layout no user sees. `tools/store-images.mjs`
+captures the real popup at twice the pixel density, seeds the same London fixture the suite uses,
+and places the capture on a flat field of the extension's own background colour, eight hundred
+pixels wide and seven hundred and fifty two high, with the rest as margin. Only the margin is ours.
+The Ramadan image is the Times screen on 1 Ramadan 1448, which genuinely shows "Suhoor ends" and
+"Iftar", not a redrawn mock. The method image walks the first run to the full thirteen method list.
+The promo tile is the extension's green, its own 300 pixel mark and the name, built to Chrome's
+440 by 280, and the logo is the store's 300 by 300 copy of the icon that already ships.
+
+**Why the script checks the pixels:** a blank canvas and a correct-size screenshot pass every file
+size test. The script reads the corner pixel of each composed image against the field colour and a
+column of middle pixels against it too, requiring at least one pixel of application in the middle,
+which is what a person does by looking. Then it prints the measured width and height from the PNG
+header. `tests/unit/store-images.test.ts` re-checks the seven committed files' real headers, so a
+deleted or resized image fails the suite before a store upload does.
+
+**Why the zip name stays `sajdatime-<version>.zip`:** PLAN section 12 calls it
+`sajdatime-extension-<version>.zip`, and the existing script has always written
+`artifacts/sajdatime-<version>.zip`, which is the name Ali's brief repeats. The script wins and the
+listing and handover name the same file, so there is one name on disk and on the checklist. The zip
+keeps its exclusions: no source maps, no tests, no `.DS_Store`, no 300 pixel icon, no `.git`.
+
+**Why the package test unzips before loading:** a zip that lists the right files can still be built
+for the repository rather than for a store. `tests/e2e/package.test.ts` builds the zip, lists it,
+refuses a source map, a test file, a node module or a `.DS_Store`, unzips it into an empty temporary
+folder, and launches that folder in a brand new browser profile. It then reads the resolved manifest
+name and description and waits for the first run's heading. That is as close to a store install as a
+machine here gets, and it is the difference between "the build works" and "the upload works".
+
+**Why the release check repeats the manifest rules instead of importing the test:** a gate that
+shares its expectation with the code it gates can drift with it. The script names the five
+permissions, the locale, the minimum Chrome version and the security policy in its own words, so a
+manifest edit has to be made twice on purpose.
+
+**What was deliberately not done:** nothing is uploaded, no account is created, no privacy page is
+published and no zip is sent anywhere. The images are checked by measurement rather than by eye,
+because this machine's assistant cannot see them; Ali approves them before submission. The store
+account setup, the five dollar Chrome fee and the submit button stay with Ali.
+
+**Verified:** `npm run release-check` passes end to end: `npm run check` (strict typecheck,
+**352 unit tests in 22 files**, build, `check-bundle: 11 bundle files and the source are clean`),
+`npm run test:e2e` (**108 passed**, 2.2 minutes, including the new package test), the five language
+files (252 keys each, `i18n check OK`), the listing limits (11 checks), and the manifest
+(`version 1.0.0, permissions alarms, geolocation, notifications, offscreen, storage, no host
+permissions, no content scripts, policy unchanged`). The zip is 40 entries and contains
+`_locales/{en,ar,tr,id}`, `print/index.html`, the audio, the city data and the notices, and none of
+the forbidden files; the fresh profile run opens the first run's welcome heading.
+
+**Not tested:** no store reviewer has seen the package, no real Chrome Web Store or Edge upload was
+attempted, and the images have not been looked at by a person yet. The promo tile's type is drawn
+with the machine's system font rather than the extension's stack, because a canvas has no access to
+the stylesheet.
+
+**Revisit if:** a store changes a length limit or a data use question, Ali approves different
+screenshots, or the manifest gains a permission (which fails the release check and this decision
+needs rewriting in the same commit).

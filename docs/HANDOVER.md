@@ -17,7 +17,7 @@ An independent review brief for this commit is in [`docs/REVIEW-REQUEST.md`](REV
 | Area | State | Evidence |
 | --- | --- | --- |
 | Manifest V3 extension | Loads in Chrome for Testing | Playwright launches it with `--load-extension=dist` and finds the popup |
-| Prayer engine | 13 methods, both Asr schools, polar projection and correction clamp, Shia Maghrib from the Twilight Angle cap exactly as the phone does it, so a normal Shia day above 60 degrees is not projected | `npm test`: 333 unit tests in 20 files pass |
+| Prayer engine | 13 methods, both Asr schools, polar projection and correction clamp, Shia Maghrib from the Twilight Angle cap exactly as the phone does it, so a normal Shia day above 60 degrees is not projected | `npm test`: 352 unit tests in 22 files pass |
 | Golden values | Six phone fixtures pinned, plus 13 broad Aladhan sanity fixtures | `tests/unit/engine.test.ts`, `tests/unit/aladhan.test.ts` |
 | Hijri calendar | Umm al-Qura, shift, Ramadan windows, Eids | `tests/unit/hijri.test.ts` |
 | Ramadan card | Inside Ramadan, Fajr reads "Suhoor ends" and Maghrib "Iftar", the hero and countdown follow ("until suhoor ends", "until you break your fast"), and the Hijri date already names the day; a "Ramadan" group in Settings holds one switch, on by default | `tests/e2e/ramadan.test.ts`, `docs/images/times-ramadan-light.png`, `docs/images/times-ramadan-dark.png` |
@@ -41,9 +41,9 @@ Commands actually run on 28 October 2026:
 
 ```text
 npm run typecheck    pass
-npm test             20 files, 333 tests passed
+npm test             22 files, 352 tests passed
 npm run build        pass, dist/manifest.json, the popup bundle, the background worker, the offscreen page and the print page written
-npm run test:e2e     107 tests passed
+npm run test:e2e     108 tests passed
 node tools/check-bundle.mjs  pass, 11 bundle files and the source clean
 ```
 
@@ -58,8 +58,9 @@ That path is one example of where Playwright keeps Chrome for Testing. `tests/e2
 
 ## What is not built
 
-- Urdu, Arabic, Turkish and Indonesian, with right-to-left layout and the Arabic Western-digit rule.
-- Store screenshots, the final listing, and the zipped builds. Review screenshots exist in `docs/images/` but are not the store set.
+- Nothing from `docs/PLAN.md` section 12 is missing. The store pack is prepared and is waiting on Ali's
+  accounts and his eyes, not on code: `docs/store/listing.md`, `docs/store/PUBLISHING.md`,
+  `docs/store/images/` and `artifacts/sajdatime-1.0.0.zip`.
 - A second browser test for Edge. Playwright cannot load an extension into Edge, so Edge gets a manual load and a short check later.
 - An automated GitHub Actions workflow. The file exists locally at `.github/workflows/ci.yml` but is not in the repository: this Mac's GitHub login lacks the `workflow` scope, and the keyring refused the refresh. The local checks above are the evidence for now. After `gh auth refresh -s workflow` succeeds in a normal Terminal, remove the path from `.git/info/exclude`, commit the workflow and push it. Do not claim CI is green before it has actually run.
 
@@ -78,10 +79,15 @@ That path is one example of where Playwright keeps Chrome for Testing. `tests/e2
 - Windows, Edge and a real user's Chrome profile are not tested. The suite runs on macOS with Chrome for Testing. Edge gets a manual load and a short check later.
 - The first run uses the computer's time zone when it reads the browser's location. A city chosen by name uses the city's own time zone.
 - City search matches Latin names only, and a place found by the browser is named by the nearest Latin city name in the same file. Urdu and Arabic names, local regions and a street address are not built.
-- Only English exists. No language switcher, no right-to-left test.
+- The five languages are checked by direction, geometry and axe, not by a native speaker and not by a
+  real screen reader. Urdu fonts on Windows were never seen.
 - The alert end-to-end test asserts the worker schedules and clears alarms, but it does not play sound and assert the audio. The beep and the two adhan recordings play through the offscreen page and are not captured by the test. The worker schedules against the real wall clock while the popup tests use Playwright's faked clock, so the test asserts a refresh alarm and prayer-named alarms exist and clear, not exact counts.
-- The Settings screen is one list of rows grouped into cards. It has the Disclaimer, Place, School, Asr school, Calculation method (all thirteen methods with today's Fajr and Isha), Hijri shift, Ramadan card (the switch and a Suhoor reminder row), Alerts (master switch, five prayer switches, a Reminder before prayer row, sound choice, Play and a test alert), Theme and About (Privacy policy, Credits, Version). A language choice is still not built, and the theme selector still has no hint line because the brief gives no words for one.
-- The screenshots are review evidence, not the final store set. `docs/store/` still has placeholders.
+- The Settings screen is one list of rows grouped into cards. It has the Disclaimer, Place, Language, School, Asr school, Calculation method (all thirteen methods with today's Fajr and Isha), Hijri shift, Ramadan card (the switch and a Suhoor reminder row), Alerts (master switch, five prayer switches, a Reminder before prayer row, sound choice, Play and a test alert), Theme and About (Privacy policy, Credits, Version). The theme selector still has no hint line because the brief gives no words for one.
+- The store images are generated from the built extension and measured in pixels, but no person has
+  looked at them yet, so Ali approves them before submission. The promo tile's type is drawn with the
+  machine's system font, because a canvas cannot read the extension stylesheet.
+- No zip has been uploaded to either store, no developer account exists and no privacy page is live.
+  Everything up to the submit button is prepared and checked; the submitting is Ali's.
 - The review also flagged, left for later: the Isha row shows tonight's time with a "Now" pill in the small hours; the default method survives a place change when the user never chose it; an Arabic browser shows Arabic meridian words beside English labels; and the polar note does not name the latitude it borrowed. Each is a known, recorded P2, not a hidden defect. Step 1 removed the cause of the method one for a place found by the browser, which now carries a real country, so the method is suggested for the country the user is in rather than the unknown country fallback. A place changed to a searched town still keeps the method.
 - **Shia Maghrib, decided 27 October 2026: the Twilight Angle cap, matching the phone.** The separate Isha-only pass caps Jafari (4 degrees) and Tehran (4.5 degrees) Maghrib at sunset plus `angle / 60` of the night, returning the true twilight when the sun reaches it early. An earlier same-day ruling chose the raw true angle; it was reversed after the review measured it jumping about 45 minutes between neighbouring days, landing one minute before Isha, and putting Jafari after Tehran at Anchorage. The cap the phone ships is smooth, so the two products now agree everywhere except the two small differences listed in `docs/DECISIONS.md`. `tools/adhan-probe` prints the phone's values, and `tests/unit/engine.test.ts` pins Oslo, Trondheim, Tampere, Manchester and Anchorage against them.
 
@@ -98,7 +104,7 @@ Read `docs/DECISIONS.md`. The five that matter most:
 
 ## Next step
 
-Steps 2, 3a, 3b and 4 of [`docs/BUILD-NEXT.md`](BUILD-NEXT.md) and [`docs/UX-PLAN.md`](UX-PLAN.md) are built. Step 5, the Times screen re-plan (U4, U5, U6, U7 and the `Glyph`, `TownChip` and two-tone `Notice` components), is built; the first review of it came back not ready and the fixes landed in D-033, measured in `tests/e2e/hero.test.ts` and recommitted with fresh screenshots. Step 6, the Settings restructure (U8, U9, U10, U11, U13 with `Row`, `Sheet`, `ChoiceRow`, `Segmented` and `Notice`), is built and documented in D-034; the first review of it came back not ready, and D-035 records the fix (one line rows at 56 to 64 pixels, a heading only over two or more rows, each method once, Play beside the Sound title), measured in `tests/e2e/settings-rows.test.ts`. Step 7, the badge and reminders (`PLAN.md` §7), is built and documented in D-036: the toolbar badge, the Reminder before prayer row and sheet, the Suhoor reminder row and sheet, the three new alarm names parsed strictly, and the two P3 fixes from the Step 6 PASS review (the short Disclaimer value, and the switch row padding). Step 8, the rest of the first-run journey (`PLAN.md` §6.3), is built and documented in D-038: the six step sequence (welcome, disclaimer, school, madhab, location, method, alerts), the language choice, and the Step 5 and 6 components reused for the method and alert steps; every step fits the 380 by 600 popup, measured in `tests/e2e/first-run.test.ts`. See D-032 for the deliberate deviations from the plan and the phone specs, D-033 for what the review changed, and D-038 for the `sajdatime.setup.v1` draft key. The review of Step 8 came back with five findings, all fixed in D-039: the focus ring that Chrome drew round every heading a step opened, method rows that were not named after their method, "Suggested for United Kingdom" without its "the", the two method buttons wrapping onto two lines, and the popup width test that failed only inside the full suite. Part A of four is that fix. Step 9, Save as PDF (`PLAN.md` §6.5), is Part B and is documented in D-040: a second extension page, the footer's second pill, the A4 sheet with its clock change note and its Ramadan variant, and 25 unit tests plus 12 end-to-end tests behind it. Step 10, the five languages with right-to-left layout, is Part C and is documented in D-041: `src/i18n/` with one JSON file per language and a `t()` helper, a saved `language` setting with its migration, `dir` and `lang` on `<html>`, clocks pinned left to right, four store locale folders (no Urdu, by R13), and `docs/TRANSLATIONS-NEW.md` printing every key in all five languages. The store preparation is Part D and follows in the same session. The brief builds the remaining steps one at a time, with a review between each:
+Steps 2, 3a, 3b and 4 of [`docs/BUILD-NEXT.md`](BUILD-NEXT.md) and [`docs/UX-PLAN.md`](UX-PLAN.md) are built. Step 5, the Times screen re-plan (U4, U5, U6, U7 and the `Glyph`, `TownChip` and two-tone `Notice` components), is built; the first review of it came back not ready and the fixes landed in D-033, measured in `tests/e2e/hero.test.ts` and recommitted with fresh screenshots. Step 6, the Settings restructure (U8, U9, U10, U11, U13 with `Row`, `Sheet`, `ChoiceRow`, `Segmented` and `Notice`), is built and documented in D-034; the first review of it came back not ready, and D-035 records the fix (one line rows at 56 to 64 pixels, a heading only over two or more rows, each method once, Play beside the Sound title), measured in `tests/e2e/settings-rows.test.ts`. Step 7, the badge and reminders (`PLAN.md` §7), is built and documented in D-036: the toolbar badge, the Reminder before prayer row and sheet, the Suhoor reminder row and sheet, the three new alarm names parsed strictly, and the two P3 fixes from the Step 6 PASS review (the short Disclaimer value, and the switch row padding). Step 8, the rest of the first-run journey (`PLAN.md` §6.3), is built and documented in D-038: the six step sequence (welcome, disclaimer, school, madhab, location, method, alerts), the language choice, and the Step 5 and 6 components reused for the method and alert steps; every step fits the 380 by 600 popup, measured in `tests/e2e/first-run.test.ts`. See D-032 for the deliberate deviations from the plan and the phone specs, D-033 for what the review changed, and D-038 for the `sajdatime.setup.v1` draft key. The review of Step 8 came back with five findings, all fixed in D-039: the focus ring that Chrome drew round every heading a step opened, method rows that were not named after their method, "Suggested for United Kingdom" without its "the", the two method buttons wrapping onto two lines, and the popup width test that failed only inside the full suite. Part A of four is that fix. Step 9, Save as PDF (`PLAN.md` §6.5), is Part B and is documented in D-040: a second extension page, the footer's second pill, the A4 sheet with its clock change note and its Ramadan variant, and 25 unit tests plus 12 end-to-end tests behind it. Step 10, the five languages with right-to-left layout, is Part C and is documented in D-041: `src/i18n/` with one JSON file per language and a `t()` helper, a saved `language` setting with its migration, `dir` and `lang` on `<html>`, clocks pinned left to right, four store locale folders (no Urdu, by R13), and `docs/TRANSLATIONS-NEW.md` printing every key in all five languages. The store preparation is Part D and is documented in D-042: version 1.0.0 in both files, `docs/store/listing.md` rewritten for the shipped build with one description under both stores' limits, the data use answers in `docs/store/PUBLISHING.md`, `docs/privacy.html` updated for the language setting and the printable page in the same commit (R12), seven store images generated from the built extension by `npm run store-images`, `npm run package` writing `artifacts/sajdatime-1.0.0.zip`, a browser test that unzips that file and loads it in a fresh profile, and `npm run release-check` as the gate that runs everything and prints one line per check. The brief builds the remaining steps one at a time, with a review between each:
 
 - Add the store screenshots and the final listing, then hand Ali the submission checks.
 
@@ -120,8 +126,14 @@ The code lives at `https://github.com/aliimrankhan86/sajdatime-extension` on `ma
 
 ## What Ali needs to do
 
-1. Look at the screenshots and say whether the popup and Settings feel right. For Part C that means the ten in `docs/images/i18n/`, especially Urdu and Arabic: M7 asks him to approve them.
-2. Later: open the Edge Partner Center account when the Chrome build is close to submission.
-3. At submission: press Submit and Publish himself, after reading the listing and the privacy answers.
+1. Look at the screenshots and say whether the popup and Settings feel right. For Part C that means the ten in `docs/images/i18n/`, especially Urdu and Arabic: M7 asks him to approve them. For Part D that means the five store screenshots and the promo tile in `docs/store/images/`, which are measured but not seen by a person.
+2. Open the Chrome Web Store developer account, pay the one time fee and finish the identity
+   checks; then the Microsoft Partner Center account. `docs/store/PUBLISHING.md` walks through
+   it one screen at a time.
+3. Make the privacy page live at
+   `https://aliimrankhan86.github.io/sajdatime-extension/privacy.html` and open it in a private
+   window. If it is a 404, turn on GitHub Pages for `main`.
+4. Upload `artifacts/sajdatime-1.0.0.zip` after `npm run release-check` passed in that commit.
+5. Press Submit and Publish himself, after reading the listing and the privacy answers.
 
 Do not ask him to test by hand. Automated browser checks are the agreed testing method. Bring him screenshots and plain words.

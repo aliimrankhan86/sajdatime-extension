@@ -67,7 +67,7 @@
 <ul>
   <li>the place you chose, including its name, latitude, longitude, time zone and country code,</li>
   <li>your calculation method, Asr school and Hijri date shift,</li>
-  <li>your alert and reminder choices, and other display settings.</li>
+  <li>your alert and reminder choices, your language, and other display settings.</li>
 </ul>
 <p>While you are setting the extension up, your in-progress answers are held in the same local storage under a separate key, <code>sajdatime.setup.v1</code>, so the setup can resume where you left off. That key is removed the moment you finish, and only your finished settings stay.</p>
 <p>This information stays in the browser profile on the computer where you installed the extension. It is not synced to your Google account by SajdaTime. Uninstalling the extension removes its local storage, subject to the browser's own behaviour.</p>
@@ -75,6 +75,7 @@
 <h2>Location</h2>
 <p>Location is optional. If you choose <strong>Use my location</strong>, the browser asks for permission and passes SajdaTime a latitude and longitude. SajdaTime stores those coordinates locally, rounded to about one kilometre, so it can work out prayer times for your place. If you refuse, or the browser cannot find a place, the extension offers <strong>Use Makkah for now</strong> and says clearly that the times are for Makkah.</p>
 <p>Prayer times are calculated on the computer. SajdaTime does not send the coordinates to any server of its own or of anyone else.</p>
+<p>The printable month view is a page inside the extension, worked out on this computer. Saving it as a PDF uses your browser's own print dialog, and nothing is sent anywhere.</p>
 <p>The browser's own location service is separate from SajdaTime. Depending on your browser, operating system and settings, it may use wifi, mobile networks or a network location service to estimate where you are. SajdaTime does not control that service and cannot promise that the coordinates the browser gives it were worked out without a network request.</p>
 
 <h2>What SajdaTime does not do</h2>

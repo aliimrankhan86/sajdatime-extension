@@ -13,7 +13,7 @@ Ali Imran Khan. Not technical. Explain in plain words. He presses Submit, Publis
 ## Non-negotiables
 
 - **No network requests from the extension.** No Aladhan calls, no fonts, no analytics, no remote code. Times are calculated locally.
-- **Permissions stay exactly:** `storage` and `geolocation`. No `alarms`, `notifications`, `offscreen`, host permissions, content scripts or `tabs` until an alert is actually built. Adding one needs Ali's agreement and a store review note.
+- **Permissions stay exactly:** `alarms`, `notifications`, `storage`, `offscreen` and `geolocation`, and nothing else (SECURITY.md R1). No host permissions, no content scripts, no `tabs`, no optional permissions. Adding one needs Ali's agreement, a matching feature that uses it, a privacy page update and a store review note. `npm run release-check` fails if the list changes.
 - **No Qibla.** Not in this product.
 - **No tracking and no ads.** Never add an analytics library or an event.
 - **Location stays local.** Never write that location "never leaves the device", because the browser's own location service may use the network. Say what SajdaTime does: it stores the coordinates on this computer and does not send them anywhere.
