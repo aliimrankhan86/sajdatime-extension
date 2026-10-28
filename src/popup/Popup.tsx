@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'preact/hooks';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'preact/hooks';
 import {
   PRAYERS,
   SLOTS,
@@ -68,15 +68,33 @@ function formatHijri(date: string, offset: number): string | null {
   return month ? `${day.day} ${month} ${day.year}` : null;
 }
 
+/**
+ * The countdown as a clock, zero padded to h:mm:ss. This is the shape the phone draws
+ * (TimeFormat.countdownClock, "%02d:%02d:%02d"), and UX-PLAN U5 asks for a masked
+ * literal rather than words, so the digits never reflow while they count.
+ */
 function formatCountdown(target: Date, now: Date): string {
   const seconds = Math.max(0, Math.floor((target.getTime() - now.getTime()) / 1000));
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
   const rest = seconds % 60;
+  return [hours, minutes, rest].map((part) => String(part).padStart(2, '0')).join(':');
+}
+
+/**
+ * The same time in words, for a screen reader. "00:44:59" is read out digit by digit,
+ * so the timer's aria-label says "44 minutes 59 seconds" instead. Hours and minutes are
+ * left out when they are zero, which only happens in the last minute before a prayer.
+ */
+function countdownWords(target: Date, now: Date): string {
+  const seconds = Math.max(0, Math.floor((target.getTime() - now.getTime()) / 1000));
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const rest = seconds % 60;
   const parts: string[] = [];
-  if (hours > 0) parts.push(`${hours} h`);
-  if (hours > 0 || minutes > 0) parts.push(`${minutes} m`);
-  parts.push(`${String(rest).padStart(2, '0')} s`);
+  if (hours > 0) parts.push(hours === 1 ? '1 hour' : `${hours} hours`);
+  if (minutes > 0) parts.push(minutes === 1 ? '1 minute' : `${minutes} minutes`);
+  parts.push(rest === 1 ? '1 second' : `${rest} seconds`);
   return parts.join(' ');
 }
 
@@ -298,14 +316,21 @@ function FirstRun({ onSaved }: { onSaved: (settings: Settings) => void }) {
   );
 }
 
+/**
+ * A notice that stays closed once it has been closed. `onHidden` tells Times when the
+ * notice is no longer on screen, either because it was already closed or because the
+ * close button was pressed, so the hero card can go back to its full form.
+ */
 function DismissableNotice({
   title,
   line,
   storageKey,
+  onHidden,
 }: {
   title: string;
   line: string;
   storageKey: string;
+  onHidden: () => void;
 }) {
   const [dismissed, setDismissed] = useState(false);
 
@@ -314,16 +339,18 @@ function DismissableNotice({
     void isNoticeDismissed(storageKey)
       .then((value) => {
         if (alive) setDismissed(value);
+        if (alive && value) onHidden();
       })
       .catch(() => undefined);
     return () => {
       alive = false;
     };
-  }, [storageKey]);
+  }, [storageKey, onHidden]);
 
   function close(): void {
     void dismissNotice(storageKey).catch(() => undefined);
     setDismissed(true);
+    onHidden();
   }
 
   if (dismissed) return null;
@@ -342,6 +369,8 @@ function Times({
 }) {
   const [now, setNow] = useState(() => new Date());
   const [showLocation, setShowLocation] = useState(false);
+  const [noticeHidden, setNoticeHidden] = useState(false);
+  const hideNotice = useCallback(() => setNoticeHidden(true), []);
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(new Date()), 1_000);
@@ -387,13 +416,22 @@ function Times({
   const inRamadan = settings.ramadanCard && ramadan !== null && contains(ramadan, today);
   const nextLabel = next.isTomorrow ? 'Next prayer, tomorrow' : 'Next prayer';
   const countdown = formatCountdown(next.at, now);
+  const words = countdownWords(next.at, now);
   const nextName = slotLabel(next.slot, inRamadan);
   const nextNote = countdownNote(next.slot, inRamadan);
+  const nextTime = clock.format(next.at);
 
   const eid = eidOn(today, settings.hijriOffsetDays);
   const comingKey =
     ramadan !== null && showsComingNotice(ramadan, today) ? ramadanNoticeKey(ramadan.hijriYear) : null;
   const eidKey = eid !== null ? eidNoticeKey(eid.eid, eid.hijriYear) : null;
+
+  // A notice day shows the hero card in its compact form (one row instead of the label,
+  // the countdown note and the five bars) so the notice and all six times still fit 600
+  // pixels. Dismissing the notice brings the full card back, because the room is free
+  // again. The state is declared here, above the early return for a broken place, so the
+  // hooks run in the same order on every render.
+  const compactHero = (comingKey !== null || eidKey !== null) && !noticeHidden;
 
   // The bold Gregorian date over the Hijri date, in the place's own zone.
   // "Tuesday 27 October" for en-GB, exactly as U4 names it.
@@ -429,52 +467,85 @@ function Times({
   return (
     <main>
       <header class="hero">
-        <Brand compact />
-        <div class="hero-dates">
-          <h1 class="date">{gregorian}</h1>
-          {hijri ? <p class="hijri">{hijri}</p> : null}
+        <div class="hero-top">
+          <Brand compact />
+          <div class="hero-dates">
+            <h1 class="date">{gregorian}</h1>
+            {hijri ? <p class="hijri">{hijri}</p> : null}
+          </div>
         </div>
-        <TownChip name={settings.place.name} onChange={() => setShowLocation(true)} />
+        <div class="hero-place">
+          <TownChip name={settings.place.name} onChange={() => setShowLocation(true)} />
+        </div>
       </header>
 
       {comingKey !== null && ramadan !== null ? (
         <DismissableNotice
+          key={comingKey}
           title={`Ramadan begins on ${formatNoticeDate(ramadan.firstDay, locale)}`}
           line="From the first day, the Ramadan card shows suhoor and iftar times here. You can turn it off in Settings."
           storageKey={comingKey}
+          onHidden={hideNotice}
         />
       ) : null}
       {eidKey !== null ? (
         <DismissableNotice
+          key={eidKey}
           title="Eid Mubarak"
           line="Follow your mosque for the date of Eid."
           storageKey={eidKey}
+          onHidden={hideNotice}
         />
       ) : null}
 
-      <section class="next-card" aria-labelledby="next-label">
-        <p class="next-label" id="next-label">
-          {nextLabel}
-        </p>
-        <div class="next-row">
-          <Glyph slot={next.slot} size={20} />
-          <p class="next-name">{nextName}</p>
-          <p class="next-time">{clock.format(next.at)}</p>
-        </div>
-        <p
-          class="countdown"
-          role="timer"
-          aria-live="off"
-          aria-label={`Time until ${nextName}: ${countdown}`}
-        >
-          {countdown} <span class="countdown-note">{nextNote}</span>
-        </p>
-        <div class="day-bars" aria-hidden="true">
-          {bars.map((state, index) => (
-            <span class={`day-bar day-bar-${state}`} key={index} />
-          ))}
-        </div>
-      </section>
+      {compactHero ? (
+        <section class="next-card is-compact">
+          <p
+            class="next-compact"
+            role="timer"
+            aria-live="off"
+            aria-label={`${nextName} at ${nextTime}, ${words} ${nextNote}`}
+          >
+            <Glyph slot={next.slot} size={20} />
+            <span class="next-compact-name" aria-hidden="true">
+              {nextName}
+            </span>
+            <span class="next-compact-time" aria-hidden="true">
+              {nextTime}
+            </span>
+            <span class="next-compact-count" aria-hidden="true">
+              {countdown}
+            </span>
+          </p>
+        </section>
+      ) : (
+        <section class="next-card" aria-labelledby="next-label">
+          <p class="next-label" id="next-label">
+            {nextLabel}
+          </p>
+          <div class="next-row">
+            <Glyph slot={next.slot} size={20} />
+            <p class="next-name">{nextName}</p>
+            <p class="next-time">{nextTime}</p>
+          </div>
+          <p
+            class="countdown"
+            role="timer"
+            aria-live="off"
+            aria-label={`${words} until ${nextName}`}
+          >
+            {countdown}
+          </p>
+          <p class="countdown-note" aria-hidden="true">
+            {nextNote}
+          </p>
+          <div class="day-bars" aria-hidden="true">
+            {bars.map((state, index) => (
+              <span class={`day-bar day-bar-${state}`} key={index} />
+            ))}
+          </div>
+        </section>
+      )}
 
       {day.isPolar ? (
         <p class="polar-note">

@@ -117,9 +117,10 @@ for (const theme of ['light', 'dark'] as const) {
         expect(block.rect.right).toBeLessThanOrEqual(380.5);
       }
 
-      // Gaps this step touched stay on the 4, 8, 12, 16, 24 scale.
-      expect(Math.round(times.rect.top - card.rect.bottom)).toBe(8);
-      expect(Math.round(footer.rect.top - times.rect.bottom)).toBe(8);
+      // Gaps this step touched stay on the 4, 8, 12, 16, 24 scale. Section to section
+      // is 16 since the Step 5 review, which had 8 and read as squeezed.
+      expect(Math.round(times.rect.top - card.rect.bottom)).toBe(16);
+      expect(Math.round(footer.rect.top - times.rect.bottom)).toBe(16);
 
       const fits = await page.evaluate(() => ({
         scrollHeight: document.documentElement.scrollHeight,

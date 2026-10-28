@@ -41,11 +41,11 @@ Commands actually run on 27 October 2026:
 npm run typecheck    pass
 npm test             14 files, 250 tests passed
 npm run build        pass, dist/manifest.json, the popup bundle, the background worker and the offscreen page written
-npm run test:e2e     70 tests passed
+npm run test:e2e     72 tests passed
 node tools/check-bundle.mjs  pass, 7 bundle files and the source clean
 ```
 
-The 70 end-to-end tests cover the popup, Settings and Location, the design foundation, the notices and their fit, Ramadan, axe accessibility in both themes, School suggestions, theme choice, the word check, alerts, city search and one real action popup measurement. They run in Chrome for Testing at:
+The 72 end-to-end tests cover the popup, Settings and Location, the design foundation, the notices and their fit, Ramadan, axe accessibility in both themes, School suggestions, theme choice, the word check, alerts, city search, one real action popup measurement, and the Step 5 review fixes measured in `tests/e2e/hero.test.ts` (header, hero paint order, bars, countdown shape, hierarchy, compact hero and the 600 px fit in all four states). They run in Chrome for Testing at:
 
 ```text
 /Users/aliimrankhan/Library/Caches/ms-playwright/chromium-1223/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing
@@ -94,13 +94,13 @@ Read `docs/DECISIONS.md`. The five that matter most:
 
 ## Next step
 
-Steps 2, 3a, 3b and 4 of [`docs/BUILD-NEXT.md`](BUILD-NEXT.md) and [`docs/UX-PLAN.md`](UX-PLAN.md) are built. Step 5, the Times screen re-plan (U4, U5, U6, U7 and the `Glyph`, `TownChip` and two-tone `Notice` components), is built and waiting for review; see D-032 for the deliberate deviations from the plan and the phone specs. The brief builds the remaining steps one at a time, with a review between each:
+Steps 2, 3a, 3b and 4 of [`docs/BUILD-NEXT.md`](BUILD-NEXT.md) and [`docs/UX-PLAN.md`](UX-PLAN.md) are built. Step 5, the Times screen re-plan (U4, U5, U6, U7 and the `Glyph`, `TownChip` and two-tone `Notice` components), is built; the first review of it came back not ready and the fixes landed in D-033, measured in `tests/e2e/hero.test.ts` and recommitted with fresh screenshots. See D-032 for the deliberate deviations from the plan and the phone specs, and D-033 for what the review changed. The brief builds the remaining steps one at a time, with a review between each:
 
 - Step 6: Settings, with the theme selector's final place and any unified card surfaces.
 - Then the rest of the first-run journey in `docs/PLAN.md`: the school and madhab steps, a language choice and the six-step sequence. Keep the Times popup unchanged while those screens are built.
 - Add the store screenshots and the final listing, then hand Ali the submission checks.
 
-Do not start Step 6 until Step 5 is reviewed. The worker is written once, against the stable `alerts` settings shape; the badge, the suhoor timer and reminders stay deferred.
+Do not start Step 6 until Step 5 is reviewed again and Ali is happy with the screenshots. The worker is written once, against the stable `alerts` settings shape; the badge, the suhoor timer and reminders stay deferred.
 
 **Known in Step 5, carried forward:** only `.next-card` gets the section 1.2 shadow and border split, and `.times` keeps the hairline in both themes, so the other card surfaces stay un-unified until Step 6. The theme selector still has no hint line, because the brief gives no words for one. With an explicit Light or Dark choice on the opposite operating system, the empty window can show the operating system background for the storage read; content never paints in the wrong theme (see D-031).
 

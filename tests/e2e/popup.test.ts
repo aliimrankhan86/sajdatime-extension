@@ -87,8 +87,12 @@ test('counts down without losing the next prayer', async () => {
     await extension.page.waitForTimeout(2_100);
     const second = await extension.page.locator('.countdown').innerText();
     expect(second).not.toBe(first);
-    expect(second).toMatch(/\d+ s until it begins$/);
+    // A zero padded clock, not a sentence: the phone draws the same shape
+    // (TimeFormat.countdownClock) and the digits keep their place while they count.
+    expect(second).toMatch(/^\d{2}:\d{2}:\d{2}$/);
     await expect(extension.page.locator('.next-name')).toHaveText('Dhuhr');
+    // "until it begins" has its own line now, in words, for a reader who can see it.
+    await expect(extension.page.locator('.countdown-note')).toHaveText('until it begins');
   } finally {
     await extension.close();
   }

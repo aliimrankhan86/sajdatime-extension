@@ -31,13 +31,28 @@ button {
 }
 
 /* Flat since Step 4 (U2): the sand gradient behind the town and date is gone.
-   The one fixed gradient in the product is the hero card (PLAN.md section 3.1). */
+   The one fixed gradient in the product is the hero card (PLAN.md section 3.1).
+
+   Two rows since the Step 5 review: row one is the mark and the date block, row two is
+   the town chip alone at the start. One row could not hold the mark, a date that must
+   never be cut off, both date lines and the chip inside 380 pixels: the date and the
+   Hijri date were truncated and the second date line ran into the hero card. */
 .hero {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px 16px 0;
+  background: var(--background);
+}
+
+.hero-top {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 4px 16px;
-  background: var(--background);
+}
+
+.hero-place {
+  display: flex;
 }
 
 /* Sentence case, the product name as written (U3). Uppercase is never set in CSS. */
@@ -67,7 +82,10 @@ button {
   margin: -4px;
 }
 
-/* U4: the bold Gregorian date over the Hijri date. One row: logo, dates, town chip. */
+/* U4: the bold Gregorian date over the Hijri date, beside the mark on row one. Both
+   lines are whole words: the review found the date cut to "Tuesday 27 Octo..." and the
+   Hijri year wrapped under it. They wrap nowhere and they are never ellipsised, so the
+   test can read scrollWidth === clientWidth on each line. */
 .hero-dates {
   flex: 1;
   min-width: 0;
@@ -79,8 +97,6 @@ button {
   font-size: 16px;
   font-weight: 700;
   line-height: 1.3;
-  overflow: hidden;
-  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
@@ -90,13 +106,14 @@ button {
   font-size: 14px;
   font-variant-numeric: tabular-nums;
   line-height: 1.3;
+  white-space: nowrap;
 }
 
 /* The town chip: pin, town, "Change". A bordered pill, not a solid button, so the
    green stays with the pressable "Change" affordance (U4). */
 .town-chip {
   flex: none;
-  max-width: 160px;
+  max-width: 100%;
   display: flex;
   align-items: center;
   gap: 4px;
@@ -142,12 +159,13 @@ button {
   display: flex;
   align-items: flex-start;
   gap: 12px;
-  margin: -12px 16px 0;
+  margin: 16px 16px 0;
   padding: 12px;
   border-radius: 24px;
   font-size: 14px;
 }
 
+/* A notice day shows the compact hero: both are cards, so they sit 8 apart. */
 .notice + .next-card {
   margin-top: 8px;
 }
@@ -217,13 +235,18 @@ button {
 
 /* The hero card: the one fixed gradient in the product, on the next prayer card only.
    Sheen is a soft diagonal highlight, rim and rim-bottom are hairline insets, and the
-   glow is a level shadow in light and none in dark (color.json gradients.hero). */
+   glow is a level shadow in light and none in dark (color.json gradients.hero).
+
+   isolation makes the card its own stacking context, so the sheen and the rim can be
+   pushed behind the text with z-index -1. Before this they painted over the label, the
+   name and the countdown, and the hero read faded grey as if a sheet lay on the words. */
 .next-card {
   position: relative;
   z-index: 1;
+  isolation: isolate;
   overflow: hidden;
-  margin: -12px 16px 0;
-  padding: 8px;
+  margin: 16px 16px 0;
+  padding: 12px;
   color: var(--on-hero);
   background: linear-gradient(
     180deg,
@@ -239,6 +262,7 @@ button {
   content: '';
   position: absolute;
   inset: 0;
+  z-index: -1;
   background: linear-gradient(135deg, var(--hero-sheen) 0%, transparent 55%);
   border-radius: inherit;
   pointer-events: none;
@@ -248,6 +272,7 @@ button {
   content: '';
   position: absolute;
   inset: 0;
+  z-index: -1;
   border-radius: inherit;
   box-shadow: inset 0 1px 0 var(--hero-rim), inset 0 -1px 0 var(--hero-rim-bottom);
   pointer-events: none;
@@ -265,7 +290,7 @@ button {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-top: 4px;
+  margin-top: 12px;
 }
 
 .next-row svg {
@@ -292,27 +317,36 @@ button {
   line-height: 1.15;
 }
 
+/* The countdown is the largest thing in the card, and it is a clock rather than a
+   sentence: zero padded h:mm:ss with tabular figures, the same shape the phone draws
+   (TimeFormat.countdownClock). A screen reader hears the words instead, from the
+   element's aria-label, because "00:44:59" is read out digit by digit. */
 .countdown {
-  margin: 4px 0 0;
+  margin: 12px 0 0;
   color: var(--on-hero);
-  font-size: 20px;
+  font-size: 32px;
   font-weight: 600;
-  line-height: 1.15;
+  line-height: 1.05;
   font-variant-numeric: tabular-nums;
 }
 
-/* "until it begins" sits on the countdown line, not its own row, so the hero card
-   stays short enough for the whole popup to fit 600 px with a notice (D-030). */
+/* "until it begins" has its own line under the countdown, as the phone has it, in the
+   secondary ink. It is hidden from the screen reader because the countdown's aria-label
+   already carries the whole sentence with the prayer's name in it. */
 .countdown-note {
+  margin: 8px 0 0;
   color: var(--on-hero-secondary);
   font-size: 14px;
+  line-height: 1.3;
 }
 
-/* Five prayer bars: done filled, next outlined, the rest in the divider colour. */
+/* Five prayer bars: done filled, next outlined, the rest in the divider colour. The
+   five share the card's inner width with equal gaps, so the last one ends inside the
+   padding box instead of reaching the card's rounded edge. */
 .day-bars {
   display: flex;
   gap: 8px;
-  margin-top: 4px;
+  margin-top: 16px;
 }
 
 .day-bar {
@@ -325,17 +359,64 @@ button {
   background: var(--primary);
 }
 
+/* The outline is an inset shadow, not a border: a border adds 3 px to this bar's width
+   and the five no longer share the card's inner width equally. */
 .day-bar-next {
   background: transparent;
-  border: 1.5px solid var(--primary);
+  box-shadow: inset 0 0 0 1.5px var(--primary);
 }
 
 .day-bar-todo {
   background: var(--outline-variant);
 }
 
+/* On a day with a notice the same card becomes one row: glyph, prayer name, its time,
+   and the countdown at the end. The label, "until it begins" and the five bars are
+   dropped on those days only, so the notice, the card and all six times still fit 600
+   pixels. The gradient, the ink and the glow stay. The row is one sentence to a screen
+   reader, so its visible parts are hidden from it. */
+.next-card.is-compact {
+  padding: 8px 12px;
+}
+
+.next-compact {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.next-compact svg {
+  flex: none;
+  color: var(--on-hero);
+}
+
+.next-compact-name {
+  color: var(--on-hero);
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.next-compact-time {
+  color: var(--on-hero-secondary);
+  font-size: 20px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.15;
+}
+
+.next-compact-count {
+  margin-inline-start: auto;
+  color: var(--on-hero);
+  font-size: 20px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.15;
+}
+
 .times {
-  margin: 8px 16px 0;
+  margin: 16px 16px 0;
   padding: 0;
   list-style: none;
   background: var(--surface);
@@ -344,11 +425,14 @@ button {
   overflow: hidden;
 }
 
+/* 32 px a row, down from 40. The Step 5 review asked for a two row header, a larger
+   countdown and 12 and 16 pixel gaps rather than a squeeze, and all of it still has to
+   fit 380 by 600 with a notice showing. The six rows are where that height comes from. */
 .time-row {
   display: flex;
   align-items: center;
   gap: 12px;
-  min-height: 40px;
+  min-height: 32px;
   padding: 0 16px;
   border-bottom: 1px solid var(--outline-variant);
 }
@@ -424,7 +508,7 @@ button {
 
 /* U7: the footer keeps one full-width Settings button; the worked-out line moves under it. */
 .footer {
-  margin: 8px 16px 4px;
+  margin: 16px 16px 4px;
   color: var(--on-surface-variant);
   text-align: center;
 }

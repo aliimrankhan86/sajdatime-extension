@@ -17,16 +17,25 @@ test('the coming notice shows two days before Ramadan', async () => {
     await expect(extension.page.getByRole('button', { name: 'Close' })).toBeVisible();
     expect(await undersizedControls(extension.page)).toEqual([]);
 
-    // The notice sits in the flow between the header and the hero card, so it must
-    // not cover the card, and the whole popup must still fit 380 by 600 with no
-    // scroll (the D-030 gap, closed in Step 5).
+    // The notice sits in the flow between the header and the hero card, 16 below the
+    // header and 8 above the compact card, so it covers neither, and the whole popup
+    // must still fit 380 by 600 with no scroll (the D-030 gap, closed in Step 5).
     const layout = await extension.page.evaluate(() => {
+      const hero = document.querySelector('.hero');
       const notice = document.querySelector('.notice');
       const card = document.querySelector('.next-card');
-      const gap = notice && card ? card.getBoundingClientRect().top - notice.getBoundingClientRect().bottom : -1;
-      return { gap, scrollHeight: document.documentElement.scrollHeight };
+      const box = (node: Element | null) => (node ? node.getBoundingClientRect() : null);
+      const heroBox = box(hero);
+      const noticeBox = box(notice);
+      const cardBox = box(card);
+      return {
+        belowHeader: heroBox && noticeBox ? Math.round(noticeBox.top - heroBox.bottom) : -1,
+        gap: noticeBox && cardBox ? Math.round(cardBox.top - noticeBox.bottom) : -1,
+        scrollHeight: document.documentElement.scrollHeight,
+      };
     });
-    expect(layout.gap).toBeGreaterThanOrEqual(0);
+    expect(layout.belowHeader).toBe(16);
+    expect(layout.gap).toBe(8);
     expect(layout.scrollHeight).toBeLessThanOrEqual(600);
 
     await screenshot(extension.page, 'docs/images/times-coming-light.png');
@@ -62,8 +71,14 @@ test('closing the coming notice keeps it closed after a reload', async () => {
   try {
     await seedSettings(extension, new Date('2027-02-06T11:00:00Z'), LONDON);
     await expect(extension.page.locator('.notice')).toBeVisible();
+    // With the notice up the hero is the one row form.
+    await expect(extension.page.locator('.next-card')).toHaveClass(/is-compact/);
     await extension.page.getByRole('button', { name: 'Close' }).click();
     await expect(extension.page.locator('.notice')).toHaveCount(0);
+    // The full hero comes back as soon as the notice is gone, because the room is free.
+    await expect(extension.page.locator('.next-card')).not.toHaveClass(/is-compact/);
+    await expect(extension.page.locator('.next-label')).toHaveText('Next prayer');
+    await expect(extension.page.locator('.day-bar')).toHaveCount(5);
 
     // Wait for the dismiss to land in storage, then prove it survives a reload.
     await extension.page.waitForFunction(async (key) => {
@@ -73,6 +88,7 @@ test('closing the coming notice keeps it closed after a reload', async () => {
     await extension.page.reload();
     await extension.page.waitForSelector('.next-card');
     await expect(extension.page.locator('.notice')).toHaveCount(0);
+    await expect(extension.page.locator('.next-card')).not.toHaveClass(/is-compact/);
   } finally {
     await extension.close();
   }

@@ -317,3 +317,27 @@ Two details worth keeping for the next reader:
 **Verified:** `npm run check` (250 unit tests, strict typecheck, build, bundle scan) and `SAJDATIME_SCREENSHOTS=1 npm run test:e2e` (70 tests) both pass. The fit is asserted by e2e for normal, Ramadan, coming-notice and Eid states in both themes at `scrollHeight <= 600` and `<= clientHeight`. Screenshots live in `docs/images/times-*.png` plus `zoom-200.png`.
 
 **Revisit if:** Step 6 unifies the remaining card surfaces, or the brief adds a longer notice line that needs the compact padding revisited.
+
+Superseded in part by D-033 (Step 5 review): the one-line countdown note, the 20 px countdown, the 40 px rows and the notice's -12 px pull-up under the header are all replaced; the remaining deviations (notice padding 12, hero name and time 20, hero glyph 20, 4 px bars, five bars with no sunrise, "until it begins" instead of "until <prayer>", and the glyph stroke widths) stay.
+
+## D-033: the Times screen fixes from the Step 5 review
+
+**Decided:** the review of `8a29451` found the screen looked wrong although every test passed, and asked for one commit of fixes with e2e measurements so none can come back. These changed:
+
+- **The header is two rows.** 16 px of top padding, row one holds the mark and the date block (bold Gregorian date over the Hijri date, both `nowrap` and never ellipsised), row two holds the town chip alone at the start, 8 px between the rows, 16 px below the header. One row could not hold a date that must never be cut off: the date read "Tuesday 27 Octo..." and the Hijri year wrapped into the hero card.
+- **The hero words paint above the sheen and the rim.** The card is `isolation: isolate`, and `::before` (sheen) and `::after` (rim) sit at `z-index: -1`, so they draw over the gradient and under the text. Before this they sat on top and the label, name and countdown read faded grey.
+- **The five bars share the card's inner width equally.** The outlined "next" bar draws its 1.5 px ring with an inset box-shadow, not a border: a border adds 3 px to that one bar and the five stop being equal.
+- **The countdown is a zero-padded clock.** `00:44:59`, 32 px, tabular figures, the same shape the phone draws (`TimeFormat.countdownClock`), with "until it begins" (or the Ramadan wording) on its own line below it. A screen reader hears "44 minutes 59 seconds until Dhuhr" from the timer's `aria-label`, because digits read one by one are not words.
+- **The hero is laid out top to bottom** — label, glyph and name and time on one row, the countdown, "until it begins", the bars — with 12, 12, 8 and 16 px gaps rather than a squeeze.
+- **Times rows are 32 px, not 40 px.** The review's requests add about 120 px (two-row header, larger countdown, note on its own line, 16 px section gaps). The six rows are where the height comes from; at 40 px the coming-notice state lands over 600 px. The 44 px touch targets (header chip, footer button, notice close) are unchanged.
+- **The notice sits fully below the header**, 16 px down, and 8 px above the compact card. Before this it pulled up under the chip with a -12 px margin.
+- **On a notice day the hero card is compact** (Ali's ruling, newest answer to the fit question): one row with the glyph, the prayer name, its time and the countdown. The label, "until it begins" and the five bars are dropped on those days only, the gradient, ink and glow stay, and the whole sentence "Dhuhr at 11:45, 44 minutes 59 seconds until it begins" is the row's `aria-label`. Dismissing the notice returns the full card. Every other day keeps the full card.
+
+**Rejected options, recorded so they are not tried again:** letting the notice replace the hero hides the countdown, which is the popup's main job; letting the popup scroll pushes Isha and Settings off the 600 px screen, which D-030 already ruled out.
+
+**Measured:** `tests/e2e/hero.test.ts` asserts, in all four states and both themes: no scroll and no clipping, the two date lines one line each and untruncated, the header 16 from the top and its block 16 clear of the header, the gradient present, the full hero's order and gaps on the scale, a `\d{2}:\d{2}:\d{2}` tabular countdown with its note below, five equal bars inside the padding box with equal gaps, every hero ink at opacity 1 and 4.5:1 against all three gradient stops, and the paint order (a probe that first lets the overlays take pointer events, then proves `elementFromPoint` at each text centre returns the text, not the card — the mutation of removing `z-index: -1` flips this test to fail). The worst state, the coming notice, measures 594.3 of 600 in both themes; the normal state 592.1; Eid 537.2.
+
+**Why:** the reviewer could not see a live popup, so the fixes had to be provable by number. The compact hero keeps the countdown visible, which is the whole reason the popup exists, and is the option Ali chose over hiding it or scrolling.
+
+**Revisit if:** a later step shortens or removes the notice, which would let the rows or the countdown grow again, or Step 6 gives the Times rows back their height.
+
