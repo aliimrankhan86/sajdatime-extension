@@ -79,7 +79,7 @@ async function waitForPopupTarget(): Promise<CdpTarget> {
 }
 
 const MEASURE = `(() => {
-  const button = document.querySelector('.header-button');
+  const button = document.querySelector('.footer-settings');
   const rect = button ? button.getBoundingClientRect() : null;
   return {
     ready: !!rect && rect.width > 0,
@@ -90,7 +90,7 @@ const MEASURE = `(() => {
   };
 })()`;
 
-// The popup target is listed before Preact has rendered the header, so poll the
+// The popup target is listed before Preact has rendered the footer, so poll the
 // target until the Settings button exists and then take the one measurement.
 interface PopupMeasurement {
   ready: boolean;

@@ -58,6 +58,13 @@
   --on-hero: #0a2419;
   --on-hero-label: #2c4a3c;
   --on-hero-secondary: #3e5c4c;
+  /* Overlays and depth on the hero, light (color.json gradients.hero). */
+  --hero-sheen: #ffffff99;
+  --hero-rim: #ffffffcc;
+  --hero-rim-bottom: #ffffff33;
+  --hero-glow: #0b5a4359;
+  /* Component shadow derived from the glow colour; dark has none (quiet glass). */
+  --hero-shadow: 0 4px 12px #0b5a4359;
 
   /* Brand call to action, light. */
   --cta: #0b5a43;
@@ -113,6 +120,14 @@
   --on-hero: #e7eae8;
   --on-hero-label: #8fd9b8;
   --on-hero-secondary: #b8c4be;
+  /* Overlays and depth on the hero, dark. The glow is transparent: the dark
+     hero reads as quiet glass, not a raised card (color.json gradients.hero). */
+  --hero-sheen: #ffffff12;
+  --hero-rim: #ffffff29;
+  --hero-rim-bottom: #ffffff0a;
+  --hero-glow: transparent;
+  /* Component shadow derived from the glow colour; dark has none (quiet glass). */
+  --hero-shadow: none;
 
   /* Brand call to action, dark. Its own green: primary cannot carry white text. */
   --cta: #17805a;

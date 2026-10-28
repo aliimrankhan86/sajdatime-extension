@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
-import { launchExtension, LONDON, seedSettings } from './extension';
+import { launchExtension, LONDON, screenshot, seedSettings, setTheme } from './extension';
+import { undersizedControls } from './measures';
 
 // Ramadan 1448 starts on 8 February 2027. The coming notice appears in the three
 // days before it; Eid al-Fitr (1 Shawwal 1448) is 9 March 2027.
@@ -14,17 +15,23 @@ test('the coming notice shows two days before Ramadan', async () => {
       'From the first day, the Ramadan card shows suhoor and iftar times here. You can turn it off in Settings.',
     );
     await expect(extension.page.getByRole('button', { name: 'Close' })).toBeVisible();
+    expect(await undersizedControls(extension.page)).toEqual([]);
 
     // The notice sits in the flow between the header and the hero card, so it must
-    // not cover the card. (Fitting the whole 380 by 600 popup with a notice
-    // showing, with no scroll, is Step 5, which re-plans the Times screen.)
-    const gap = await extension.page.evaluate(() => {
+    // not cover the card, and the whole popup must still fit 380 by 600 with no
+    // scroll (the D-030 gap, closed in Step 5).
+    const layout = await extension.page.evaluate(() => {
       const notice = document.querySelector('.notice');
       const card = document.querySelector('.next-card');
-      if (!notice || !card) return -1;
-      return card.getBoundingClientRect().top - notice.getBoundingClientRect().bottom;
+      const gap = notice && card ? card.getBoundingClientRect().top - notice.getBoundingClientRect().bottom : -1;
+      return { gap, scrollHeight: document.documentElement.scrollHeight };
     });
-    expect(gap).toBeGreaterThanOrEqual(0);
+    expect(layout.gap).toBeGreaterThanOrEqual(0);
+    expect(layout.scrollHeight).toBeLessThanOrEqual(600);
+
+    await screenshot(extension.page, 'docs/images/times-coming-light.png');
+    await setTheme(extension.page, 'dark');
+    await screenshot(extension.page, 'docs/images/times-coming-dark.png');
   } finally {
     await extension.close();
   }
@@ -77,7 +84,42 @@ test('Eid al-Fitr shows the Eid notice', async () => {
     await seedSettings(extension, new Date('2027-03-09T11:00:00Z'), LONDON);
     await expect(extension.page.locator('.notice-title')).toHaveText('Eid Mubarak');
     await expect(extension.page.locator('.notice-line')).toHaveText('Follow your mosque for the date of Eid.');
+
+    await screenshot(extension.page, 'docs/images/times-eid-light.png');
+    await setTheme(extension.page, 'dark');
+    await screenshot(extension.page, 'docs/images/times-eid-dark.png');
   } finally {
     await extension.close();
   }
 });
+
+// D-030: the base Times screen fills 380 by 600 exactly, so a notice must not push
+// it taller. Every state, notice included, stays at or under 600 px with no scroll,
+// in both themes. Normal, Ramadan (no notice, card active), coming notice and Eid.
+for (const theme of ['light', 'dark'] as const) {
+  test(`the popup fits 600 px with no scroll in ${theme}`, async () => {
+    const extension = await launchExtension();
+    const page = extension.page;
+    try {
+      const dates: Record<string, string> = {
+        normal: '2026-10-27T11:00:00Z',
+        ramadan: '2027-02-20T11:00:00Z',
+        coming: '2027-02-06T11:00:00Z',
+        eid: '2027-03-09T11:00:00Z',
+      };
+      for (const [name, iso] of Object.entries(dates)) {
+        // seedSettings reloads with the stored system theme, so paint the theme after.
+        await seedSettings(extension, new Date(iso), LONDON);
+        await setTheme(page, theme);
+        const fits = await page.evaluate(() => ({
+          scrollHeight: document.documentElement.scrollHeight,
+          clientHeight: document.documentElement.clientHeight,
+        }));
+        expect(fits.scrollHeight, `${name} in ${theme}`).toBeLessThanOrEqual(600);
+        expect(fits.scrollHeight, `${name} in ${theme}`).toBeLessThanOrEqual(fits.clientHeight);
+      }
+    } finally {
+      await extension.close();
+    }
+  });
+}

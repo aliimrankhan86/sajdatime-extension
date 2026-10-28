@@ -87,7 +87,7 @@ test('counts down without losing the next prayer', async () => {
     await extension.page.waitForTimeout(2_100);
     const second = await extension.page.locator('.countdown').innerText();
     expect(second).not.toBe(first);
-    expect(second).toMatch(/\d+ s$/);
+    expect(second).toMatch(/\d+ s until it begins$/);
     await expect(extension.page.locator('.next-name')).toHaveText('Dhuhr');
   } finally {
     await extension.close();

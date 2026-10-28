@@ -61,7 +61,7 @@ test('turning the Ramadan card off restores the normal labels', async () => {
     await extension.page.getByRole('button', { name: 'Close settings' }).click();
 
     await expect(extension.page.locator('.next-name')).toHaveText('Maghrib');
-    await expect(extension.page.locator('.countdown-note')).toHaveText('until Maghrib');
+    await expect(extension.page.locator('.countdown-note')).toHaveText('until it begins');
     await expect(extension.page.locator('[data-slot="fajr"] .time-label')).toHaveText('Fajr');
     await expect(extension.page.locator('[data-slot="maghrib"] .time-label')).toContainText('Maghrib');
     await expect(extension.page.locator('.ramadan-day')).toHaveCount(0);

@@ -273,7 +273,7 @@ The badge and "time until the next prayer" reminders are deferred.
 
 **Why:** the three pieces all name the Ramadan moment: warn the user three days before, greet the Eid, and say the Maghrib call is the time to break the fast. The notices use the quiet (soft green) tone because they are invitations, not problems. The dismissed keys are separate from `sajdatime.settings.v1`, so closing a notice never touches settings. The coming notice and the Eid notice cannot show together, because coming days are before the first day and the Eid is the first Shawwal.
 
-**Known gap:** the base Times screen fills 380 by 600 exactly, so the notice pushes the popup taller than 600 px and it scrolls. Making the whole popup fit 380 by 600 with no scroll, notice included, is Step 5 (the Times screen re-plan), which also builds the full `Notice` component (round mark and a row of solid buttons).
+**Closed in Step 5 (D-032):** the base Times screen once filled 380 by 600 exactly, so the notice pushed the popup taller than 600 px and it scrolled. Step 5 rebuilt the Times screen so every state — normal, Ramadan, the coming notice and Eid — fits 380 by 600 with no scroll in both themes, and built the full `Notice` component.
 
 **Revisit if:** Ali wants the deferred "Shift the date" notice on the first two days of Ramadan, or a different close control than the "Close" text link.
 
@@ -290,3 +290,30 @@ The badge and "time until the next prayer" reminders are deferred.
 **Words instrument:** UX-PLAN 5.4 says "a unit test scans the built strings". The check is an e2e scan of what is rendered (text plus every `aria-label`, `title`, `placeholder` and `alt`) on every screen in both themes, with a self-test that proves the detector fires on bad copy. A raw source scan would count code semicolons and CSS class names as prose and would miss strings assembled at runtime, so the literal instrument was changed deliberately. The build-time scan covers the code-side part: uppercase is banned by `check-bundle.mjs`.
 
 **Revisit if:** a later phone release adds focus or hover roles to `color.json`, or Step 5 replaces the card surfaces.
+
+---
+
+## D-032: the Times screen re-plan (Step 5)
+
+**Decided:** Step 5 rebuilt the Times screen exactly as `docs/UX-PLAN.md` writes it — U4 (header with logo, bold Gregorian date over the Hijri date, and the town chip), U5 (the hero card with the phone's `gradients.hero` values on the next prayer card only), U6 (the six rows with a `Glyph` per slot) and U7 (the footer Settings button and the worked-out line) — plus the `Glyph`, `TownChip` and two-tone `Notice` components. The whole popup fits 380 by 600 with no scroll in light and dark, including Ramadan and with a notice showing, and the countdown ticks once a second without moving the layout.
+
+Deviations from `PLAN.md` §6.1 and the phone's component specs, each deliberate so the notice state stays inside 600 px:
+
+- **Times rows are 40 px, not 42 px.** `PLAN.md` §6.1 asked for rows of at least 42 px, but the phone's Today rows are actually 50 px (`03-components.md` line 185), so either is a re-plan. 40 px was chosen because 42 px pushed the coming-notice state over 600 px. The 44 px touch target is met by the header chip, footer button and notice close, not by read-only time rows.
+- **Notice padding is 12 px, not 16 px.** The phone's Notice uses 16 px; the popup is the compact variant at 12 px.
+- **Hero name and time are 20 px, not 24 px**, and the hero glyph is 20 px, not 24 px.
+- **The countdown and its note sit on one line.** "until it begins" (or the Ramadan wording) is an inline span after the countdown, not its own row, so the hero card stays short enough for the notice to fit. The countdown is 20 px (not 22 px), the note 14 px.
+- **Day bars are 4 px tall with an 8 px gap and 4 px top margin** (not the earlier 8 px margin), and there are five bars — one per prayer, no sunrise.
+- **"until <prayer>" became "until it begins".** The hero reads "Next prayer" already, so naming the prayer again in the note repeated a fact the card shows.
+- **Glyph stroke widths follow the phone's vector drawables, not U6's literal "2 px".** The Android `widget_glyph_*.xml` files use 1.8 for the six base glyphs, 1.5 for the Isha star and 3 for the Asr shadow, so `Glyph.tsx` uses those exact widths.
+
+Two details worth keeping for the next reader:
+
+- **The town chip's accessible name is "London, change location"** (place first, then the action), not `PLAN.md`'s "Change location, London". axe's WCAG 2.5.3 Label in Name rule failed the second form because the visible words "London" then "Change" must appear in the accessible name in order; "London, change location" keeps them. A zero-width space between the two spans keeps them separate words for axe (flex `gap` is visual only, so without it the DOM reads "LondonChange" as one word).
+- **The countdown line count is measured by height over line height**, not by `Range.getClientRects()`. The note is a smaller font than the digits, so a Range over the two runs reports two rects on one line.
+
+**Why:** the header, hero, rows and footer are one screen the user sees every time they open the popup, so it is the place to spend the design care. The hero gradient is the one fixed gradient in the product, carried only on the next prayer card, and its inks are `--on-hero` (countdown and name), `--on-hero-label` ("Next prayer") and `--on-hero-secondary` (the time and the note). Green stays reserved for the next prayer, Qibla and pressable text, so row glyphs are `currentColor`, never green.
+
+**Verified:** `npm run check` (250 unit tests, strict typecheck, build, bundle scan) and `SAJDATIME_SCREENSHOTS=1 npm run test:e2e` (70 tests) both pass. The fit is asserted by e2e for normal, Ramadan, coming-notice and Eid states in both themes at `scrollHeight <= 600` and `<= clientHeight`. Screenshots live in `docs/images/times-*.png` plus `zoom-200.png`.
+
+**Revisit if:** Step 6 unifies the remaining card surfaces, or the brief adds a longer notice line that needs the compact padding revisited.

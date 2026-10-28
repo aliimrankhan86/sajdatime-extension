@@ -19,8 +19,10 @@ const EXPECTED = {
     onSurfaceVariant: 'rgb(90, 96, 92)',
     cta: 'rgb(11, 90, 67)',
     onCta: 'rgb(255, 255, 255)',
-    cardOutline: 'rgba(0, 0, 0, 0)',
-    hasShadow: true,
+    onHero: 'rgb(10, 36, 25)',
+    onHeroLabel: 'rgb(44, 74, 60)',
+    onHeroSecondary: 'rgb(62, 92, 76)',
+    hasGlowShadow: true,
   },
   dark: {
     background: 'rgb(16, 19, 18)',
@@ -32,8 +34,10 @@ const EXPECTED = {
     onSurfaceVariant: 'rgb(169, 178, 174)',
     cta: 'rgb(23, 128, 90)',
     onCta: 'rgb(255, 255, 255)',
-    cardOutline: 'rgb(42, 49, 46)',
-    hasShadow: false,
+    onHero: 'rgb(231, 234, 232)',
+    onHeroLabel: 'rgb(143, 217, 184)',
+    onHeroSecondary: 'rgb(184, 196, 190)',
+    hasGlowShadow: false,
   },
 } as const;
 
@@ -43,6 +47,7 @@ async function styles(page: Page, selector: string) {
     return {
       color: style.color,
       background: style.backgroundColor,
+      backgroundImage: style.backgroundImage,
       borderColor: style.borderTopColor,
       bottomBorderColor: style.borderBottomColor,
       boxShadow: style.boxShadow,
@@ -77,11 +82,14 @@ for (const theme of ['light', 'dark'] as const) {
       const hijri = await styles(page, '.hijri');
       expect(hijri.color).toBe(expected.onSurfaceVariant);
 
+      // The hero card carries the one fixed gradient and its own ink, plus a glow in
+      // light and none in dark (color.json gradients.hero).
       const card = await styles(page, '.next-card');
-      expect(card.background).toBe(expected.surface);
-      expect(card.borderColor).toBe(expected.cardOutline);
-      // Light cards carry a level 1 shadow; dark cards carry a hairline and no shadow.
-      expect(card.boxShadow !== 'none').toBe(expected.hasShadow);
+      expect(card.backgroundImage).toContain('linear-gradient');
+      expect(card.boxShadow !== 'none').toBe(expected.hasGlowShadow);
+      expect((await styles(page, '.next-label')).color).toBe(expected.onHeroLabel);
+      expect((await styles(page, '.next-name')).color).toBe(expected.onHero);
+      expect((await styles(page, '.next-time')).color).toBe(expected.onHeroSecondary);
 
       const times = await styles(page, '.times');
       expect(times.background).toBe(expected.surface);

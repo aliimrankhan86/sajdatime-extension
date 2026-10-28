@@ -16,13 +16,22 @@ interface Colour {
   dark?: { $value: string };
 }
 
+interface HeroTheme {
+  stops: Colour[];
+  ink: Record<string, Colour>;
+  sheen: Colour;
+  rim: Colour;
+  rimBottom: Colour;
+  glow: Colour;
+}
+
 interface ColourJson {
   roles: Record<string, Colour>;
   brand: Record<string, Colour>;
   gradients: {
     hero: {
-      light: { stops: Colour[]; ink: Record<string, Colour> };
-      dark: { stops: Colour[]; ink: Record<string, Colour> };
+      light: HeroTheme;
+      dark: HeroTheme;
     };
   };
 }
@@ -48,6 +57,12 @@ const DARK = blockOf(darkSource);
 
 function valueOf(block: string, name: string): string | undefined {
   const match = new RegExp(`--${name}:\\s*(#[0-9a-fA-F]{3,8})`).exec(block);
+  return match?.[1]?.toLowerCase();
+}
+
+/** Like valueOf, but also accepts the word `transparent` (the dark hero glow). */
+function valueOfFlex(block: string, name: string): string | undefined {
+  const match = new RegExp(`--${name}:\\s*(#[0-9a-fA-F]{3,8}|transparent)`).exec(block);
   return match?.[1]?.toLowerCase();
 }
 
@@ -115,6 +130,18 @@ describe('tokens.css parity with the phone design system', () => {
       expect(valueOf(LIGHT, token)).toBe(resolve(light.ink[ink] as Colour));
       expect(valueOf(DARK, token)).toBe(resolve(dark.ink[ink] as Colour));
     }
+    // The overlays: sheen, rim, rim-bottom and glow. The dark glow is transparent,
+    // which the hex-only valueOf cannot read, so glow uses the flexible matcher.
+    for (const [overlay, token] of [
+      ['sheen', 'hero-sheen'],
+      ['rim', 'hero-rim'],
+      ['rimBottom', 'hero-rim-bottom'],
+    ] as const) {
+      expect(valueOf(LIGHT, token)).toBe((light[overlay] as Colour).$value?.toLowerCase());
+      expect(valueOf(DARK, token)).toBe((dark[overlay] as Colour).$value?.toLowerCase());
+    }
+    expect(valueOfFlex(LIGHT, 'hero-glow')).toBe((light.glow as Colour).$value?.toLowerCase());
+    expect(valueOfFlex(DARK, 'hero-glow')).toBe((dark.glow as Colour).$value?.toLowerCase());
   });
 
   it('sets color-scheme in both themes, so native controls follow', () => {

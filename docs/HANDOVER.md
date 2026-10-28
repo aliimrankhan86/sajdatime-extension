@@ -17,13 +17,14 @@ An independent review brief for this commit is in [`docs/REVIEW-REQUEST.md`](REV
 | Area | State | Evidence |
 | --- | --- | --- |
 | Manifest V3 extension | Loads in Chrome for Testing | Playwright launches it with `--load-extension=dist` and finds the popup |
-| Prayer engine | 13 methods, both Asr schools, polar projection and correction clamp, Shia Maghrib from the Twilight Angle cap exactly as the phone does it, so a normal Shia day above 60 degrees is not projected | `npm test`: 144 unit tests pass |
+| Prayer engine | 13 methods, both Asr schools, polar projection and correction clamp, Shia Maghrib from the Twilight Angle cap exactly as the phone does it, so a normal Shia day above 60 degrees is not projected | `npm test`: 250 unit tests pass |
 | Golden values | Six phone fixtures pinned, plus 13 broad Aladhan sanity fixtures | `tests/unit/engine.test.ts`, `tests/unit/aladhan.test.ts` |
 | Hijri calendar | Umm al-Qura, shift, Ramadan windows, Eids | `tests/unit/hijri.test.ts` |
-| Ramadan card | Inside Ramadan, Fajr reads "Suhoor ends" and Maghrib "Iftar", the hero and countdown follow, and the Hijri date already names the day; a "Ramadan" group in Settings holds one switch, on by default | `tests/e2e/ramadan.test.ts`, `docs/images/times-ramadan-light.png`, `docs/images/times-ramadan-dark.png` |
+| Ramadan card | Inside Ramadan, Fajr reads "Suhoor ends" and Maghrib "Iftar", the hero and countdown follow ("until suhoor ends", "until you break your fast"), and the Hijri date already names the day; a "Ramadan" group in Settings holds one switch, on by default | `tests/e2e/ramadan.test.ts`, `docs/images/times-ramadan-light.png`, `docs/images/times-ramadan-dark.png` |
+| Notices | A closable coming notice shows the one, two and three days before Ramadan, and an Eid notice on the two Eids, one at a time between the header and the hero; closing persists per Ramadan or Eid | `tests/e2e/notices.test.ts`, `docs/images/times-coming-light.png`, `docs/images/times-coming-dark.png`, `docs/images/times-eid-light.png`, `docs/images/times-eid-dark.png` |
 | Method suggestion | Country table and Shia rule | `tests/unit/suggestions.test.ts` |
 | City search | Offline GeoNames city list, search and pick; the most populous city within 15 kilometres names a place the browser located, with "Near" past 50 kilometres | `tests/unit/cities.test.ts`, `tests/unit/place.test.ts`, Playwright first-run test |
-| Popup | Place, Hijri date, next prayer, countdown, six times, a fixed 380 pixel width, the real toolbar popup measured at 380 by 600, 200 percent zoom, visible Settings button, explicit Next and Now pills | Playwright screenshots and 52 end-to-end tests |
+| Popup | Place chip, Hijri date, next prayer on the fixed hero-gradient card, countdown with its note on one line, five day bars, six time rows with a glyph each, a two-tone Notice between the header and the hero, the footer Settings button and the worked-out line, a fixed 380 pixel width, the real toolbar popup measured at 380 by 600, 200 percent zoom, and no scroll in any state in either theme | Playwright screenshots and 70 end-to-end tests |
 | First run | Use my location names the town and confirms it before going on, city search, method suggestion from the country, save on Continue, show times | Playwright tests with a supplied geolocation fix |
 | Settings | Place change, School (Sunni or Shia), method, Asr school, Hijri shift, Ramadan card, disclaimer, privacy link, keyboard focus and Escape | Playwright tests |
 | Alerts | Off by default; a background worker schedules one alarm per prayer plus a daily refresh, fires a notification, and plays the beep or the adhan through one offscreen page; five-minute late drop; Stop sound; test alert; blocked notice when the browser denies notifications; the Play button returns to Play when a sound ends and a replaced sound never reports its end; the worker owns only prayer and refresh alarms, so the 60 second self-clear survives a rebuild | `tests/unit/alerts.test.ts`, `tests/unit/messages.test.ts`, `tests/e2e/alerts.test.ts` |
@@ -38,13 +39,13 @@ Commands actually run on 27 October 2026:
 
 ```text
 npm run typecheck    pass
-npm test             12 files, 140 tests passed
+npm test             14 files, 250 tests passed
 npm run build        pass, dist/manifest.json, the popup bundle, the background worker and the offscreen page written
-npm run test:e2e     38 tests passed
+npm run test:e2e     70 tests passed
 node tools/check-bundle.mjs  pass, 7 bundle files and the source clean
 ```
 
-The 38 end-to-end tests are six Settings and state tests, six design and responsive tests, four axe tests, eleven original popup tests, three location confirmation tests, four School tests, three alert tests and one real action popup measurement. They run in Chrome for Testing at:
+The 70 end-to-end tests cover the popup, Settings and Location, the design foundation, the notices and their fit, Ramadan, axe accessibility in both themes, School suggestions, theme choice, the word check, alerts, city search and one real action popup measurement. They run in Chrome for Testing at:
 
 ```text
 /Users/aliimrankhan/Library/Caches/ms-playwright/chromium-1223/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing
@@ -57,7 +58,7 @@ That path is one example of where Playwright keeps Chrome for Testing. `tests/e2
 
 - The full first run journey: the school and madhab steps, a language choice and the six-step sequence in the plan.
 - The countdown badge and a reminder before each prayer.
-- Ramadan notices, the suhoor timer, Eid notices and the timetable page.
+- The suhoor timer and the timetable page.
 - Urdu, Arabic, Turkish and Indonesian, with right-to-left layout and the Arabic Western-digit rule.
 - Store screenshots, the final listing, and the zipped builds. Review screenshots exist in `docs/images/` but are not the store set.
 - A second browser test for Edge. Playwright cannot load an extension into Edge, so Edge gets a manual load and a short check later.
@@ -93,18 +94,15 @@ Read `docs/DECISIONS.md`. The five that matter most:
 
 ## Next step
 
-Steps 2, 3a and 3b of [`docs/BUILD-NEXT.md`](BUILD-NEXT.md) are accepted. Step 4 of [`docs/UX-PLAN.md`](UX-PLAN.md), the design foundation (U1, U2, U3, U12 and the §5 tests), is built and waiting for review. The brief builds the remaining steps one at a time, with a review between each:
+Steps 2, 3a, 3b and 4 of [`docs/BUILD-NEXT.md`](BUILD-NEXT.md) and [`docs/UX-PLAN.md`](UX-PLAN.md) are built. Step 5, the Times screen re-plan (U4, U5, U6, U7 and the `Glyph`, `TownChip` and two-tone `Notice` components), is built and waiting for review; see D-032 for the deliberate deviations from the plan and the phone specs. The brief builds the remaining steps one at a time, with a review between each:
 
-- Step 5: the Times screen re-plan. It carries the fixed hero-card gradient, the full `Notice` component, and a layout that fits 380 by 600 with a notice, using the tokens and theme from this step.
 - Step 6: Settings, with the theme selector's final place and any unified card surfaces.
 - Then the rest of the first-run journey in `docs/PLAN.md`: the school and madhab steps, a language choice and the six-step sequence. Keep the Times popup unchanged while those screens are built.
 - Add the store screenshots and the final listing, then hand Ali the submission checks.
 
-Do not start Step 5 until Step 4 is reviewed. The worker is written once, against the stable `alerts` settings shape; the badge and reminders stay deferred.
+Do not start Step 6 until Step 5 is reviewed. The worker is written once, against the stable `alerts` settings shape; the badge, the suhoor timer and reminders stay deferred.
 
-**Known in Step 4:** only `.next-card` gets the section 1.2 shadow and border split; the hero tokens are defined but unused until Step 5; the theme selector has no hint line, because the brief gives no words for one. With an explicit Light or Dark choice on the opposite operating system, the empty window can show the operating system background for the storage read; content never paints in the wrong theme (see D-031).
-
-**Known in Step 3b:** the coming and Eid notices push the popup taller than 600 px, so it scrolls. Step 5 fixes that.
+**Known in Step 5, carried forward:** only `.next-card` gets the section 1.2 shadow and border split, and `.times` keeps the hairline in both themes, so the other card surfaces stay un-unified until Step 6. The theme selector still has no hint line, because the brief gives no words for one. With an explicit Light or Dark choice on the opposite operating system, the empty window can show the operating system background for the storage read; content never paints in the wrong theme (see D-031).
 
 ## How to pick this up
 

@@ -112,6 +112,9 @@ test('keyboard focus enters Settings and returns to its button', async () => {
     await seedSettings(extension);
     const settings = extension.page.getByRole('button', { name: 'Settings' });
     await extension.page.mouse.click(10, 10);
+    // The town chip is the first focusable control, the footer Settings button is second.
+    await extension.page.keyboard.press('Tab');
+    await expect(extension.page.getByRole('button', { name: 'change location' })).toBeFocused();
     await extension.page.keyboard.press('Tab');
     await expect(settings).toBeFocused();
     await settings.focus();

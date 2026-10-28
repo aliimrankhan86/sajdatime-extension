@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'preact/hooks';
 import {
+  PRAYERS,
   SLOTS,
   computeDay,
   contains,
@@ -29,8 +30,12 @@ import type { Place, Settings } from '../settings/types';
 import { applyTheme, watchSystemTheme } from './theme';
 import { CitySearch } from './CitySearch';
 import { Brand } from './Brand';
+import { Glyph } from './Glyph';
 import { LocationFound } from './LocationFound';
+import { LocationSheet } from './LocationSheet';
+import { Notice } from './Notice';
 import { Settings as SettingsScreen } from './Settings';
+import { TownChip } from './TownChip';
 
 const HIJRI_MONTHS = [
   'Muharram',
@@ -86,7 +91,7 @@ function slotLabel(slot: PrayerSlot, inRamadan: boolean): string {
 function countdownNote(slot: Prayer, inRamadan: boolean): string {
   if (inRamadan && slot === 'fajr') return 'until suhoor ends';
   if (inRamadan && slot === 'maghrib') return 'until you break your fast';
-  return `until ${LABELS[slot]}`;
+  return 'until it begins';
 }
 
 export function Popup({ initial }: { initial?: Settings | null }) {
@@ -99,7 +104,7 @@ export function Popup({ initial }: { initial?: Settings | null }) {
   // Put focus back when it returns, instead of dropping the keyboard user on <body>.
   useEffect(() => {
     if (previousScreen.current === 'settings' && screen === 'times') {
-      document.querySelector<HTMLButtonElement>('.header-button')?.focus();
+      document.querySelector<HTMLButtonElement>('.footer-settings')?.focus();
     }
     previousScreen.current = screen;
   }, [screen]);
@@ -323,15 +328,7 @@ function DismissableNotice({
 
   if (dismissed) return null;
 
-  return (
-    <section class="notice">
-      <h2 class="notice-title">{title}</h2>
-      <p class="notice-line">{line}</p>
-      <button class="notice-close" type="button" onClick={close}>
-        Close
-      </button>
-    </section>
-  );
+  return <Notice tone="quiet" title={title} line={line} onClose={close} />;
 }
 
 function Times({
@@ -344,6 +341,7 @@ function Times({
   onOpenSettings: () => void;
 }) {
   const [now, setNow] = useState(() => new Date());
+  const [showLocation, setShowLocation] = useState(false);
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(new Date()), 1_000);
@@ -397,17 +395,46 @@ function Times({
     ramadan !== null && showsComingNotice(ramadan, today) ? ramadanNoticeKey(ramadan.hijriYear) : null;
   const eidKey = eid !== null ? eidNoticeKey(eid.eid, eid.hijriYear) : null;
 
+  // The bold Gregorian date over the Hijri date, in the place's own zone.
+  // "Tuesday 27 October" for en-GB, exactly as U4 names it.
+  const gregorian = new Intl.DateTimeFormat(locale, {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    timeZone: prefs.timeZone,
+  }).format(new Date(`${today}T12:00:00`));
+
+  // The five prayer bars on the hero: done filled, next outlined, the rest in the
+  // divider colour. After Isha the next prayer is tomorrow, so all five read as done.
+  const nextSlotToday = next.isTomorrow ? null : next.slot;
+  const bars = PRAYERS.map((prayer) => {
+    const at = day.times[prayer].getTime();
+    if (prayer === nextSlotToday) return 'next' as const;
+    return at <= now.getTime() ? ('done' as const) : ('todo' as const);
+  });
+
+  if (showLocation) {
+    return (
+      <LocationSheet
+        current={settings.place}
+        onClose={() => setShowLocation(false)}
+        onSaved={(place) => {
+          setShowLocation(false);
+          void saveSettings({ ...settings, place });
+        }}
+      />
+    );
+  }
+
   return (
     <main>
       <header class="hero">
-        <div class="hero-top">
-          <Brand />
-          <button class="header-button" type="button" onClick={onOpenSettings}>
-            Settings
-          </button>
+        <Brand compact />
+        <div class="hero-dates">
+          <h1 class="date">{gregorian}</h1>
+          {hijri ? <p class="hijri">{hijri}</p> : null}
         </div>
-        <h1 class="place">{settings.place.name}</h1>
-        {hijri ? <p class="hijri">{hijri}</p> : null}
+        <TownChip name={settings.place.name} onChange={() => setShowLocation(true)} />
       </header>
 
       {comingKey !== null && ramadan !== null ? (
@@ -430,6 +457,7 @@ function Times({
           {nextLabel}
         </p>
         <div class="next-row">
+          <Glyph slot={next.slot} size={20} />
           <p class="next-name">{nextName}</p>
           <p class="next-time">{clock.format(next.at)}</p>
         </div>
@@ -439,9 +467,13 @@ function Times({
           aria-live="off"
           aria-label={`Time until ${nextName}: ${countdown}`}
         >
-          {countdown}
+          {countdown} <span class="countdown-note">{nextNote}</span>
         </p>
-        <p class="countdown-note">{nextNote}</p>
+        <div class="day-bars" aria-hidden="true">
+          {bars.map((state, index) => (
+            <span class={`day-bar day-bar-${state}`} key={index} />
+          ))}
+        </div>
       </section>
 
       {day.isPolar ? (
@@ -471,6 +503,7 @@ function Times({
               data-testid={`time-${slot}`}
               aria-current={isNow ? 'time' : undefined}
             >
+              <Glyph slot={slot} size={20} />
               <span class="time-label">
                 {slotLabel(slot, inRamadan)}
                 {isNext || isNow ? ' ' : null}
@@ -483,7 +516,12 @@ function Times({
         })}
       </ul>
 
-      <p class="footer">Worked out on this computer. No ads.</p>
+      <footer class="footer">
+        <button class="action footer-settings" type="button" onClick={onOpenSettings}>
+          Settings
+        </button>
+        <p class="footer-note">Worked out on this computer. No ads.</p>
+      </footer>
     </main>
   );
 }
