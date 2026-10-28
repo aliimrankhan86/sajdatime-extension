@@ -49,7 +49,14 @@ The user opens the popup for two seconds to see one thing: **when the next praye
 1. **Read** the design system pages for what you touch: `02-foundations.md`, `03-components.md` (the matching component), `06-content-and-language.md`, `07-accessibility.md`. For a new screen, `10-new-feature-playbook.md`.
 2. **Use the skills.** Ali has given you all of his skills. Before writing UI, load and follow, in this order: `design-system` (keep tokens and components consistent), `impeccable` and `make-interfaces-feel-better` (spacing, type, borders, hit areas, states), `accessibility` (WCAG 2.2 AA), `apple-design` (the iPhone road; Apple's design guidelines). For a review pass on screenshots, `browser-qa` and `ui-ux-pro-max`. **The design system and Ali's rules beat any skill.** If a skill suggests a font, a gradient, an animation, a new colour or uppercase, ignore that part.
 3. **Build with tokens only.** Every colour is a CSS custom property in `src/popup/tokens.css`. No hex anywhere else (a test enforces it, §5).
-4. **Screenshot** every changed screen at 380 by 600 in light and dark, plus 200% zoom, with `SAJDATIME_SCREENSHOTS=1`. Look at them yourself, against §1, before reporting. Fix what you see. Then commit the images in `docs/images/`.
+4. **Screenshot** every changed screen at 380 by 600 in light and dark, plus 200% zoom, with `SAJDATIME_SCREENSHOTS=1`, and commit the images in `docs/images/`. **DeepSeek cannot see images** (it said so on 28 Oct 2026), so it must not claim it looked. Instead it **measures** in e2e, in both themes:
+   - no two text or control boxes overlap, and nothing crosses its card's edge (compare `getBoundingClientRect`);
+   - the page has no scroll where `PLAN.md` says it fits (`scrollHeight <= 600`);
+   - every computed colour of text, fill and border equals a `tokens.css` value for that theme;
+   - every gap between siblings is one of 4, 8, 12, 16 or 24 px;
+   - no text repeats a fact already shown on the same screen.
+
+   The reviewer (Claude) or Ali looks at the images. If no reviewer is available, list the images in the report for Ali at the screenshot gates of §6.
 5. **Self-review** with the checklist in §7 and paste it in the report, each line PASS or FAIL.
 6. **Report:** what changed, the screenshots' paths, the checklist, the security checklist, test counts, and what you did not test. Stop and wait for review.
 
@@ -126,8 +133,9 @@ UX checklist
 [ ] Read the design system pages for what I touched: <list>
 [ ] Skills used: <list>, and what I took from each
 [ ] Colours only from tokens.css; token parity test passes
-[ ] Light and dark screenshots taken and looked at: <paths>
-[ ] 200% zoom screenshot taken, nothing clipped or overlapping
+[ ] Light and dark screenshots taken (for the reviewer): <paths>
+[ ] Measured in e2e, both themes: no overlap, fits where it must, colours from tokens, gaps on the scale
+[ ] 200% zoom: nothing clipped or overlapping (measured)
 [ ] Every action a solid pill with white bold text; no greyed or outlined button
 [ ] Green only on next prayer or something pressable; amber only for withheld; no red
 [ ] No state shown by colour alone
