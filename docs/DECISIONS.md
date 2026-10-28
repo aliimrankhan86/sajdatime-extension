@@ -412,3 +412,17 @@ The method Sheet (U13) is the only one without a Done button: choosing a method 
 **Verified:** `npm run check` passes (strict typecheck, 270 unit tests in 15 files, build, `check-bundle: 7 bundle files and the source are clean`). `npm run test:e2e` passes **78** tests, two of them new (the Suhoor reminder sheet in Ramadan, and the reminder sheet already counted in the sheets loop). The badge boundaries are unit-tested in `tests/unit/badge.test.ts` (over an hour, under an hour, under a minute, across midnight). `docs/privacy.html` now reads "your alert and reminder choices, and other display settings."
 
 **Revisit if:** Ali wants the Makkah-fallback tooltip wording, which means first storing a flag for how the place was chosen.
+
+## D-037: the daily refresh follows any alarm, not only prayer alerts
+
+**Decided:** `scheduledAlarms` adds the once a day `refresh` alarm whenever the list holds any prayer, reminder or suhoor alarm, and returns an empty list when all of them are off. The push moved from inside the `alerts.enabled` branch to just before the return, guarded by `alarms.length > 0`.
+
+**Why:** the refresh is the only thing that wakes the worker after local midnight to plan the next day. It was pushed only while `settings.alerts.enabled` held, so a user with prayer alerts off and the Suhoor reminder on received today's and tomorrow's suhoor alarms and nothing after that. There was no midnight wake-up, and the alarm came back only when Chrome restarted through `onStartup`, `onInstalled` or a settings change. Step 7 made the Suhoor reminder deliberately independent of the master switch (D-036), so this combination is supported on purpose, not an edge case.
+
+**Rejected:** a second repeating alarm for suhoor alone, because it doubles the wake-ups and leaves two alarms doing one job. Pushing `refresh` unconditionally was rejected too. With everything off the worker should own nothing except the always-on `badge` alarm, which `tests/e2e/alerts.test.ts` already asserts as `['badge']`.
+
+**Test that can fail:** `tests/unit/alerts.test.ts`, "keeps the daily refresh when prayer alerts are off but the suhoor reminder is on". It uses 20 February 2027, inside Ramadan 1448, and asserts both `suhoor:2027-02-21` and `refresh`. Against `86c5332` it fails with `expected [ 'suhoor:2027-02-21' ] to include 'refresh'`. Its companion, "gives an empty list when prayer alerts and the suhoor reminder are both off" on the same Ramadan date, guards the other half and passes before and after the fix.
+
+**Verified:** `npm run check` passes (strict typecheck, 272 unit tests in 15 files, build, `check-bundle: 7 bundle files and the source are clean`). `npm run test:e2e` passes 78 tests, so the existing expectations that alerts off leaves only the badge alarm still hold.
+
+**Revisit if:** a future setting schedules an alarm of its own without the refresh, or the worker gains a reason to wake daily with nothing scheduled.

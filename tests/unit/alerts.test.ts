@@ -126,6 +126,36 @@ describe('scheduledAlarms', () => {
     expect(names.filter((name) => name.startsWith('suhoor:'))).toEqual(['suhoor:2027-02-21']);
   });
 
+  it('keeps the daily refresh when prayer alerts are off but the suhoor reminder is on', () => {
+    // 20 February 2027 is in Ramadan 1448. The refresh is the only thing that wakes the
+    // worker after midnight to plan the next day, so without it the suhoor alarms
+    // scheduled here would stop after the two days planned ahead, until Chrome restarted.
+    const ramadanNow = new Date('2027-02-20T16:00:00Z');
+    const names = scheduledAlarms(
+      settings({
+        alerts: { enabled: false, prayers: PRAYERS_ON, sound: 'beep', reminder: { enabled: false, minutes: 10 } },
+        suhoorReminder: { enabled: true, minutes: 30 },
+      }),
+      ramadanNow,
+    ).map((alarm) => alarm.name);
+    expect(names).toContain('suhoor:2027-02-21');
+    expect(names).toContain('refresh');
+  });
+
+  it('gives an empty list when prayer alerts and the suhoor reminder are both off', () => {
+    // Everything off leaves nothing to wake for, so even the daily refresh stays out.
+    const ramadanNow = new Date('2027-02-20T16:00:00Z');
+    expect(
+      scheduledAlarms(
+        settings({
+          alerts: { enabled: false, prayers: PRAYERS_ON, sound: 'beep', reminder: { enabled: false, minutes: 10 } },
+          suhoorReminder: { enabled: false, minutes: 30 },
+        }),
+        ramadanNow,
+      ),
+    ).toEqual([]);
+  });
+
   it('never schedules a suhoor reminder outside Ramadan', () => {
     const names = scheduledAlarms(
       settings({ suhoorReminder: { enabled: true, minutes: 30 } }),
