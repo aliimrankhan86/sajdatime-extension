@@ -1,39 +1,28 @@
-import type { PrayerSlot } from './types';
+import { t } from '../i18n';
+import type { Madhab, PrayerSlot } from './types';
 
 /**
- * The Hijri month names, spelled the way the phone spells them. Shared by the Times
- * screen's date line and the printable timetable, so the two can never disagree.
- * Kept in core rather than the popup because the print page is a second entry point.
+ * The names the screens use for Hijri months, the six times of day and the two Asr schools.
+ * Shared by the Times screen, the printable timetable and the alerts, so no two screens can
+ * disagree. Kept in core rather than the popup because the print page is a second entry
+ * point and reads the same words.
+ *
+ * They are functions, not constants: a constant would be filled in once, at module load,
+ * and would still say the first language after the user changes it (PLAN.md section 10).
  */
-export const HIJRI_MONTHS = [
-  'Muharram',
-  'Safar',
-  "Rabi' al-Awwal",
-  "Rabi' al-Thani",
-  'Jumada al-Awwal',
-  'Jumada al-Thani',
-  'Rajab',
-  "Sha'ban",
-  'Ramadan',
-  'Shawwal',
-  "Dhu al-Qi'dah",
-  'Dhu al-Hijjah',
-] as const;
 
 /** The name of a Hijri month, or null when the number is outside 1 to 12. */
 export function hijriMonthName(month: number): string | null {
-  return HIJRI_MONTHS[month - 1] ?? null;
+  if (!Number.isInteger(month) || month < 1 || month > 12) return null;
+  return t(`hijri.${month}`);
 }
 
 /** The six line labels, in the order they appear on the Times screen and in the table. */
-export const SLOT_LABELS: Record<PrayerSlot, string> = {
-  fajr: 'Fajr',
-  sunrise: 'Sunrise',
-  dhuhr: 'Dhuhr',
-  asr: 'Asr',
-  maghrib: 'Maghrib',
-  isha: 'Isha',
-};
+export function slotLabel(slot: PrayerSlot): string {
+  return t(`slot.${slot}`);
+}
 
 /** The two Asr schools, in the words Settings uses. */
-export const MADHAB_LABELS = { hanafi: 'Hanafi', shafii: "Shafi'i" } as const;
+export function madhabLabel(madhab: Madhab): string {
+  return t(`madhab.${madhab}`);
+}

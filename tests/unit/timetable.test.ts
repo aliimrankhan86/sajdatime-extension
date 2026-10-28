@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { computeDay } from '../../src/core/engine';
 import { ramadanInfo } from '../../src/core/hijri';
-import { HIJRI_MONTHS, hijriMonthName, SLOT_LABELS } from '../../src/core/labels';
+import { hijriMonthName, slotLabel } from '../../src/core/labels';
 import { SLOTS, type CalculationPrefs } from '../../src/core/types';
 import {
   buildMonth,
@@ -65,15 +65,16 @@ describe('the month in the URL', () => {
 
 describe('the Hijri names', () => {
   it('holds the twelve months of the phone, in order', () => {
-    expect(HIJRI_MONTHS).toHaveLength(12);
-    expect(HIJRI_MONTHS[8]).toBe('Ramadan');
+    const months = Array.from({ length: 12 }, (_, index) => hijriMonthName(index + 1));
+    expect(months.filter((name) => name !== null)).toHaveLength(12);
+    expect(hijriMonthName(9)).toBe('Ramadan');
     expect(hijriMonthName(1)).toBe('Muharram');
     expect(hijriMonthName(13)).toBeNull();
     expect(hijriMonthName(0)).toBeNull();
   });
 
   it('names the six lines of the table', () => {
-    expect(SLOTS.map((slot) => SLOT_LABELS[slot])).toEqual([
+    expect(SLOTS.map((slot) => slotLabel(slot))).toEqual([
       'Fajr',
       'Sunrise',
       'Dhuhr',

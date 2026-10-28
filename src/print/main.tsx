@@ -2,9 +2,11 @@ import { render } from 'preact';
 import { dateInZone } from '../core/engine';
 import { applyTheme } from '../popup/theme';
 import { loadSettings } from '../settings/storage';
+import { applyLanguage } from '../i18n';
 import type { Settings } from '../settings/types';
 import { Print, type TimetableKind } from './Print';
 import { monthOfDate } from './timetable';
+import { t } from '../i18n';
 import '../popup/tokens.css';
 import './styles.css';
 
@@ -29,9 +31,9 @@ function readSearch(settings: Settings): { month: string; kind: TimetableKind } 
 function NoSettings() {
   return (
     <main class="print-page">
-      <h1 class="print-title">Set up SajdaTime first</h1>
+      <h1 class="print-title">{t('print.setupTitle')}</h1>
       <p class="print-line">
-        Open SajdaTime and choose your town. The timetable is worked out from that.
+        {t('print.setupNote')}
       </p>
     </main>
   );
@@ -50,6 +52,8 @@ async function start(): Promise<void> {
   }
 
   applyTheme(settings.theme);
+  // The sheet speaks the saved language, right to left included.
+  applyLanguage(settings.language);
   const { month, kind } = readSearch(settings);
   render(<Print settings={settings} initialMonth={month} initialKind={kind} />, mount);
 }

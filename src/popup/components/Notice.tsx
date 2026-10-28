@@ -2,8 +2,8 @@ import type { ComponentChildren } from 'preact';
 
 /**
  * The Settings notice: a round mark, a title, one sentence, and an optional row of
- * solid buttons. Two tones: `warning` (amber) for "alerts are blocked", `quiet`
- * (soft green) for "Chrome needs to be open". Settings notices have no close button and
+ * solid buttons. Two tones: `warning` (amber) for the blocked-alerts notice, `quiet`
+ * (soft green) for the browser-not-open notice. Settings notices have no close button and
  * stay until the condition they describe is fixed.
  *
  * Scoped with its own class names so it never inherits the dismissable Times notice's

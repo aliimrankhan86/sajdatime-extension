@@ -23,5 +23,6 @@ export function firstSettings(place: Place): Settings {
     ramadanCard: true,
     suhoorReminder: DEFAULT_SUHOOR_REMINDER,
     theme: 'system',
+    language: 'auto',
   };
 }

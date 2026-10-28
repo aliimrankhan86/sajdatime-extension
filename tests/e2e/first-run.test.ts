@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
-import { METHOD_NAMES } from '../../src/popup/meta';
+import { METHOD_IDS, methodName } from '../../src/popup/meta';
 import { launchExtension, screenshot, setTheme, walkToLocation } from './extension';
 import { undersizedControls } from './measures';
 
@@ -311,7 +311,7 @@ test('every method row is named after its method and the suggestion is the hint 
     await page.getByRole('button', { name: 'Allow location' }).click();
     await page.getByRole('button', { name: 'Continue' }).click(); // method step
 
-    const known = new Set(Object.values(METHOD_NAMES));
+    const known = new Set(METHOD_IDS.map((id) => methodName(id)));
 
     const stepNames = await page.locator('.first-run-method-row .method-name').allTextContents();
     expect(stepNames.length, 'the UK offers three methods').toBe(3);

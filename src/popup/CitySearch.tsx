@@ -1,10 +1,11 @@
 import { useState } from 'preact/hooks';
 import { countryName, CITY_SEARCH_LIMIT, loadCities, searchCities, type City } from '../core/cities';
+import { t, localeTag } from '../i18n';
 
 interface Props {
   onPick: (city: City) => void;
   disabled?: boolean;
-  /** The field label. The location sheet says "Or find a place"; first run says "Or type a place". */
+  /** The field label. The location sheet says t('place.findPlace'); first run says t('firstRun.orTypePlace'). */
   label?: string;
 }
 
@@ -12,7 +13,7 @@ interface Props {
  * An offline town search. The list is loaded only when the field is first used, so a
  * person who allows location never waits for three megabytes they do not need.
  */
-export function CitySearch({ onPick, disabled = false, label = 'Or find a place' }: Props) {
+export function CitySearch({ onPick, disabled = false, label = t('place.findPlace') }: Props) {
   const [query, setQuery] = useState('');
   const [cities, setCities] = useState<City[] | null>(null);
   const [loading, setLoading] = useState(false);
@@ -27,7 +28,7 @@ export function CitySearch({ onPick, disabled = false, label = 'Or find a place'
         setLoading(false);
       })
       .catch(() => {
-        setError('The town list could not be read. Try using your location instead.');
+        setError(t('place.listMissing'));
         setLoading(false);
       });
   }
@@ -44,7 +45,7 @@ export function CitySearch({ onPick, disabled = false, label = 'Or find a place'
       : [];
   const results = found.slice(0, CITY_SEARCH_LIMIT);
   const hasMore = found.length > CITY_SEARCH_LIMIT;
-  const locale = navigator.language || 'en-GB';
+  const locale = localeTag();
 
   return (
     <div class="city-search">
@@ -66,23 +67,23 @@ export function CitySearch({ onPick, disabled = false, label = 'Or find a place'
       />
       <p class="field-hint" id="city-hint" role="status">
         {trimmed.length === 1
-          ? 'Type one more letter.'
+          ? t('common.oneMoreLetter')
           : error
             ? error
             : loading
-              ? 'Loading places...'
+              ? t('place.loading')
               : trimmed.length === 0
-                ? 'Type the name of your town or city.'
+                ? t('firstRun.typePlace')
                 : results.length === 0
-                  ? 'No place found. Try a larger town nearby.'
+                  ? t('place.none')
                   : results.length === 1
-                    ? '1 place found.'
+                    ? t('place.onePlace', { count: 1 })
                     : hasMore
                       ? `Top ${CITY_SEARCH_LIMIT} places.`
-                      : `${results.length} places found.`}
+                      : t('place.manyPlaces', { count: results.length })}
       </p>
       {results.length > 0 ? (
-        <ul class="city-results" id="city-results" aria-label="Places found">
+        <ul class="city-results" id="city-results" aria-label={t('place.placesFound')}>
           {results.map((city) => (
             <li key={`${city.name}-${city.countryCode}-${city.latitude}-${city.longitude}`}>
               <button

@@ -19,6 +19,7 @@ function settings(overrides: Partial<Settings> = {}): Settings {
     suhoorReminder: { enabled: false, minutes: 30 },
     ramadanCard: true,
     theme: 'system',
+    language: 'auto',
     ...overrides,
   };
 }

@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 /**
  * The toolbar badge text and its colours (PLAN.md §7).
  *
@@ -42,8 +43,9 @@ export function humanDuration(ms: number): string {
   const minutes = roundedMinutes(ms);
   const hours = Math.floor(minutes / 60);
   const rest = minutes % 60;
-  const unit = (count: number, word: string): string => `${count} ${word}${count === 1 ? '' : 's'}`;
-  if (hours > 0 && rest > 0) return `${unit(hours, 'hour')} ${unit(rest, 'minute')}`;
-  if (hours > 0) return unit(hours, 'hour');
-  return unit(rest, 'minute');
+  const hoursText = t(hours === 1 ? 'unit.hour' : 'unit.hours', { count: hours });
+  const minutesText = t(rest === 1 ? 'unit.minute' : 'unit.minutes', { count: rest });
+  if (hours > 0 && rest > 0) return `${hoursText} ${minutesText}`;
+  if (hours > 0) return hoursText;
+  return minutesText;
 }

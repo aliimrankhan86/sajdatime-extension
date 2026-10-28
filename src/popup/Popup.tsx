@@ -23,8 +23,9 @@ import {
 } from '../core';
 import { clockFormatter, type ClockFormat } from '../core/clock';
 import { monthOfDate } from '../print/timetable';
-import { HIJRI_MONTHS, SLOT_LABELS } from '../core/labels';
+import { hijriMonthName, slotLabel as plainSlotLabel } from '../core/labels';
 import { clearSettings, loadSettings, saveSettings, watchSettings } from '../settings/storage';
+import { applyLanguage, localeTag } from '../i18n';
 import type { Settings } from '../settings/types';
 import { applyTheme, watchSystemTheme } from './theme';
 import { Brand } from './Brand';
@@ -34,11 +35,12 @@ import { LocationSheet } from './LocationSheet';
 import { Notice } from './Notice';
 import { Settings as SettingsScreen } from './Settings';
 import { TownChip } from './TownChip';
+import { t } from '../i18n';
 
 function formatHijri(date: string, offset: number): string | null {
   const day = hijriFor(date, offset);
   if (!day) return null;
-  const month = HIJRI_MONTHS[day.month - 1];
+  const month = hijriMonthName(day.month);
   return month ? `${day.day} ${month} ${day.year}` : null;
 }
 
@@ -66,24 +68,24 @@ function countdownWords(target: Date, now: Date): string {
   const minutes = Math.floor((seconds % 3600) / 60);
   const rest = seconds % 60;
   const parts: string[] = [];
-  if (hours > 0) parts.push(hours === 1 ? '1 hour' : `${hours} hours`);
-  if (minutes > 0) parts.push(minutes === 1 ? '1 minute' : `${minutes} minutes`);
-  parts.push(rest === 1 ? '1 second' : `${rest} seconds`);
+  if (hours > 0) parts.push(t(hours === 1 ? 'unit.hour' : 'unit.hours', { count: hours }));
+  if (minutes > 0) parts.push(t(minutes === 1 ? 'unit.minute' : 'unit.minutes', { count: minutes }));
+  parts.push(t(rest === 1 ? 'unit.second' : 'unit.seconds', { count: rest }));
   return parts.join(' ');
 }
 
 /** The label a prayer slot shows during Ramadan, when the Ramadan card is on. */
 function slotLabel(slot: PrayerSlot, inRamadan: boolean): string {
-  if (inRamadan && slot === 'fajr') return 'Suhoor ends';
-  if (inRamadan && slot === 'maghrib') return 'Iftar';
-  return SLOT_LABELS[slot];
+  if (inRamadan && slot === 'fajr') return t('slot.suhoor');
+  if (inRamadan && slot === 'maghrib') return t('slot.iftar');
+  return plainSlotLabel(slot);
 }
 
 /** The words under the countdown during Ramadan, when the Ramadan card is on. */
 function countdownNote(slot: Prayer, inRamadan: boolean): string {
-  if (inRamadan && slot === 'fajr') return 'until suhoor ends';
-  if (inRamadan && slot === 'maghrib') return 'until you break your fast';
-  return 'until it begins';
+  if (inRamadan && slot === 'fajr') return t('times.untilSuhoor');
+  if (inRamadan && slot === 'maghrib') return t('times.untilIftar');
+  return t('times.untilBegins');
 }
 
 export function Popup({ initial }: { initial?: Settings | null }) {
@@ -110,6 +112,12 @@ export function Popup({ initial }: { initial?: Settings | null }) {
     return watchSystemTheme(() => applyTheme('system'));
   }, [settings?.theme]);
 
+  // The language, its direction and the font stack follow the setting without a reload.
+  // `lang` and `dir` go on <html> so a sheet rendering in a portal reads the same way.
+  useLayoutEffect(() => {
+    applyLanguage(settings?.language ?? 'auto');
+  }, [settings?.language]);
+
   useEffect(() => {
     let alive = true;
     loadSettings()
@@ -131,7 +139,7 @@ export function Popup({ initial }: { initial?: Settings | null }) {
   if (settings === undefined) {
     return (
       <main class="welcome" aria-busy="true">
-        <p class="welcome-note">Loading SajdaTime...</p>
+        <p class="welcome-note">{t('app.loading')}</p>
       </main>
     );
   }
@@ -226,7 +234,7 @@ function Times({
     timeZone: settings.place.timeZone,
     hijriOffsetDays: settings.hijriOffsetDays,
   };
-  const locale = navigator.language || 'en-GB';
+  const locale = localeTag();
 
   let today: string;
   let day: DayTimes;
@@ -245,10 +253,10 @@ function Times({
   } catch {
     return (
       <main class="welcome">
-        <h1 class="welcome-title">Times are not available for this place.</h1>
-        <p class="welcome-lead">The location saved for SajdaTime cannot be used. Set your place again.</p>
+        <h1 class="welcome-title">{t('times.unavailable')}</h1>
+        <p class="welcome-lead">{t('times.badPlace')}</p>
         <button class="action" type="button" onClick={onReset}>
-          Set your place again
+          {t('times.setPlace')}
         </button>
       </main>
     );
@@ -266,7 +274,7 @@ function Times({
   const hijri = formatHijri(today, settings.hijriOffsetDays);
   const ramadan = ramadanInfo(today, settings.hijriOffsetDays);
   const inRamadan = settings.ramadanCard && ramadan !== null && contains(ramadan, today);
-  const nextLabel = next.isTomorrow ? 'Next prayer, tomorrow' : 'Next prayer';
+  const nextLabel = next.isTomorrow ? t('times.nextPrayerTomorrow') : t('times.nextPrayer');
   const countdown = formatCountdown(next.at, now);
   const words = countdownWords(next.at, now);
   const nextName = slotLabel(next.slot, inRamadan);
@@ -322,8 +330,14 @@ function Times({
         <div class="hero-top">
           <Brand compact />
           <div class="hero-dates">
-            <h1 class="date">{gregorian}</h1>
-            {hijri ? <p class="hijri">{hijri}</p> : null}
+            <h1 class="date">
+              <bdi>{gregorian}</bdi>
+            </h1>
+            {hijri ? (
+              <p class="hijri">
+                <bdi>{hijri}</bdi>
+              </p>
+            ) : null}
           </div>
         </div>
         <div class="hero-place">
@@ -334,8 +348,8 @@ function Times({
       {comingKey !== null && ramadan !== null ? (
         <DismissableNotice
           key={comingKey}
-          title={`Ramadan begins on ${formatNoticeDate(ramadan.firstDay, locale)}`}
-          line="From the first day, the Ramadan card shows suhoor and iftar times here. You can turn it off in Settings."
+          title={t('times.ramadanBegins', { date: formatNoticeDate(ramadan.firstDay, locale) })}
+          line={t('times.ramadanComing')}
           storageKey={comingKey}
           onHidden={hideNotice}
         />
@@ -343,8 +357,8 @@ function Times({
       {eidKey !== null ? (
         <DismissableNotice
           key={eidKey}
-          title="Eid Mubarak"
-          line="Follow your mosque for the date of Eid."
+          title={t('times.eid')}
+          line={t('times.eidNote')}
           storageKey={eidKey}
           onHidden={hideNotice}
         />
@@ -356,17 +370,17 @@ function Times({
             class="next-compact"
             role="timer"
             aria-live="off"
-            aria-label={`${nextName} at ${nextTime}, ${words} ${nextNote}`}
+            aria-label={t('times.nextAria', { prayer: nextName, time: nextTime, wait: words })}
           >
             <Glyph slot={next.slot} size={20} />
             <span class="next-compact-name" aria-hidden="true">
               {nextName}
             </span>
             <span class="next-compact-time" aria-hidden="true">
-              {nextTime}
+              <bdi>{nextTime}</bdi>
             </span>
             <span class="next-compact-count" aria-hidden="true">
-              {countdown}
+              <bdi>{countdown}</bdi>
             </span>
           </p>
         </section>
@@ -378,15 +392,17 @@ function Times({
           <div class="next-row">
             <Glyph slot={next.slot} size={20} />
             <p class="next-name">{nextName}</p>
-            <p class="next-time">{nextTime}</p>
+            <p class="next-time">
+              <bdi>{nextTime}</bdi>
+            </p>
           </div>
           <p
             class="countdown"
             role="timer"
             aria-live="off"
-            aria-label={`${words} until ${nextName}`}
+            aria-label={t('times.countdownAria', { wait: words, prayer: nextName })}
           >
-            {countdown}
+            <bdi>{countdown}</bdi>
           </p>
           <p class="countdown-note" aria-hidden="true">
             {nextNote}
@@ -401,12 +417,11 @@ function Times({
 
       {day.isPolar ? (
         <p class="polar-note">
-          These times are estimated from a place where the sun rises and sets, because they
-          cannot be worked out directly here.
+          {t('times.polar')}
         </p>
       ) : null}
 
-      <ul class="times" aria-label="Today's prayer times">
+      <ul class="times" aria-label={t('times.today')}>
         {SLOTS.map((slot) => {
           const isNext = slot === next.slot && !next.isTomorrow;
           const isNow = slot === current;
@@ -430,10 +445,12 @@ function Times({
               <span class="time-label">
                 {slotLabel(slot, inRamadan)}
                 {isNext || isNow ? ' ' : null}
-                {isNext ? <span class="state-pill next-pill">Next</span> : null}
-                {isNow ? <span class="state-pill now-pill">Now</span> : null}
+                {isNext ? <span class="state-pill next-pill">{t('common.next')}</span> : null}
+                {isNow ? <span class="state-pill now-pill">{t('common.now')}</span> : null}
               </span>{' '}
-              <span class="time-value">{clock.format(day.times[slot])}</span>
+              <span class="time-value">
+                <bdi>{clock.format(day.times[slot])}</bdi>
+              </span>
             </li>
           );
         })}
@@ -442,13 +459,13 @@ function Times({
       <footer class="footer">
         <div class="footer-actions">
           <button class="action footer-settings" type="button" onClick={onOpenSettings}>
-            Settings
+            {t('common.settings')}
           </button>
           <button class="action footer-pdf" type="button" onClick={onOpenPrint}>
-            Save as PDF
+            {t('times.savePdf')}
           </button>
         </div>
-        <p class="footer-note">Worked out on this computer. No ads.</p>
+        <p class="footer-note">{t('times.footerNote')}</p>
       </footer>
     </main>
   );

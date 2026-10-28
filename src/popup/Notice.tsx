@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 export type NoticeTone = 'warning' | 'quiet';
 
 function Mark({ tone }: { tone: NoticeTone }) {
@@ -42,7 +43,7 @@ export function Notice({
         <h2 class="notice-title">{title}</h2>
         <p class="notice-line">{line}</p>
       </div>
-      <button class="notice-close" type="button" aria-label="Close" onClick={onClose}>
+      <button class="notice-close" type="button" aria-label={t('common.close')} onClick={onClose}>
         ×
       </button>
     </section>

@@ -1,9 +1,10 @@
 import { computeDay, dateInZone } from './engine';
 import { methodsOfferedTo } from './methods';
 import type { Coordinates, Madhab, MethodId, Sect } from './types';
+import { t } from '../i18n';
 
 /**
- * PLAN 5.4 "Match my mosque": work out today's Fajr for every method offered to the
+ * PLAN 5.4 Match my mosque: work out today's Fajr for every method offered to the
  * user's tradition, then sort them by how far each is from the time the user read on
  * their mosque's board. The difference is compared in wall-clock minutes in the place's
  * own zone, not as absolute instants, so a daylight-saving change on the same day cannot
@@ -66,10 +67,10 @@ export function matchMethods(
   return matches;
 }
 
-/** "2 minutes after your mosque", "6 minutes before your mosque", "At your mosque's time". */
+/** "2 minutes after your mosque", "6 minutes before your mosque", t('match.atMosque'). */
 export function matchLabel(diffMinutes: number): string {
   const amount = Math.abs(diffMinutes);
-  if (amount === 0) return "At your mosque's time";
-  const words = amount === 1 ? '1 minute' : `${amount} minutes`;
-  return diffMinutes > 0 ? `${words} after your mosque` : `${words} before your mosque`;
+  if (amount === 0) return t('match.atMosque');
+  if (amount === 1) return t(diffMinutes > 0 ? 'match.afterOne' : 'match.beforeOne');
+  return t(diffMinutes > 0 ? 'match.after' : 'match.before', { count: amount });
 }

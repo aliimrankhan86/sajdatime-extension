@@ -2,6 +2,7 @@ import { render } from 'preact';
 import { Popup } from './Popup';
 import { applyTheme } from './theme';
 import { loadSettings } from '../settings/storage';
+import { applyDocumentLanguage, getLanguage, setLanguage } from '../i18n';
 import './tokens.css';
 import './styles.css';
 
@@ -16,5 +17,8 @@ void loadSettings()
   .catch(() => null)
   .then((settings) => {
     applyTheme(settings?.theme ?? 'system');
+    // The document attributes follow the stored language before the first paint.
+    setLanguage(settings?.language);
+    applyDocumentLanguage(getLanguage());
     render(<Popup initial={settings} />, document.getElementById('app') as HTMLElement);
   });

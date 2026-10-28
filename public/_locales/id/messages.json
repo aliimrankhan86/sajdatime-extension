@@ -1,0 +1,10 @@
+{
+  "appName": {
+    "message": "SajdaTime",
+    "description": "The extension's name, the same in every language."
+  },
+  "appDescription": {
+    "message": "Waktu salat dan pengingat lembut, dihitung di komputer Anda secara luring. Tanpa akun dan tanpa iklan.",
+    "description": "The extension's description, at most 132 characters for Chrome."
+  }
+}

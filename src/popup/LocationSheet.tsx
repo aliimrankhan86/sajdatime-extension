@@ -5,6 +5,7 @@ import type { Place } from '../settings/types';
 import { Brand } from './Brand';
 import { CitySearch } from './CitySearch';
 import { LocationFound } from './LocationFound';
+import { t, localeTag } from '../i18n';
 
 interface Props {
   current: Place | null;
@@ -16,7 +17,7 @@ export function LocationSheet({ current, onClose, onSaved }: Props) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [found, setFound] = useState<Place | null>(null);
-  const locale = navigator.language || 'en-GB';
+  const locale = localeTag();
   const title = useRef<HTMLHeadingElement>(null);
 
   useEffect(() => {
@@ -37,14 +38,14 @@ export function LocationSheet({ current, onClose, onSaved }: Props) {
   function useMyLocation() {
     setError(null);
     if (!navigator.geolocation) {
-      setError('This browser cannot read your location. Find a place below instead.');
+      setError(t('firstRun.noLocation'));
       return;
     }
     setBusy(true);
     navigator.geolocation.getCurrentPosition(
       (position) => {
         // placeFromGeolocation never rejects: when the city list will not load it falls
-        // back to "My location" itself, so there is no error branch to show here.
+        // back to My location itself, so there is no error branch to show here.
         placeFromGeolocation(
           position.coords.latitude,
           position.coords.longitude,
@@ -75,13 +76,13 @@ export function LocationSheet({ current, onClose, onSaved }: Props) {
           <button
             class="icon-button"
             type="button"
-            aria-label="Close location"
+            aria-label={t('place.close')}
             onClick={() => onSaved(found)}
           >
             ×
           </button>
         </header>
-        <LocationFound place={found} action="Done" onAction={() => onSaved(found)} />
+        <LocationFound place={found} action={t('common.done')} onAction={() => onSaved(found)} />
       </main>
     );
   }
@@ -93,28 +94,28 @@ export function LocationSheet({ current, onClose, onSaved }: Props) {
         <h1 class="sheet-title" ref={title} tabIndex={-1}>
           Location
         </h1>
-        <button class="icon-button" type="button" aria-label="Close location" onClick={onClose}>
+        <button class="icon-button" type="button" aria-label={t('place.close')} onClick={onClose}>
           ×
         </button>
       </header>
 
       {current ? (
-        <section class="current-place" aria-label="Current place">
-          <p class="field-label">Times are for</p>
+        <section class="current-place" aria-label={t('place.currentPlace')}>
+          <p class="field-label">{t('place.timesFor')}</p>
           <p class="current-name">{current.name}</p>
           <p class="current-meta">
             {current.countryCode === 'ZZ'
-              ? 'From this computer'
+              ? t('settings.fromThisComputer')
               : countryName(current.countryCode, locale)}
           </p>
         </section>
       ) : null}
 
       <button class="action" type="button" onClick={useMyLocation} disabled={busy}>
-        {busy ? 'Finding your place...' : 'Use my location'}
+        {busy ? t('firstRun.finding') : t('firstRun.useLocation')}
       </button>
       <p class="field-hint">
-        Your browser asks its location service. SajdaTime only receives the coordinates.
+        {t('location.browserNote')}
       </p>
 
       {error ? (
@@ -132,7 +133,7 @@ export function LocationSheet({ current, onClose, onSaved }: Props) {
 
       <div class="sheet-foot">
         <button class="action action-small" type="button" onClick={() => onSaved(MAKKAH)} disabled={busy}>
-          Use Makkah instead
+          {t('location.useMakkah')}
         </button>
       </div>
     </main>

@@ -7,6 +7,7 @@ import {
   type City,
 } from '../core/cities';
 import type { Place } from './types';
+import { t } from '../i18n';
 
 /** Makkah, used only when someone asks for it or cannot find their own place. */
 export const MAKKAH: Place = {
@@ -55,7 +56,7 @@ export function placeFromBrowser(
 
   // The list could not be read, so fall back to the old unknown place rather than
   // leaving the user without times at all.
-  if (!city) return { name: 'My location', ...rounded, countryCode: 'ZZ' };
+  if (!city) return { name: t('settings.myLocation'), ...rounded, countryCode: 'ZZ' };
 
   const far = distanceKm(latitude, longitude, city.latitude, city.longitude) > NEAR_DISTANCE_KM;
   return {

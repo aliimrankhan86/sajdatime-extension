@@ -1,11 +1,16 @@
 import { useEffect, useRef } from 'preact/hooks';
 import { countryName } from '../core/cities';
 import type { Place } from '../settings/types';
+import { t, localeTag } from '../i18n';
 
 interface Props {
   place: Place;
-  /** The one action this panel offers: Continue on first run, Done in Settings. */
-  action: 'Continue' | 'Done';
+  /**
+   * The one action this panel offers: Continue on first run, Done in Settings. It is the
+   * translated label itself, because a union of two translated strings would change with
+   * the language.
+   */
+  action: string;
   onAction: () => void;
 }
 
@@ -19,7 +24,7 @@ interface Props {
  */
 export function LocationFound({ place, action, onAction }: Props) {
   const button = useRef<HTMLButtonElement>(null);
-  const locale = navigator.language || 'en-GB';
+  const locale = localeTag();
 
   useEffect(() => {
     button.current?.focus();
@@ -45,11 +50,11 @@ export function LocationFound({ place, action, onAction }: Props) {
           stroke-linejoin="round"
         />
       </svg>
-      <h2 class="location-found-title">Location found</h2>
+      <h2 class="location-found-title">{t('place.found')}</h2>
       <p class="location-found-place">
         {place.name}, {countryName(place.countryCode, locale)}
       </p>
-      <p class="location-found-note">Your prayer times are now for this place.</p>
+      <p class="location-found-note">{t('place.foundNote')}</p>
       <button class="action" type="button" ref={button} onClick={onAction}>
         {action}
       </button>

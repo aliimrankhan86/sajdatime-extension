@@ -1,0 +1,10 @@
+{
+  "appName": {
+    "message": "SajdaTime",
+    "description": "The extension's name, the same in every language."
+  },
+  "appDescription": {
+    "message": "أوقات الصلاة وتنبيه لطيف، تُحسب على حاسوبك ومن دون إنترنت. بلا حساب وبلا إعلانات وبلا خادم.",
+    "description": "The extension's description, at most 132 characters for Chrome."
+  }
+}

@@ -1,16 +1,17 @@
 import type { ComponentChildren } from 'preact';
 import { useEffect, useRef } from 'preact/hooks';
+import { t } from '../../i18n';
 
 /**
  * A bottom-sheet style screen that replaces Settings while open. The title takes focus
- * first, Escape closes, and the foot carries a single solid "Done" (or "Close") action.
+ * first, Escape closes, and the foot carries a single solid Done (or Close) action.
  * Focus moves back to the row that opened the sheet, which the caller does in onClose.
  */
 interface SheetProps {
   title: string;
   onClose: () => void;
   children: ComponentChildren;
-  /** The solid action at the foot. Defaults to "Done". */
+  /** The solid action at the foot. Defaults to t('common.done'). */
   doneLabel?: string;
   /** Rendered instead of the foot, for sheets with no action (e.g. the method list). */
   noFoot?: boolean;
@@ -18,7 +19,7 @@ interface SheetProps {
   action?: ComponentChildren;
 }
 
-export function Sheet({ title, onClose, children, doneLabel = 'Done', noFoot = false, action }: SheetProps) {
+export function Sheet({ title, onClose, children, doneLabel = t('common.done'), noFoot = false, action }: SheetProps) {
   const titleRef = useRef<HTMLHeadingElement>(null);
 
   useEffect(() => {
@@ -43,7 +44,7 @@ export function Sheet({ title, onClose, children, doneLabel = 'Done', noFoot = f
           {title}
         </h1>
         {action ? <div class="sheet-action">{action}</div> : null}
-        <button class="icon-button" type="button" aria-label="Close" onClick={onClose}>
+        <button class="icon-button" type="button" aria-label={t('common.close')} onClick={onClose}>
           <span aria-hidden="true">×</span>
         </button>
       </header>

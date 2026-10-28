@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { countryInSentence, METHOD_NAMES } from '../../src/popup/meta';
+import { countryInSentence, METHOD_IDS, methodName } from '../../src/popup/meta';
 
 /**
  * English puts "the" before twelve country names when the name sits inside a sentence,
@@ -53,7 +53,7 @@ describe('countryInSentence', () => {
 
 describe('the method names', () => {
   it('names all thirteen methods, and none of them is a phrase about a country', () => {
-    const names = Object.values(METHOD_NAMES);
+    const names = METHOD_IDS.map((id) => methodName(id));
     expect(names).toHaveLength(13);
     for (const name of names) {
       expect(name.length).toBeGreaterThan(0);

@@ -1,8 +1,10 @@
 {
   "appName": {
-    "message": "SajdaTime"
+    "message": "SajdaTime",
+    "description": "The extension's name, the same in every language."
   },
   "appDescription": {
-    "message": "Prayer times in your browser with a countdown and the Hijri date. No account, no ads, no tracking."
+    "message": "Prayer times and a gentle alert, worked out on your computer, offline. No account, no ads, no server.",
+    "description": "The extension's description, at most 132 characters for Chrome."
   }
 }

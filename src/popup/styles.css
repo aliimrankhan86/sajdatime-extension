@@ -8,6 +8,22 @@ body {
   padding: 0;
 }
 
+/*
+ * Urdu and Arabic have no bundled font. These are the faces Windows, macOS and Linux
+ * already ship, in the order that renders each script best, and the body stack stays as
+ * the last resort. Urdu sets a little larger and looser because Nastaliq descenders are
+ * taller than Latin ones, and clipped words are worse than a slightly taller row.
+ */
+html[lang='ur'] body {
+  font-family: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', 'Noto Naskh Arabic', 'Geeza Pro', Tahoma, sans-serif;
+  line-height: 1.9;
+}
+
+html[lang='ar'] body {
+  font-family: 'Segoe UI', Tahoma, 'Geeza Pro', 'Noto Naskh Arabic', Arial, sans-serif;
+  line-height: 1.6;
+}
+
 body {
   width: 380px;
   min-height: 600px;
@@ -1045,7 +1061,7 @@ button {
 .switch-thumb {
   position: absolute;
   top: 2px;
-  left: 2px;
+  inset-inline-start: 2px;
   width: 20px;
   height: 20px;
   background: var(--surface);
@@ -1056,6 +1072,24 @@ button {
 
 .switch[aria-checked='true'] .switch-thumb {
   transform: translateX(20px);
+}
+
+/*
+ * Times and countdowns are read left to right in every language, so their own direction
+ * is fixed. The date and Hijri lines keep the paragraph's direction, because those hold
+ * words and words have to follow the script.
+ */
+.time-value bdi,
+.next-time bdi,
+.next-compact-time bdi,
+.next-compact-count bdi,
+.countdown bdi {
+  direction: ltr;
+}
+
+/* The thumb travels towards the end of the row, which is leftwards in Arabic and Urdu. */
+[dir='rtl'] .switch[aria-checked='true'] .switch-thumb {
+  transform: translateX(-20px);
 }
 
 .sound-head {

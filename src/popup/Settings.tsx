@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'preact/hooks';
 import { countryName } from '../core/cities';
 import { isMethodOfferedTo, isShiaMethod, methodsOfferedTo } from '../core/methods';
 import { suggestMethod } from '../core/suggestions';
-import { PRAYER_NAMES } from '../core/alerts';
+import { prayerName } from '../core/alerts';
 import { parseAlertMessage, soundMessageType } from '../core/messages';
 import { PRAYERS, type MethodId, type Sect } from '../core/types';
 import { computeDay, dateInZone, ramadanInfo, showsSettings } from '../core';
@@ -18,13 +18,13 @@ import {
 } from '../settings/types';
 import {
   browserName,
-  METHOD_HINTS,
-  METHOD_NAMES,
   methodGroupsFor,
-  SOUND_HINTS,
-  SOUND_LABELS,
+  methodHint,
+  methodName,
+  soundHint,
+  soundLabel,
 } from './meta';
-import { SHORT_DISCLAIMER } from './disclaimer';
+import { shortDisclaimer } from './disclaimer';
 import { applyTheme } from './theme';
 import { LocationSheet } from './LocationSheet';
 import { Row } from './components/Row';
@@ -32,26 +32,13 @@ import { Sheet } from './components/Sheet';
 import { ChoiceRow } from './components/ChoiceRow';
 import { Segmented } from './components/Segmented';
 import { Notice } from './components/Notice';
-import {
-  CalendarIcon,
-  CheckMark,
-  ClockIcon,
-  ContrastIcon,
-  InfoIcon,
-  LockIcon,
-  NoteIcon,
-  PersonIcon,
-  PhoneIcon,
-  PinIcon,
-  SchoolIcon,
-  TuneIcon,
-  WarningMark,
-} from './icons';
+import { applyLanguage, LANGUAGE_CHOICES, LANGUAGE_NAMES, t, type LanguageChoice, localeTag } from '../i18n';
+import { CalendarIcon, CheckMark, ClockIcon, ContrastIcon, InfoIcon, LockIcon, NoteIcon, PersonIcon, PhoneIcon, PinIcon, SchoolIcon, TuneIcon, WarningMark, GlobeIcon } from './icons';
 
 /**
  * One Settings group. A group of two or more rows carries a heading; a group of one
- * row does not, because a heading over a single row only repeats it ("Disclaimer"
- * over "Disclaimer", "Place" over "London"). `rows` is that count, passed in rather
+ * row does not, because a heading over a single row only repeats it (Disclaimer
+ * over Disclaimer, Place over "London"). `rows` is that count, passed in rather
  * than derived from children so a conditional row cannot silently change the rule.
  */
 function Group({
@@ -77,9 +64,9 @@ function Group({
 }
 
 const THEME_LABELS: Record<Theme, string> = {
-  system: 'System',
-  light: 'Light',
-  dark: 'Dark',
+  system: t('settings.themeSystem'),
+  light: t('settings.themeLight'),
+  dark: t('settings.themeDark'),
 };
 
 function Switch(props: { label: string; checked: boolean; disabled: boolean; onToggle: () => void }) {
@@ -110,6 +97,7 @@ type SheetKind =
   | 'reminder'
   | 'suhoor'
   | 'theme'
+  | 'language'
   | 'credits';
 
 interface Props {
@@ -119,6 +107,8 @@ interface Props {
 }
 
 export function Settings({ settings, onClose, onSaved }: Props) {
+  // The manifest is the one place the version is written, so About cannot drift from it.
+  const version = chrome.runtime.getManifest().version;
   const [changingPlace, setChangingPlace] = useState(false);
   const [sheet, setSheet] = useState<SheetKind | null>(null);
   const [busy, setBusy] = useState(false);
@@ -126,7 +116,7 @@ export function Settings({ settings, onClose, onSaved }: Props) {
   const [playing, setPlaying] = useState(false);
   const [blocked, setBlocked] = useState(false);
   const browser = browserName();
-  const locale = navigator.language || 'en-GB';
+  const locale = localeTag();
   const title = useRef<HTMLHeadingElement>(null);
   const wasChangingPlace = useRef(false);
   const focusTarget = useRef<SheetKind | null>(null);
@@ -196,6 +186,19 @@ export function Settings({ settings, onClose, onSaved }: Props) {
     setSheet(null);
   }
 
+  /**
+   * A language is applied before it is saved, so the sheet the user is looking at answers
+   * in the language they just picked. The saved value is what the next screen starts with.
+   */
+  function languageLabel(choice: LanguageChoice): string {
+    return choice === 'auto' ? t('common.computerLanguage') : LANGUAGE_NAMES[choice];
+  }
+
+  function changeLanguage(choice: LanguageChoice) {
+    applyLanguage(choice);
+    update({ language: choice });
+  }
+
   function changeTheme(theme: Theme) {
     if (busy) return;
     applyTheme(theme);
@@ -217,7 +220,7 @@ export function Settings({ settings, onClose, onSaved }: Props) {
       .catch(() => {
         saving.current = false;
         setBusy(false);
-        setError('Your settings could not be saved. Try again.');
+        setError(t('common.saveError'));
       });
   }
 
@@ -271,22 +274,27 @@ export function Settings({ settings, onClose, onSaved }: Props) {
   // inside a sentence, so it takes "the" where English wants it (D-039, meta.ts).
   const countryText =
     settings.place.countryCode === 'ZZ'
-      ? 'your country'
+      ? t('settings.yourCountry')
       : countryName(settings.place.countryCode, locale);
-  const placeValue = settings.place.countryCode === 'ZZ' ? 'From this computer' : countryText;
+  const placeValue = settings.place.countryCode === 'ZZ' ? t('settings.fromThisComputer') : countryText;
+  const offset = settings.hijriOffsetDays;
   const hijriValue =
-    settings.hijriOffsetDays === 0
-      ? 'No change'
-      : `${settings.hijriOffsetDays > 0 ? '+' : ''}${settings.hijriOffsetDays} ${
-          Math.abs(settings.hijriOffsetDays) === 1 ? 'day' : 'days'
-        }`;
-  const soundValue = SOUND_LABELS[settings.alerts.sound];
+    offset === 0
+      ? t('settings.noChange')
+      : Math.abs(offset) === 1
+        ? offset > 0
+          ? t('settings.oneDayLater')
+          : t('settings.oneDayEarlier')
+        : offset > 0
+          ? t('settings.daysLater', { count: Math.abs(offset) })
+          : t('settings.daysEarlier', { count: Math.abs(offset) });
+  const soundValue = soundLabel(settings.alerts.sound);
   const reminderValue = settings.alerts.reminder.enabled
-    ? `${settings.alerts.reminder.minutes} minutes before`
-    : 'Off';
+    ? t('settings.minutesBefore', { count: settings.alerts.reminder.minutes })
+    : t('common.off');
   const suhoorValue = settings.suhoorReminder.enabled
-    ? `${settings.suhoorReminder.minutes} minutes before Fajr`
-    : 'Off';
+    ? t('settings.minutesBeforeFajr', { count: settings.suhoorReminder.minutes })
+    : t('common.off');
 
   // Today's Fajr and Isha for one method, to put beside each choice in the method sheet.
   const clock = clockFormatter(settings.place.timeZone, locale);
@@ -320,7 +328,7 @@ export function Settings({ settings, onClose, onSaved }: Props) {
   return (
     <main class="settings">
       <header class="settings-head">
-        <button class="icon-button back-button" type="button" aria-label="Back to times" onClick={onClose}>
+        <button class="icon-button back-button" type="button" aria-label={t('settings.backToTimes')} onClick={onClose}>
           <svg
             width="24"
             height="24"
@@ -337,7 +345,7 @@ export function Settings({ settings, onClose, onSaved }: Props) {
           </svg>
         </button>
         <h1 class="settings-title" ref={title} tabIndex={-1}>
-          Settings
+          {t('common.settings')}
         </h1>
       </header>
 
@@ -348,17 +356,17 @@ export function Settings({ settings, onClose, onSaved }: Props) {
       ) : null}
 
       <div class="settings-scroll">
-        <Group title="Disclaimer" id="disclaimer-heading" rows={1}>
+        <Group title={t('settings.disclaimer')} id="disclaimer-heading" rows={1}>
           <Row
             icon={<InfoIcon />}
-            title="Disclaimer"
-            value="A helper, not a religious authority."
+            title={t('settings.disclaimer')}
+            value={t('settings.disclaimerHint')}
             rowId="disclaimer"
             onClick={() => openSheet('disclaimer')}
           />
         </Group>
 
-        <Group title="Place" id="place-heading" rows={1}>
+        <Group title={t('settings.place')} id="place-heading" rows={1}>
           <Row
             icon={<PinIcon />}
             title={settings.place.name}
@@ -368,33 +376,33 @@ export function Settings({ settings, onClose, onSaved }: Props) {
           />
         </Group>
 
-        <Group title="Prayer times" id="prayer-times-heading" rows={shiaMethod ? 3 : 4}>
+        <Group title={t('settings.prayerTimes')} id="prayer-times-heading" rows={shiaMethod ? 3 : 4}>
           <Row
             icon={<SchoolIcon />}
-            title="School"
-            value={settings.sect === 'sunni' ? 'Sunni' : 'Shia'}
+            title={t('firstRun.schoolTitle')}
+            value={settings.sect === 'sunni' ? t('school.sunni') : t('school.shia')}
             rowId="school"
             onClick={() => openSheet('school')}
           />
           {!shiaMethod ? (
             <Row
               icon={<ClockIcon />}
-              title="Asr school"
-              value={settings.madhab === 'shafii' ? "Shafi'i" : 'Hanafi'}
+              title={t('firstRun.madhabTitle')}
+              value={settings.madhab === 'shafii' ? t('madhab.shafii') : t('madhab.hanafi')}
               rowId="asr"
               onClick={() => openSheet('asr')}
             />
           ) : null}
           <Row
             icon={<TuneIcon />}
-            title="Calculation method"
-            value={METHOD_NAMES[settings.method]}
+            title={t('firstRun.methodTitle')}
+            value={methodName(settings.method)}
             rowId="method"
             onClick={() => openSheet('method')}
           />
           <Row
             icon={<CalendarIcon />}
-            title="Hijri date"
+            title={t('settings.hijriDate')}
             value={hijriValue}
             rowId="hijri"
             onClick={() => openSheet('hijri')}
@@ -402,13 +410,13 @@ export function Settings({ settings, onClose, onSaved }: Props) {
         </Group>
 
         {showRamadan ? (
-          <Group title="Ramadan" id="ramadan-heading" rows={2}>
+          <Group title={t('hijri.9')} id="ramadan-heading" rows={2}>
             <div class="switch-row">
               <div class="switch-copy">
-                <p class="switch-title">Ramadan card</p>
+                <p class="switch-title">{t('settings.ramadanCard')}</p>
               </div>
               <Switch
-                label="Ramadan card"
+                label={t('settings.ramadanCard')}
                 checked={settings.ramadanCard}
                 disabled={busy}
                 onToggle={() => update({ ramadanCard: !settings.ramadanCard })}
@@ -416,7 +424,7 @@ export function Settings({ settings, onClose, onSaved }: Props) {
             </div>
             <Row
               icon={<NoteIcon />}
-              title="Suhoor reminder"
+              title={t('settings.suhoorReminder')}
               value={suhoorValue}
               rowId="suhoor"
               onClick={() => openSheet('suhoor')}
@@ -424,24 +432,24 @@ export function Settings({ settings, onClose, onSaved }: Props) {
           </Group>
         ) : null}
 
-        <Group title="Alerts" id="alerts-heading" rows={settings.alerts.enabled ? 8 : 1}>
+        <Group title={t('firstRun.alertsTitle')} id="alerts-heading" rows={settings.alerts.enabled ? 8 : 1}>
 
           {blocked ? (
             <Notice
               tone="warning"
-              title="Prayer alerts are blocked"
-              line={`${browser} is not allowed to show notifications for SajdaTime, so the alert cannot appear.`}
+              title={t('settings.alertsBlocked')}
+              line={t('settings.blockedLine', { browser })}
               mark={<WarningMark />}
             />
           ) : null}
 
           <div class="switch-row">
             <div class="switch-copy">
-              <p class="switch-title">Prayer alerts</p>
-              <p class="switch-hint">A message and a sound at each prayer.</p>
+              <p class="switch-title">{t('settings.prayerAlerts')}</p>
+              <p class="switch-hint">{t('settings.alertsNote')}</p>
             </div>
             <Switch
-              label="Prayer alerts"
+              label={t('settings.prayerAlerts')}
               checked={settings.alerts.enabled}
               disabled={busy}
               onToggle={() => update({ alerts: { ...settings.alerts, enabled: !settings.alerts.enabled } })}
@@ -453,10 +461,10 @@ export function Settings({ settings, onClose, onSaved }: Props) {
               {PRAYERS.map((prayer) => (
                 <div class="switch-row" key={prayer}>
                   <div class="switch-copy">
-                    <p class="switch-title">{PRAYER_NAMES[prayer]}</p>
+                    <p class="switch-title">{prayerName(prayer)}</p>
                   </div>
                   <Switch
-                    label={PRAYER_NAMES[prayer]}
+                    label={prayerName(prayer)}
                     checked={settings.alerts.prayers[prayer]}
                     disabled={busy}
                     onToggle={() =>
@@ -473,7 +481,7 @@ export function Settings({ settings, onClose, onSaved }: Props) {
 
               <Row
                 icon={<ClockIcon />}
-                title="Reminder before prayer"
+                title={t('settings.reminder')}
                 value={reminderValue}
                 rowId="reminder"
                 onClick={() => openSheet('reminder')}
@@ -488,36 +496,43 @@ export function Settings({ settings, onClose, onSaved }: Props) {
               />
 
               <button class="action action-small" type="button" aria-disabled={busy} onClick={sendTestAlert}>
-                Send a test alert
+                {t('settings.testAlert')}
               </button>
               <p class="field-hint">
-                If nothing appears, check your computer's notification and Focus settings.
+                {t('settings.testNote')}
               </p>
 
               <Notice
                 tone="quiet"
-                title={`${browser} needs to be open`}
-                line={`If ${browser} is closed or the computer is asleep, no alert can sound.`}
+                title={t('notice.offlineTitle', { browser })}
+                line={t('notice.offlineLine', { browser })}
                 mark={<CheckMark />}
               />
             </>
           ) : null}
         </Group>
 
-        <Group title="Appearance" id="appearance-heading" rows={1}>
+        <Group title={t('settings.appearance')} id="appearance-heading" rows={2}>
           <Row
             icon={<ContrastIcon />}
-            title="Theme"
+            title={t('settings.theme')}
             value={THEME_LABELS[settings.theme]}
             rowId="theme"
             onClick={() => openSheet('theme')}
           />
+          <Row
+            icon={<GlobeIcon />}
+            title={t('settings.language')}
+            value={languageLabel(settings.language)}
+            rowId="language"
+            onClick={() => openSheet('language')}
+          />
         </Group>
 
-        <Group title="About" id="about-heading" rows={3}>
+        <Group title={t('settings.about')} id="about-heading" rows={3}>
           <Row
             icon={<LockIcon />}
-            title="Privacy policy"
+            title={t('settings.privacy')}
             rowId="privacy"
             onClick={() => {
               window.open('https://aliimrankhan86.github.io/sajdatime-extension/privacy.html', '_blank', 'noopener,noreferrer');
@@ -525,12 +540,17 @@ export function Settings({ settings, onClose, onSaved }: Props) {
           />
           <Row
             icon={<PersonIcon />}
-            title="Credits"
-            value="GeoNames, adhan-js, adhan recordings"
+            title={t('settings.credits')}
+            value={t('settings.creditsEngines')}
             rowId="credits"
             onClick={() => openSheet('credits')}
           />
-          <Row icon={<PhoneIcon />} title="Version" value="SajdaTime 0.1.0" chevron={false} />
+          <Row
+            icon={<PhoneIcon />}
+            title={t('settings.version')}
+            value={t('settings.versionLine', { version })}
+            chevron={false}
+          />
         </Group>
       </div>
     </main>
@@ -540,59 +560,56 @@ export function Settings({ settings, onClose, onSaved }: Props) {
     switch (sheet) {
       case 'disclaimer':
         return (
-          <Sheet title="Disclaimer" onClose={() => closeSheet('disclaimer')}>
+          <Sheet title={t('settings.disclaimer')} onClose={() => closeSheet('disclaimer')}>
             <div class="sheet-body">
-              <p class="disclaimer-text">{SHORT_DISCLAIMER}</p>
+              <p class="disclaimer-text">{shortDisclaimer()}</p>
             </div>
           </Sheet>
         );
 
       case 'school':
         return (
-          <Sheet title="School" onClose={() => closeSheet('school')}>
+          <Sheet title={t('firstRun.schoolTitle')} onClose={() => closeSheet('school')}>
             <div class="sheet-body">
               <Segmented
                 options={[
-                  { value: 'sunni', label: 'Sunni' },
-                  { value: 'shia', label: 'Shia' },
+                  { value: 'sunni', label: t('school.sunni') },
+                  { value: 'shia', label: t('school.shia') },
                 ]}
                 value={settings.sect}
                 onChange={changeSect}
                 disabled={busy}
                 labelledBy="sheet-title"
               />
-              <p class="field-hint">This sets which calculation methods are offered.</p>
+              <p class="field-hint">{t('settings.methodNote')}</p>
             </div>
           </Sheet>
         );
 
       case 'asr':
         return (
-          <Sheet title="Asr school" onClose={() => closeSheet('asr')}>
+          <Sheet title={t('firstRun.madhabTitle')} onClose={() => closeSheet('asr')}>
             <div class="sheet-body">
               <Segmented
                 options={[
-                  { value: 'shafii', label: "Shafi'i" },
-                  { value: 'hanafi', label: 'Hanafi' },
+                  { value: 'shafii', label: t('madhab.shafii') },
+                  { value: 'hanafi', label: t('madhab.hanafi') },
                 ]}
                 value={settings.madhab}
                 onChange={(madhab) => update({ madhab })}
                 disabled={busy}
                 labelledBy="sheet-title"
               />
-              <p class="field-hint">This only changes when Asr begins.</p>
+              <p class="field-hint">{t('settings.madhabNote')}</p>
             </div>
           </Sheet>
         );
 
       case 'method':
         return (
-          <Sheet title="Calculation method" onClose={() => closeSheet('method')} noFoot>
+          <Sheet title={t('firstRun.methodTitle')} onClose={() => closeSheet('method')} noFoot>
             <div class="sheet-body method-body">
-              <p class="field-hint">
-                Today's Fajr and Isha in {settings.place.name} are shown for each one, so you can
-                compare with your mosque.
-              </p>
+              <p class="field-hint">{t('settings.methodHintTimes', { place: settings.place.name })}</p>
               {methodGroups.map((group) => (
                 <div class="method-group" key={group.title}>
                   <h3 class="method-group-title">{group.title}</h3>
@@ -612,12 +629,20 @@ export function Settings({ settings, onClose, onSaved }: Props) {
                             onClick={() => chooseMethod(method)}
                           >
                             <span class="method-copy">
-                              <span class="method-name">{METHOD_NAMES[method]}</span>
-                              <span class="method-hint">{METHOD_HINTS[method]}</span>
+                              <span class="method-name">{methodName(method)}</span>
+                              <span class="method-hint">{methodHint(method)}</span>
                               {times ? (
                                 <span class="method-times">
-                                  <span class="method-time">Fajr {times.fajr}</span>
-                                  <span class="method-time">Isha {times.isha}</span>
+                                  <span class="method-time">
+                                    <bdi>
+                                      {t('slot.fajr')} {times.fajr}
+                                    </bdi>
+                                  </span>
+                                  <span class="method-time">
+                                    <bdi>
+                                      {t('slot.isha')} {times.isha}
+                                    </bdi>
+                                  </span>
                                 </span>
                               ) : null}
                             </span>
@@ -650,13 +675,13 @@ export function Settings({ settings, onClose, onSaved }: Props) {
 
       case 'hijri':
         return (
-          <Sheet title="Hijri date" onClose={() => closeSheet('hijri')}>
+          <Sheet title={t('settings.hijriDate')} onClose={() => closeSheet('hijri')}>
             <div class="sheet-body">
               <div class="stepper">
                 <button
                   class="step-button"
                   type="button"
-                  aria-label="One day earlier"
+                  aria-label={t('settings.oneDayEarlier')}
                   aria-disabled={busy || settings.hijriOffsetDays <= -2}
                   onClick={() => {
                     if (!busy && settings.hijriOffsetDays > -2) {
@@ -672,7 +697,7 @@ export function Settings({ settings, onClose, onSaved }: Props) {
                 <button
                   class="step-button"
                   type="button"
-                  aria-label="One day later"
+                  aria-label={t('settings.oneDayLater')}
                   aria-disabled={busy || settings.hijriOffsetDays >= 2}
                   onClick={() => {
                     if (!busy && settings.hijriOffsetDays < 2) {
@@ -696,7 +721,7 @@ export function Settings({ settings, onClose, onSaved }: Props) {
             action={
               settings.alerts.sound !== 'silent' ? (
                 <button class="compact-button" type="button" aria-disabled={busy} onClick={togglePlay}>
-                  {playing ? 'Stop' : 'Play'}
+                  {playing ? t('common.stop') : t('common.play')}
                 </button>
               ) : null
             }
@@ -705,22 +730,22 @@ export function Settings({ settings, onClose, onSaved }: Props) {
               <div class="choices" role="group" aria-labelledby="sheet-title">
                 <ChoiceRow
                   selected={settings.alerts.sound === 'beep'}
-                  title={SOUND_LABELS.beep}
-                  hint={SOUND_HINTS.beep}
+                  title={soundLabel('beep')}
+                  hint={soundHint('beep')}
                   disabled={busy}
                   onSelect={() => update({ alerts: { ...settings.alerts, sound: 'beep' } })}
                 />
                 <ChoiceRow
                   selected={settings.alerts.sound === 'adhan'}
-                  title={SOUND_LABELS.adhan}
-                  hint={SOUND_HINTS.adhan}
+                  title={soundLabel('adhan')}
+                  hint={soundHint('adhan')}
                   disabled={busy}
                   onSelect={() => update({ alerts: { ...settings.alerts, sound: 'adhan' } })}
                 />
                 <ChoiceRow
                   selected={settings.alerts.sound === 'silent'}
-                  title={SOUND_LABELS.silent}
-                  hint={SOUND_HINTS.silent}
+                  title={soundLabel('silent')}
+                  hint={soundHint('silent')}
                   disabled={busy}
                   onSelect={() => update({ alerts: { ...settings.alerts, sound: 'silent' } })}
                 />
@@ -731,12 +756,12 @@ export function Settings({ settings, onClose, onSaved }: Props) {
 
       case 'reminder':
         return (
-          <Sheet title="Reminder before prayer" onClose={() => closeSheet('reminder')}>
+          <Sheet title={t('settings.reminder')} onClose={() => closeSheet('reminder')}>
             <div class="sheet-body">
               <div class="choices" role="group" aria-labelledby="sheet-title">
                 <ChoiceRow
                   selected={!settings.alerts.reminder.enabled}
-                  title="Off"
+                  title={t('common.off')}
                   disabled={busy}
                   onSelect={() =>
                     update({
@@ -751,7 +776,7 @@ export function Settings({ settings, onClose, onSaved }: Props) {
                   <ChoiceRow
                     key={minutes}
                     selected={settings.alerts.reminder.enabled && settings.alerts.reminder.minutes === minutes}
-                    title={`${minutes} minutes before`}
+                    title={t('settings.minutesBefore', { count: minutes })}
                     disabled={busy}
                     onSelect={() =>
                       update({
@@ -767,12 +792,12 @@ export function Settings({ settings, onClose, onSaved }: Props) {
 
       case 'suhoor':
         return (
-          <Sheet title="Suhoor reminder" onClose={() => closeSheet('suhoor')}>
+          <Sheet title={t('settings.suhoorReminder')} onClose={() => closeSheet('suhoor')}>
             <div class="sheet-body">
               <div class="choices" role="group" aria-labelledby="sheet-title">
                 <ChoiceRow
                   selected={!settings.suhoorReminder.enabled}
-                  title="Off"
+                  title={t('common.off')}
                   disabled={busy}
                   onSelect={() => update({ suhoorReminder: { ...settings.suhoorReminder, enabled: false } })}
                 />
@@ -780,7 +805,7 @@ export function Settings({ settings, onClose, onSaved }: Props) {
                   <ChoiceRow
                     key={minutes}
                     selected={settings.suhoorReminder.enabled && settings.suhoorReminder.minutes === minutes}
-                    title={`${minutes} minutes before Fajr`}
+                    title={t('settings.minutesBeforeFajr', { count: minutes })}
                     disabled={busy}
                     onSelect={() => update({ suhoorReminder: { enabled: true, minutes } })}
                   />
@@ -792,7 +817,7 @@ export function Settings({ settings, onClose, onSaved }: Props) {
 
       case 'theme':
         return (
-          <Sheet title="Theme" onClose={() => closeSheet('theme')}>
+          <Sheet title={t('settings.theme')} onClose={() => closeSheet('theme')}>
             <div class="sheet-body">
               <Segmented
                 options={THEMES.map((theme) => ({ value: theme, label: THEME_LABELS[theme] }))}
@@ -805,32 +830,38 @@ export function Settings({ settings, onClose, onSaved }: Props) {
           </Sheet>
         );
 
+      case 'language':
+        return (
+          <Sheet title={t('settings.language')} onClose={() => closeSheet('language')}>
+            <div class="sheet-body">
+              <div class="choices" role="radiogroup" aria-labelledby="sheet-title">
+                {LANGUAGE_CHOICES.map((choice) => (
+                  <ChoiceRow
+                    key={choice}
+                    selected={settings.language === choice}
+                    title={languageLabel(choice)}
+                    disabled={busy}
+                    onSelect={() => changeLanguage(choice)}
+                  />
+                ))}
+              </div>
+            </div>
+          </Sheet>
+        );
+
       case 'credits':
         return (
-          <Sheet title="Credits" onClose={() => closeSheet('credits')}>
+          <Sheet title={t('settings.credits')} onClose={() => closeSheet('credits')}>
             <div class="sheet-body">
               <p class="credit-line">
-                City data from{' '}
                 <a class="link" href="https://www.geonames.org/" target="_blank" rel="noopener noreferrer">
-                  GeoNames
+                  {t('settings.creditCity')}
                 </a>
-                , CC BY 4.0.
               </p>
-              <p class="credit-line">Prayer times from adhan-js by Batoul Apps, MIT.</p>
-              <p class="credit-line">Sunni adhan: recorded by Adam-synagda, CC0.</p>
-              <p class="credit-line">
-                Shia adhan: sung by Saeed Hatamzadeh-Varmazyar,{' '}
-                <a
-                  class="link"
-                  href="https://creativecommons.org/licenses/by-sa/4.0/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  CC BY-SA 4.0
-                </a>
-                .
-              </p>
-              <p class="credit-line">Both via Wikimedia Commons.</p>
+              <p class="credit-line">{t('settings.creditAdhan')}</p>
+              <p class="credit-line">{t('settings.creditRecording')}</p>
+              <p class="credit-line">{t('settings.creditShia')}</p>
+              <p class="credit-line">{t('settings.creditCommons')}</p>
             </div>
           </Sheet>
         );

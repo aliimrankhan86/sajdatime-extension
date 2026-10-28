@@ -24,6 +24,7 @@ const LONDON = {
   suhoorReminder: DEFAULT_SUHOOR_REMINDER,
   ramadanCard: true,
   theme: 'system',
+  language: 'auto',
 } as const;
 
 function changed(overrides: Record<string, unknown>): unknown {

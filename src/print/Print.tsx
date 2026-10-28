@@ -2,10 +2,11 @@ import { useEffect, useState } from 'preact/hooks';
 import { clockFormatter } from '../core/clock';
 import { dateInZone } from '../core/engine';
 import { offersTimetable, ramadanInfo } from '../core/hijri';
-import { MADHAB_LABELS, SLOT_LABELS } from '../core/labels';
+import { madhabLabel, slotLabel } from '../core/labels';
 import { SLOTS, type CalculationPrefs, type RamadanInfo } from '../core/types';
-import { METHOD_NAMES } from '../popup/meta';
+import { methodName } from '../popup/meta';
 import type { Settings } from '../settings/types';
+import { localeTag, t } from '../i18n';
 import {
   buildMonth,
   buildRamadan,
@@ -36,32 +37,38 @@ export interface PrintProps {
   initialKind: TimetableKind;
 }
 
-const MONTH_HEADERS = ['Date', 'Day', 'Hijri', ...SLOTS.map((slot) => SLOT_LABELS[slot])];
+/** The month table's headings, read at render time so they follow the language. */
+function monthHeaders(): string[] {
+  return [t('print.date'), t('print.day'), t('print.hijri'), ...SLOTS.map((slot) => slotLabel(slot))];
+}
 
 // Ramadan renames two columns and puts the day of Ramadan first. The six times keep
 // their order, so the same body cells serve both tables.
-const RAMADAN_HEADERS = [
-  'Day of Ramadan',
-  'Date',
-  'Day',
-  'Suhoor ends',
-  SLOT_LABELS.sunrise,
-  SLOT_LABELS.dhuhr,
-  SLOT_LABELS.asr,
-  'Iftar',
-  SLOT_LABELS.isha,
-];
+function ramadanHeaders(): string[] {
+  return [
+    t('print.ramadanDay'),
+    t('print.date'),
+    t('print.day'),
+    t('slot.suhoor'),
+    slotLabel('sunrise'),
+    slotLabel('dhuhr'),
+    slotLabel('asr'),
+    t('slot.iftar'),
+    slotLabel('isha'),
+  ];
+}
 
 /** The exact wording of the line at the foot of the page, from PLAN.md section 6.5. */
-export const PAGE_FOOTER =
-  "Worked out by SajdaTime for the place above. Not supplied by any mosque, scholar or authority. If your mosque's times differ, follow your mosque.";
+function pageFooter(): string {
+  return t('print.footer');
+}
 
 export function Print({ settings, initialMonth, initialKind }: PrintProps) {
   const [month, setMonth] = useState(initialMonth);
   const [kind, setKind] = useState<TimetableKind>(initialKind);
 
   // The same language the Times screen uses, which also decides 12 or 24 hour style.
-  const locale = navigator.language || 'en-GB';
+  const locale = localeTag();
   const timeZone = settings.place.timeZone;
   const offset = settings.hijriOffsetDays;
   const prefs: CalculationPrefs = {
@@ -116,8 +123,8 @@ export function Print({ settings, initialMonth, initialKind }: PrintProps) {
   // file names. The sheet itself says the town, because PLAN.md section 6.5 asks it to.
   useEffect(() => {
     document.title = viewing
-      ? `SajdaTime Ramadan timetable`
-      : `SajdaTime timetable, ${table.title}`;
+      ? t('print.tabRamadan')
+      : t('print.tabMonth', { title: table.title });
   }, [viewing, table.title]);
 
   const showRamadan = () => {
@@ -131,11 +138,11 @@ export function Print({ settings, initialMonth, initialKind }: PrintProps) {
     <main class="print-page">
       <div class="print-bar">
         <button class="action" type="button" onClick={() => window.print()}>
-          Print or save
+          {t('print.printOrSave')}
         </button>
         {viewing ? (
           <button class="action action-small" type="button" onClick={showMonth}>
-            Month timetable
+            {t('print.month')}
           </button>
         ) : (
           <>
@@ -144,18 +151,18 @@ export function Print({ settings, initialMonth, initialKind }: PrintProps) {
               type="button"
               onClick={() => setMonth(stepMonth(month, -1))}
             >
-              Previous month
+              {t('print.previous')}
             </button>
             <button
               class="action action-small"
               type="button"
               onClick={() => setMonth(stepMonth(month, 1))}
             >
-              Next month
+              {t('print.next')}
             </button>
             {canOfferRamadan ? (
               <button class="action action-small" type="button" onClick={showRamadan}>
-                Ramadan timetable
+                {t('print.ramadan')}
               </button>
             ) : null}
           </>
@@ -166,7 +173,7 @@ export function Print({ settings, initialMonth, initialKind }: PrintProps) {
         <img class="print-logo" src="/icons/icon-128.png" alt="" width="56" height="56" />
         <div>
           <h1 class="print-title">
-            {viewing ? 'Ramadan timetable for' : 'Prayer times for'} {settings.place.name}
+            {t(viewing ? 'print.ramadanTitle' : 'print.monthTitle', { town: settings.place.name })}
           </h1>
           {viewing && ramadanRows && ramadanForView ? (
             <p class="print-line">
@@ -184,18 +191,18 @@ export function Print({ settings, initialMonth, initialKind }: PrintProps) {
             </p>
           )}
           <p class="print-line">
-            {METHOD_NAMES[settings.method]} · Asr {MADHAB_LABELS[settings.madhab]}
+            {methodName(settings.method)} · {t('settings.asrSchool')} {madhabLabel(settings.madhab)}
           </p>
         </div>
       </header>
 
       <table class="print-table">
         <caption class="sr-only">
-          {viewing ? `Ramadan timetable for ${settings.place.name}` : `${table.title} prayer times`}
+          {t(viewing ? 'print.captionRamadan' : 'print.captionMonth', { town: settings.place.name, title: table.title })}
         </caption>
         <thead>
           <tr>
-            {(viewing ? RAMADAN_HEADERS : MONTH_HEADERS).map((header) => (
+            {(viewing ? ramadanHeaders() : monthHeaders()).map((header) => (
               <th scope="col" key={header}>
                 {header}
               </th>
@@ -211,7 +218,7 @@ export function Print({ settings, initialMonth, initialKind }: PrintProps) {
               {viewing ? null : <td class="hijri">{row.hijri ?? ''}</td>}
               {SLOTS.map((slot) => (
                 <td class="time" key={slot}>
-                  {clock.format(row.times[slot])}
+                  <bdi>{clock.format(row.times[slot])}</bdi>
                 </td>
               ))}
             </tr>
@@ -219,12 +226,11 @@ export function Print({ settings, initialMonth, initialKind }: PrintProps) {
         </tbody>
       </table>
 
-      {todayRow ? <p class="print-note">Today is the shaded row.</p> : null}
+      {todayRow ? <p class="print-note">{t('print.today')}</p> : null}
 
       {isPolar ? (
         <p class="print-note">
-          These times are estimated from a place where the sun rises and sets, because they
-          cannot be worked out directly here.
+          {t('times.polar')}
         </p>
       ) : null}
 
@@ -234,7 +240,7 @@ export function Print({ settings, initialMonth, initialKind }: PrintProps) {
         </p>
       ))}
 
-      <footer class="print-foot">{PAGE_FOOTER}</footer>
+      <footer class="print-foot">{pageFooter()}</footer>
     </main>
   );
 }

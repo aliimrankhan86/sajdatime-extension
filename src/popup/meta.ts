@@ -1,70 +1,77 @@
+import { getLanguage, t } from '../i18n';
 import type { MethodId, Sect } from '../core/types';
 import type { Settings } from '../settings/types';
 
 /**
  * The method names, hints, region groups, sound labels and the browser name, shared by
  * the Settings method sheet and the first-run "Other methods" step. The strings are the
- * phone's own (Ali's words), kept verbatim, so both screens can never drift apart.
+ * phone's own (Ali's words), copied into the language files, so both screens can never
+ * drift apart.
+ *
+ * Everything here is a function rather than a constant: a constant object would be filled
+ * in once, at module load, and would still speak the first language after a change
+ * (PLAN.md section 10).
  */
 
-// The method names and hints are the phone's own strings (Ali's words), kept verbatim.
-export const METHOD_NAMES: Record<MethodId, string> = {
-  moonsighting: 'Moonsighting Committee',
-  'north-america': 'ISNA, North America',
-  karachi: 'University of Karachi',
-  mwl: 'Muslim World League',
-  'umm-al-qura': 'Umm al-Qura, Makkah',
-  egyptian: 'Egyptian General Authority',
-  dubai: 'Dubai',
-  kuwait: 'Kuwait',
-  qatar: 'Qatar',
-  turkey: 'Diyanet, Turkey',
-  singapore: 'Kemenag & MUIS, Indonesia and Singapore',
-  jafari: 'Jafari (Ithna Ashari)',
-  tehran: 'Institute of Geophysics, Tehran',
+/**
+ * The method ids do not spell themselves into keys safely: `north-america` and
+ * `umm-al-qura` carry hyphens, and a flat `method.north-america` key is legal JSON but
+ * hard to read beside `method.mwl`. One table, so a new method cannot half-appear.
+ */
+const METHOD_KEY: Record<MethodId, string> = {
+  moonsighting: 'moonsighting',
+  'north-america': 'northAmerica',
+  karachi: 'karachi',
+  mwl: 'mwl',
+  'umm-al-qura': 'ummAlQura',
+  egyptian: 'egyptian',
+  dubai: 'dubai',
+  kuwait: 'kuwait',
+  qatar: 'qatar',
+  turkey: 'turkey',
+  singapore: 'singapore',
+  jafari: 'jafari',
+  tehran: 'tehran',
 };
 
-export const METHOD_HINTS: Record<MethodId, string> = {
-  mwl: 'A general convention used in many countries. The standard here.',
-  egyptian: "Egypt's official method.",
-  karachi: 'Common across Pakistan and South Asia.',
-  'umm-al-qura': 'The official method in Saudi Arabia. Isha is set at a fixed time after Maghrib.',
-  dubai: 'A convention used in the Gulf.',
-  moonsighting: 'A seasonal rule made for places far from the equator. Followed by some mosques in Britain.',
-  'north-america':
-    'The Islamic Society of North America. Used by many mosques in the United States and Canada.',
-  kuwait: 'The convention used in Kuwait.',
-  qatar: 'The convention used in Qatar.',
-  singapore: 'The official bodies of Indonesia and Singapore.',
-  turkey: "Turkey's Presidency of Religious Affairs, with its precaution minutes.",
-  jafari: "The usual Shia convention. Maghrib is a little after sunset, once the redness has left the sky.",
-  tehran: "The University of Tehran, whose calendar Iran's official times follow.",
-};
+/** Every method, in the order the method tables list them. */
+export const METHOD_IDS: readonly MethodId[] = Object.keys(METHOD_KEY) as MethodId[];
+
+export function methodName(method: MethodId): string {
+  return t(`method.${METHOD_KEY[method]}`);
+}
+
+export function methodHint(method: MethodId): string {
+  return t(`methodHint.${METHOD_KEY[method]}`);
+}
+
+export function soundLabel(sound: Settings['alerts']['sound']): string {
+  return t(`sound.${sound}`);
+}
+
+export function soundHint(sound: Settings['alerts']['sound']): string {
+  return t(`sound.${sound}Hint`);
+}
+
+/** The three regions below "Suggested for", in the order the method sheet shows them. */
+export type RegionId = 'europe' | 'middleEast' | 'asia' | 'shia';
 
 // PLAN 6.3 "Other methods": the region groups that the method sheet shows below the
 // "Suggested for <country>" group. North America has no group of its own in the plan, so
 // ISNA sits with the other western far-from-the-equator methods under Europe (D-034).
-export const REGION_GROUPS: ReadonlyArray<{ title: string; methods: ReadonlyArray<MethodId> }> = [
-  { title: 'Europe', methods: ['moonsighting', 'mwl', 'north-america', 'turkey'] },
+export const REGION_GROUPS: ReadonlyArray<{ id: RegionId; methods: ReadonlyArray<MethodId> }> = [
+  { id: 'europe', methods: ['moonsighting', 'mwl', 'north-america', 'turkey'] },
   {
-    title: 'Middle East and Africa',
+    id: 'middleEast',
     methods: ['umm-al-qura', 'egyptian', 'dubai', 'kuwait', 'qatar'],
   },
-  { title: 'South and East Asia', methods: ['karachi', 'singapore'] },
-  { title: 'Shia', methods: ['jafari', 'tehran'] },
+  { id: 'asia', methods: ['karachi', 'singapore'] },
+  { id: 'shia', methods: ['jafari', 'tehran'] },
 ];
 
-export const SOUND_LABELS: Record<Settings['alerts']['sound'], string> = {
-  beep: 'Soft beep',
-  adhan: 'Adhan',
-  silent: 'Silent',
-};
-
-export const SOUND_HINTS: Record<Settings['alerts']['sound'], string> = {
-  beep: 'Short and gentle',
-  adhan: 'The full call to prayer',
-  silent: 'The message only',
-};
+export function regionTitle(id: RegionId): string {
+  return t(`region.${id}`);
+}
 
 export function browserName(): 'Edge' | 'Chrome' {
   const data = (navigator as unknown as { userAgentData?: { brands?: Array<{ brand: string }> } })
@@ -97,11 +104,13 @@ const COUNTRIES_WITH_THE: ReadonlySet<string> = new Set([
  * A country name as it reads inside a sentence: "the Netherlands", "the United Kingdom",
  * but "Pakistan" and "Saudi Arabia" bare. Use it wherever a country sits inside a
  * sentence, and never for a line that is only the name. Safe to call twice, so a name
- * that already carries "the" is left alone.
+ * that already carries "the" is left alone. Only English needs this: the other four
+ * languages have no word for "the" in front of a country.
  */
 export function countryInSentence(name: string): string {
   const trimmed = name.trim();
   if (trimmed.length === 0) return trimmed;
+  if (getLanguage() !== 'en') return trimmed;
   return COUNTRIES_WITH_THE.has(trimmed.toLowerCase()) ? `the ${trimmed}` : trimmed;
 }
 
@@ -120,21 +129,24 @@ export function methodGroupsFor(
 ): Array<{ title: string; methods: ReadonlyArray<MethodId> }> {
   const groups: Array<{ title: string; methods: ReadonlyArray<MethodId> }> = [];
   if (sect === 'shia') {
-    groups.push({ title: 'Shia', methods: ['jafari', 'tehran'] });
+    groups.push({ title: regionTitle('shia'), methods: ['jafari', 'tehran'] });
     return groups;
   }
   const first = [suggested, ...alternatives].filter((method) => offered.includes(method));
   const shown = new Set<MethodId>(first);
   if (first.length > 0) {
     // A country inside a sentence takes "the" where English wants it (D-039).
-    groups.push({ title: `Suggested for ${countryInSentence(placeValue)}`, methods: first });
+    groups.push({
+      title: t('method.suggestedFor', { country: countryInSentence(placeValue) }),
+      methods: first,
+    });
   }
   for (const group of REGION_GROUPS) {
-    if (group.title === 'Shia') continue;
+    if (group.id === 'shia') continue;
     const rest = group.methods.filter((method) => offered.includes(method) && !shown.has(method));
     if (rest.length === 0) continue;
     for (const method of rest) shown.add(method);
-    groups.push({ title: group.title, methods: rest });
+    groups.push({ title: regionTitle(group.id), methods: rest });
   }
   return groups;
 }

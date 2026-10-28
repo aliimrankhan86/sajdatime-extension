@@ -1,4 +1,4 @@
-import { PRAYER_NAMES, isLate, parseAlarmName, prayerAlertMessage, scheduledAlarms } from '../core/alerts';
+import { isLate, parseAlarmName, prayerAlertMessage, prayerName, scheduledAlarms } from '../core/alerts';
 import { BADGE_BACKGROUND, BADGE_TEXT, badgeText, humanDuration } from '../core/badge';
 import { formatClockTime } from '../core/clock';
 import { computeDay, nextPrayer } from '../core/engine';
@@ -7,6 +7,7 @@ import { parseAlertMessage, soundMessageType, type AlertMessageType } from '../c
 import type { NextPrayer, Prayer, Sect } from '../core/types';
 import { loadSettings } from '../settings/storage';
 import { SETTINGS_KEY, type AlertSound, type Settings } from '../settings/types';
+import { t } from '../i18n';
 
 const NOTIFICATION_ICON = chrome.runtime.getURL('icons/icon-128.png');
 const CLEAR_AFTER_MS = 60 * 1000;
@@ -90,11 +91,11 @@ async function firePrayer(date: string, slot: Prayer): Promise<void> {
     await chrome.notifications.create(notificationId, {
       type: 'basic',
       iconUrl: NOTIFICATION_ICON,
-      title: `${PRAYER_NAMES[slot]}, ${formatClockTime(scheduled, settings.place.timeZone, locale)}`,
+      title: `${prayerName(slot)}, ${formatClockTime(scheduled, settings.place.timeZone, locale)}`,
       message: prayerAlertMessage(slot, placeName, inRamadan),
       silent: true,
       requireInteraction: true,
-      ...(settings.alerts.sound === 'adhan' ? { buttons: [{ title: 'Stop sound' }] } : {}),
+      ...(settings.alerts.sound === 'adhan' ? { buttons: [{ title: t('alerts.stopSound') }] } : {}),
     });
   } catch {
     // A fixed message only: the browser may refuse the icon or deny notifications.
@@ -126,8 +127,8 @@ async function fireReminder(date: string, slot: Prayer): Promise<void> {
     await chrome.notifications.create(`reminder:${date}:${slot}`, {
       type: 'basic',
       iconUrl: NOTIFICATION_ICON,
-      title: `${PRAYER_NAMES[slot]} in ${settings.alerts.reminder.minutes} minutes`,
-      message: `${PRAYER_NAMES[slot]} begins at ${formatClockTime(at, settings.place.timeZone, locale)}.`,
+      title: t('alerts.reminderTitle', { prayer: prayerName(slot), minutes: settings.alerts.reminder.minutes }),
+      message: t('alerts.reminderBody', { prayer: prayerName(slot), time: formatClockTime(at, settings.place.timeZone, locale) }),
       silent: true,
     });
   } catch {
@@ -156,11 +157,11 @@ async function fireSuhoor(date: string): Promise<void> {
     await chrome.notifications.create(notificationId, {
       type: 'basic',
       iconUrl: NOTIFICATION_ICON,
-      title: `Suhoor ends at ${formatClockTime(fajr, settings.place.timeZone, locale)}`,
-      message: `Fajr begins in ${settings.suhoorReminder.minutes} minutes.`,
+      title: t('alerts.suhoorTitle', { time: formatClockTime(fajr, settings.place.timeZone, locale) }),
+      message: t('alerts.suhoorBody', { minutes: settings.suhoorReminder.minutes }),
       silent: true,
       requireInteraction: true,
-      ...(settings.alerts.sound === 'adhan' ? { buttons: [{ title: 'Stop sound' }] } : {}),
+      ...(settings.alerts.sound === 'adhan' ? { buttons: [{ title: t('alerts.stopSound') }] } : {}),
     });
   } catch {
     console.error('Could not show the suhoor reminder.');
@@ -194,8 +195,8 @@ async function fireTestAlert(): Promise<void> {
     await chrome.notifications.create('test-alert', {
       type: 'basic',
       iconUrl: NOTIFICATION_ICON,
-      title: 'Test alert',
-      message: 'This is how a prayer alert looks.',
+      title: t('alerts.testTitle'),
+      message: t('alerts.testBody'),
     });
   } catch {
     console.error('Could not show the test alert.');
@@ -232,18 +233,18 @@ async function ensureOffscreen(): Promise<void> {
 function updateBadge(settings: Settings | null): void {
   if (!settings) {
     void chrome.action.setBadgeText({ text: '' });
-    void chrome.action.setTitle({ title: 'SajdaTime: set up your prayer times' });
+    void chrome.action.setTitle({ title: t('alerts.setup') });
     return;
   }
   const next = safeNextPrayer(settings);
   if (!next) {
     void chrome.action.setBadgeText({ text: '' });
-    void chrome.action.setTitle({ title: 'SajdaTime: set up your prayer times' });
+    void chrome.action.setTitle({ title: t('alerts.setup') });
     return;
   }
   const locale = navigator.language || 'en-GB';
   const wait = next.at.getTime() - Date.now();
-  const title = `SajdaTime: ${PRAYER_NAMES[next.slot]} in ${humanDuration(wait)} (${formatClockTime(
+  const title = `SajdaTime: ${prayerName(next.slot)} in ${humanDuration(wait)} (${formatClockTime(
     next.at,
     settings.place.timeZone,
     locale,

@@ -115,7 +115,7 @@ button {
 .print-table th,
 .print-table td {
   padding: 7px 8px;
-  text-align: left;
+  text-align: start;
   border-bottom: 1px solid var(--outline-variant);
 }
 
@@ -129,8 +129,13 @@ button {
 /* Tabular digits, so the columns of times line up the way the Times screen's do. */
 .print-table td.time {
   font-variant-numeric: tabular-nums;
-  text-align: right;
+  text-align: end;
   white-space: nowrap;
+}
+
+/* A clock reads left to right in Urdu and Arabic too, so the cell isolates its digits. */
+.print-table td.time bdi {
+  direction: ltr;
 }
 
 .print-table td.hijri {

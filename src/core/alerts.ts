@@ -2,6 +2,7 @@ import { addDaysISO, computeDay, dateInZone, parseISODate } from './engine';
 import { isRamadan } from './hijri';
 import { PRAYERS, type CalculationPrefs, type Prayer } from './types';
 import type { Settings } from '../settings/types';
+import { t } from '../i18n';
 
 export interface ScheduledAlarm {
   name: string;
@@ -17,14 +18,10 @@ export type AlarmName =
   | { kind: 'clear'; notificationId: string }
   | { kind: 'unknown' };
 
-/** The names shown in a prayer alert, in the same order as PRAYERS. */
-export const PRAYER_NAMES: Record<Prayer, string> = {
-  fajr: 'Fajr',
-  dhuhr: 'Dhuhr',
-  asr: 'Asr',
-  maghrib: 'Maghrib',
-  isha: 'Isha',
-};
+/** The name of a prayer, in the language the screens speak. */
+export function prayerName(prayer: Prayer): string {
+  return t(`slot.${prayer}`);
+}
 
 /** An alarm more than this late is dropped instead of firing a stale alert. */
 export const LATE_MS = 5 * 60 * 1000;
@@ -43,8 +40,8 @@ export function suhoorAlarmName(date: string): string {
 
 /** The body of a prayer alert; in Ramadan the Maghrib alert is the iftar call. */
 export function prayerAlertMessage(slot: Prayer, placeName: string, inRamadan: boolean): string {
-  if (inRamadan && slot === 'maghrib') return 'It is time for Maghrib. You can break your fast.';
-  return `It is time for ${PRAYER_NAMES[slot]} in ${placeName}.`;
+  if (inRamadan && slot === 'maghrib') return t('alerts.iftar');
+  return t('alerts.prayerInPlace', { prayer: prayerName(slot), place: placeName });
 }
 
 export function isLate(nowMs: number, scheduledMs: number): boolean {

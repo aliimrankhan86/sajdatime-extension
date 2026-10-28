@@ -20,6 +20,7 @@ Ali Imran Khan. Not technical. Explain in plain words. He presses Submit, Publis
 - **The religious disclaimer is never removed, softened or hidden.** When it is added, keep all four substance points and the final dua request. Follow the mosque where the two differ.
 - **Quiet Glass only.** Colours come from `tokens.css`. Solid green pill buttons with bold white text. No two icon buttons side by side. Every dismissable dialog has a close X. No greyed placeholder buttons. Times use tabular numbers. Nothing below 14 pixels.
 - **UK English, plain short words.** No en or em dashes. No semicolons in user-facing copy. No AI clichés.
+- **Five languages, and English is not special.** Screens read English, Urdu, Arabic, Turkish and Indonesian from `src/i18n/*.json`. A new or changed sentence goes into all five files in the same commit, `npm run check` fails if a key is missing or a placeholder differs, and nothing is ever written into the extension in English only. Urdu and Arabic read right to left, clocks stay left to right inside them. Translations are written and checked by Claude with no native speaker review, by Ali's decision of 9 October 2026, and the product never says a translation awaits review. The disclaimer is carried whole in every language, never softened.
 - **Never call work done unless it was run.** Paste the commands and the real result. Say what was not tested.
 
 ## Branches and commits

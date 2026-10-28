@@ -1,6 +1,7 @@
 import { addDaysISO, computeDay, parseISODate } from '../core/engine';
 import { hijriFor } from '../core/hijri';
 import { hijriMonthName } from '../core/labels';
+import { t } from '../i18n';
 import {
   type CalculationPrefs,
   type Coordinates,
@@ -178,7 +179,10 @@ export function clockNotes(days: string[], timeZone: string, locale: string): st
       );
       const { day } = parseISODate(date);
       notes.push(
-        `${forward ? 'Clocks go forward' : 'Clocks go back'} on ${weekday} ${day} ${monthName}. Times from that day are in ${offsetLabel(timeZone, date, locale)}.`,
+        t(forward ? 'print.clockForward' : 'print.clockBack', {
+          when: `${weekday} ${day} ${monthName}`,
+          zone: offsetLabel(timeZone, date, locale),
+        }),
       );
     }
     previous = current;

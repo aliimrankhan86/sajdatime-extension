@@ -1,4 +1,5 @@
 import { isMethodId } from '../core/methods';
+import { LANGUAGE_CHOICES, type LanguageChoice } from '../i18n';
 import { PRAYERS, type Madhab, type MethodId, type Prayer, type Sect } from '../core/types';
 
 export interface Place {
@@ -70,6 +71,8 @@ export interface Settings {
   suhoorReminder: SuhoorSetting;
   /** System follows the computer. System is the default, and a migration adds it. */
   theme: Theme;
+  /** `auto` follows the browser language. A migration adds it to older settings. */
+  language: LanguageChoice;
 }
 
 export const SETTINGS_KEY = 'sajdatime.settings.v1';
@@ -111,6 +114,9 @@ export function migrateSettings(value: unknown): unknown {
   if (candidate.theme === undefined) {
     result = { ...result, theme: 'system' };
   }
+  if (candidate.language === undefined) {
+    result = { ...result, language: 'auto' };
+  }
   return result;
 }
 
@@ -144,7 +150,8 @@ export function isSettings(value: unknown): value is Settings {
     isAlertsSettings(candidate.alerts) &&
     typeof candidate.ramadanCard === 'boolean' &&
     isSuhoorSetting(candidate.suhoorReminder) &&
-    THEMES.includes(candidate.theme as Theme)
+    THEMES.includes(candidate.theme as Theme) &&
+    LANGUAGE_CHOICES.includes(candidate.language as LanguageChoice)
   );
 }
 

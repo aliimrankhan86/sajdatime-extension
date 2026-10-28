@@ -217,7 +217,7 @@ const CITY_PROMOTE_POPULATION_RATIO = 10;
 /**
  * Name a located point from its nearest non-section city, promoting the name to a larger
  * city only when a narrow, name-based rule holds: the larger city's name appears as a
- * whole word inside the nearest city's name ("Paris" in "Paris 04 Hôtel-de-Ville", "Dubai"
+ * whole word inside the nearest city's name ("Paris" in "Paris 04 Hôtel-de-Ville", Dubai
  * in "Bur Dubai"), it shares the country, it is within 20 kilometres of the point, and it
  * has at least ten times the population. Anything else keeps the nearest city's own name,
  * so Bradford stays Bradford and Kehl stays Kehl. The nearest city's coordinates, country

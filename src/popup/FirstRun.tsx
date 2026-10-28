@@ -16,24 +16,33 @@ import { Brand } from './Brand';
 import { CitySearch } from './CitySearch';
 import { ChoiceRow } from './components/ChoiceRow';
 import { Notice } from './components/Notice';
-import { FULL_DISCLAIMER, SHORT_DISCLAIMER } from './disclaimer';
+import { fullDisclaimer, shortDisclaimer } from './disclaimer';
 import { CheckMark, GlobeIcon, PlayIcon } from './icons';
+import {
+  applyLanguage,
+  LANGUAGE_CHOICES,
+  LANGUAGE_NAMES,
+  localeTag,
+  resolveChoice,
+  t,
+  type LanguageChoice,
+} from '../i18n';
 import {
   browserName,
   countryInSentence,
-  METHOD_HINTS,
-  METHOD_NAMES,
   methodGroupsFor,
-  SOUND_HINTS,
-  SOUND_LABELS,
+  methodHint,
+  methodName,
+  soundHint,
+  soundLabel,
 } from './meta';
 
 const MADHABS: Array<{ value: Madhab; title: string; hint: string }> = [
-  { value: 'hanafi', title: 'Hanafi', hint: 'Asr begins when a shadow is twice its height.' },
+  { value: 'hanafi', title: t('madhab.hanafi'), hint: t('madhab.hanafiHint') },
   {
     value: 'shafii',
     title: "Shafi'i, Maliki or Hanbali",
-    hint: 'Asr begins when a shadow equals its height.',
+    hint: t('madhab.shafiiHint'),
   },
 ];
 
@@ -179,12 +188,15 @@ export function FirstRun({ onSaved }: { onSaved: (settings: Settings) => void })
   const [found, setFound] = useState<Place | null>(null);
   const [matchInput, setMatchInput] = useState('');
   const [matchChosen, setMatchChosen] = useState<MethodId | null>(null);
-  const [language, setLanguage] = useState<'system' | 'english'>('system');
   const [playing, setPlaying] = useState(false);
   const main = useRef<HTMLDivElement>(null);
 
+  // The globe in the welcome corner names the language in use, which is the computer's
+  // until the user picks one by name.
+  const languageName = LANGUAGE_NAMES[resolveChoice(draft.language)];
+
   const browser = browserName();
-  const locale = navigator.language || 'en-GB';
+  const locale = localeTag();
   const clock = clockFormatter(draft.place.timeZone, locale);
   const today = dateInZone(new Date(), draft.place.timeZone);
   const suggestion = suggestMethod(draft.place.countryCode, draft.sect);
@@ -330,14 +342,14 @@ export function FirstRun({ onSaved }: { onSaved: (settings: Settings) => void })
       })
       .catch(() => {
         setBusy(false);
-        setError('Your settings could not be saved. Try again.');
+        setError(t('common.saveError'));
       });
   }
 
   function useMyLocation() {
     setError(null);
     if (!navigator.geolocation) {
-      setError('This browser cannot read your location. Find a place below instead.');
+      setError(t('firstRun.noLocation'));
       return;
     }
     setBusy(true);
@@ -354,7 +366,7 @@ export function FirstRun({ onSaved }: { onSaved: (settings: Settings) => void })
       },
       () => {
         setBusy(false);
-        setError('We could not read your location. Allow location for this browser, then try again, or type a place below.');
+        setError(t('firstRun.locationDenied'));
       },
       { enableHighAccuracy: false, timeout: 15_000, maximumAge: 600_000 },
     );
@@ -391,7 +403,7 @@ export function FirstRun({ onSaved }: { onSaved: (settings: Settings) => void })
   if (!ready) {
     return (
       <main class="welcome" aria-busy="true">
-        <p class="welcome-note">Loading SajdaTime...</p>
+        <p class="welcome-note">{t('app.loading')}</p>
       </main>
     );
   }
@@ -416,19 +428,19 @@ export function FirstRun({ onSaved }: { onSaved: (settings: Settings) => void })
           <header class="first-run-welcome-head">
             <button class="language-button" type="button" onClick={() => setSub('language')}>
               <GlobeIcon size={18} />
-              <span>English</span>
+              <span>{languageName}</span>
             </button>
           </header>
           <div class="first-run-welcome-body">
             <Brand />
             <h1 class="welcome-title" data-autofocus tabIndex={-1}>
-              Prayer times and a gentle alert, right here on your computer.
+              {t('firstRun.welcome')}
             </h1>
-            <p class="welcome-lead">Free, with no ads and no account. Your times are worked out on this computer.</p>
+            <p class="welcome-lead">{t('firstRun.note')}</p>
           </div>
           <div class="first-run-welcome-foot">
             <button class="action first-run-primary" type="button" onClick={continueTo}>
-              Begin
+              {t('common.begin')}
             </button>
           </div>
         </div>
@@ -447,7 +459,7 @@ export function FirstRun({ onSaved }: { onSaved: (settings: Settings) => void })
         {step >= 2 ? (
           <div class="first-run-foot">
             <button class="action" type="button" onClick={goBack} disabled={busy}>
-              Back
+              {t('common.back')}
             </button>
             <button
               class="action"
@@ -455,7 +467,7 @@ export function FirstRun({ onSaved }: { onSaved: (settings: Settings) => void })
               onClick={continueTo}
               disabled={busy || (step === 3 && !madhabChosen) || (step === 4 && !found)}
             >
-              {step === 6 ? 'Finish' : 'Continue'}
+              {step === 6 ? t('common.finish') : t('common.continue')}
             </button>
           </div>
         ) : null}
@@ -468,15 +480,15 @@ export function FirstRun({ onSaved }: { onSaved: (settings: Settings) => void })
       return (
         <>
           <h1 class="first-run-title" data-autofocus tabIndex={-1}>
-            Before you begin
+            {t('firstRun.before')}
           </h1>
-          <p class="disclaimer-text">{SHORT_DISCLAIMER}</p>
+          <p class="disclaimer-text">{shortDisclaimer()}</p>
           <div class="first-run-actions">
             <button class="action first-run-primary" type="button" onClick={continueTo}>
-              I understand
+              {t('firstRun.understand')}
             </button>
             <button class="action" type="button" onClick={() => setSub('full')}>
-              Read in full
+              {t('common.readInFull')}
             </button>
           </div>
         </>
@@ -487,20 +499,20 @@ export function FirstRun({ onSaved }: { onSaved: (settings: Settings) => void })
       return (
         <>
           <h1 class="first-run-title" data-autofocus tabIndex={-1}>
-            Which school do you follow?
+            {t('firstRun.schoolQuestion')}
           </h1>
           <p class="field-hint">
-            This picks the calculation method for you. You can change it later in Settings.
+            {t('firstRun.schoolNote')}
           </p>
           <div class="choice-cards">
             <ChoiceCard
               selected={draft.sect === 'sunni'}
-              title="Sunni"
+              title={t('school.sunni')}
               onSelect={() => chooseSect('sunni')}
             />
             <ChoiceCard
               selected={draft.sect === 'shia'}
-              title="Shia"
+              title={t('school.shia')}
               onSelect={() => chooseSect('shia')}
             />
           </div>
@@ -512,9 +524,9 @@ export function FirstRun({ onSaved }: { onSaved: (settings: Settings) => void })
       return (
         <>
           <h1 class="first-run-title" data-autofocus tabIndex={-1}>
-            Which madhab do you follow?
+            {t('firstRun.madhabQuestion')}
           </h1>
-          <p class="field-hint">It only changes when Asr begins. Every other time stays the same.</p>
+          <p class="field-hint">{t('firstRun.madhabNote')}</p>
           <div class="choice-cards">
             {MADHABS.map((madhab) => (
               <ChoiceCard
@@ -535,47 +547,47 @@ export function FirstRun({ onSaved }: { onSaved: (settings: Settings) => void })
         return (
           <section class="location-found" role="status">
             <h1 class="first-run-title" data-autofocus tabIndex={-1}>
-              Where are you?
+              {t('firstRun.locationQuestion')}
             </h1>
             <div class="first-run-place">
               <CheckMark size={32} />
               <p class="first-run-place-name">{found.name}</p>
               <p class="first-run-place-meta">
                 {found.countryCode === 'ZZ'
-                  ? 'From this computer'
+                  ? t('settings.fromThisComputer')
                   : countryName(found.countryCode, locale)}
               </p>
             </div>
-            <p class="field-hint">Your prayer times will be for this place.</p>
+            <p class="field-hint">{t('firstRun.willBeFor')}</p>
           </section>
         );
       }
       return (
         <>
           <h1 class="first-run-title" data-autofocus tabIndex={-1}>
-            Where are you?
+            {t('firstRun.locationQuestion')}
           </h1>
           <p class="field-hint">
-            Your times are worked out on this computer from where you are.
+            {t('firstRun.locationNote')}
           </p>
           <button class="action first-run-primary" type="button" onClick={useMyLocation} disabled={busy}>
-            {busy ? 'Finding your place...' : 'Allow location'}
+            {busy ? t('firstRun.finding') : t('firstRun.allowLocation')}
           </button>
           <p class="field-hint">
             {browser === 'Chrome'
-              ? 'Chrome asks Google to estimate where you are. SajdaTime never receives it.'
-              : 'Edge asks Microsoft to estimate where you are. SajdaTime never receives it.'}
+              ? t('firstRun.chromeNote')
+              : t('firstRun.edgeNote')}
           </p>
           <CitySearch
-            label="Or type a place"
+            label={t('firstRun.orTypePlace')}
             onPick={(city) => choosePlace(placeFromCity(city))}
             disabled={busy}
           />
           <div class="first-run-skip">
             <button class="action" type="button" onClick={useMakkah} disabled={busy}>
-              Skip for now and use Makkah
+              {t('firstRun.skip')}
             </button>
-            <p class="field-hint">Prayer times will be for Makkah until you set your location.</p>
+            <p class="field-hint">{t('firstRun.defaultMakkah')}</p>
           </div>
         </>
       );
@@ -588,11 +600,11 @@ export function FirstRun({ onSaved }: { onSaved: (settings: Settings) => void })
     return (
       <>
         <h1 class="first-run-title" data-autofocus tabIndex={-1}>
-          Prayer alerts
+          {t('settings.prayerAlerts')}
         </h1>
-        <p class="field-hint">At each prayer you hear a sound and see a message. The message closes after 1 minute.</p>
+        <p class="field-hint">{t('firstRun.alertsNote')}</p>
         <div class="first-run-sound-row">
-          <span class="field-label">Sound</span>
+          <span class="field-label">{t('settings.sound')}</span>
           <button
             class="action action-small"
             type="button"
@@ -600,7 +612,7 @@ export function FirstRun({ onSaved }: { onSaved: (settings: Settings) => void })
             onClick={togglePlay}
           >
             <PlayIcon size={16} />
-            <span>{playing ? 'Stop' : 'Play'}</span>
+            <span>{playing ? t('common.stop') : t('common.play')}</span>
           </button>
         </div>
         <div class="choices" role="group" aria-label="Sound">
@@ -608,8 +620,8 @@ export function FirstRun({ onSaved }: { onSaved: (settings: Settings) => void })
             <ChoiceRow
               key={sound}
               selected={draft.alerts.sound === sound}
-              title={SOUND_LABELS[sound]}
-              hint={SOUND_HINTS[sound]}
+              title={soundLabel(sound)}
+              hint={soundHint(sound)}
               disabled={busy}
               onSelect={() => chooseSound(sound)}
             />
@@ -617,8 +629,8 @@ export function FirstRun({ onSaved }: { onSaved: (settings: Settings) => void })
         </div>
         <Notice
           tone="quiet"
-          title={`${browser} needs to be open`}
-          line={`If ${browser} is closed or the computer is asleep, no alert can sound.`}
+          title={t('notice.offlineTitle', { browser })}
+          line={t('notice.offlineLine', { browser })}
           mark={<CheckMark />}
         />
       </>
@@ -632,11 +644,11 @@ export function FirstRun({ onSaved }: { onSaved: (settings: Settings) => void })
       return (
         <>
           <h1 class="first-run-title" data-autofocus tabIndex={-1}>
-            Calculation method
+            {t('firstRun.methodTitle')}
           </h1>
           <div class="method-row is-selected first-run-method-card">
             <span class="method-copy">
-              <span class="method-name">{METHOD_NAMES[draft.method]}</span>
+              <span class="method-name">{methodName(draft.method)}</span>
               <span class="method-hint">Suggested for {placeValue}</span>
               {times ? (
                 <span class="method-times method-times-large">
@@ -663,10 +675,10 @@ export function FirstRun({ onSaved }: { onSaved: (settings: Settings) => void })
           </div>
           <div class="first-run-method-actions">
             <button class="action" type="button" onClick={openMatch}>
-              Match my mosque
+              {t('firstRun.matchTitle')}
             </button>
             <button class="action" type="button" onClick={() => setSub('methods')}>
-              Other methods
+              {t('method.other')}
             </button>
           </div>
         </>
@@ -679,10 +691,10 @@ export function FirstRun({ onSaved }: { onSaved: (settings: Settings) => void })
     return (
       <>
         <h1 class="first-run-title" data-autofocus tabIndex={-1}>
-          Calculation method
+          {t('firstRun.methodTitle')}
         </h1>
         <p class="field-hint">Mosques in {placeValue} work out Fajr and Isha differently.</p>
-        <div class="choices" role="radiogroup" aria-label="Calculation method">
+        <div class="choices" role="radiogroup" aria-label={t('firstRun.methodTitle')}>
           {methods.map((method, index) => {
             const times = todayFor(method);
             const selected = method === draft.method;
@@ -696,7 +708,7 @@ export function FirstRun({ onSaved }: { onSaved: (settings: Settings) => void })
                 onClick={() => chooseMethod(method)}
               >
                 <span class="method-copy">
-                  <span class="method-name">{METHOD_NAMES[method]}</span>
+                  <span class="method-name">{methodName(method)}</span>
                   {index === 0 ? (
                     <span class="method-hint">Suggested for {placeValue}</span>
                   ) : null}
@@ -730,10 +742,10 @@ export function FirstRun({ onSaved }: { onSaved: (settings: Settings) => void })
         </div>
         <div class="first-run-method-actions">
           <button class="action" type="button" onClick={openMatch}>
-            Match my mosque
+            {t('firstRun.matchTitle')}
           </button>
           <button class="action" type="button" onClick={() => setSub('methods')}>
-            Other methods
+            {t('method.other')}
           </button>
         </div>
       </>
@@ -744,9 +756,9 @@ export function FirstRun({ onSaved }: { onSaved: (settings: Settings) => void })
     return (
       <div class="first-run-sheet">
         <header class="first-run-sheet-head">
-          <BackArrow label="Back" onClick={closeSub} />
+          <BackArrow label={t('common.back')} onClick={closeSub} />
           <h1 class="first-run-sheet-title" data-autofocus tabIndex={-1}>
-            Other methods
+            {t('method.other')}
           </h1>
         </header>
         <div class="first-run-sheet-body method-body">
@@ -773,8 +785,8 @@ export function FirstRun({ onSaved }: { onSaved: (settings: Settings) => void })
                       }}
                     >
                       <span class="method-copy">
-                        <span class="method-name">{METHOD_NAMES[method]}</span>
-                        <span class="method-hint">{METHOD_HINTS[method]}</span>
+                        <span class="method-name">{methodName(method)}</span>
+                        <span class="method-hint">{methodHint(method)}</span>
                         {times ? (
                           <span class="method-times">
                             <span class="method-time">Fajr {times.fajr}</span>
@@ -831,16 +843,16 @@ export function FirstRun({ onSaved }: { onSaved: (settings: Settings) => void })
     return (
       <div class="first-run-sheet">
         <header class="first-run-sheet-head">
-          <BackArrow label="Back" onClick={closeSub} />
+          <BackArrow label={t('common.back')} onClick={closeSub} />
           <h1 class="first-run-sheet-title" data-autofocus tabIndex={-1}>
-            Match my mosque
+            {t('firstRun.matchTitle')}
           </h1>
         </header>
         <div class="first-run-sheet-body">
-          <p class="field-hint">Type the Fajr start time your mosque shows.</p>
-          <p class="field-hint">Use the start time, not the jamaat time.</p>
+          <p class="field-hint">{t('firstRun.matchNote')}</p>
+          <p class="field-hint">{t('firstRun.matchStart')}</p>
           <label class="field-label" for="match-fajr-time">
-            Fajr time
+            {t('firstRun.matchTime')}
           </label>
           <input
             class="search-input"
@@ -852,7 +864,7 @@ export function FirstRun({ onSaved }: { onSaved: (settings: Settings) => void })
 
           {results.length > 0 ? (
             <>
-              <div class="choices" role="radiogroup" aria-label="Closest methods">
+              <div class="choices" role="radiogroup" aria-label={t('method.closest')}>
                 {results.map((entry) => {
                   const selected = entry.method === selectedMatch;
                   return (
@@ -865,9 +877,13 @@ export function FirstRun({ onSaved }: { onSaved: (settings: Settings) => void })
                       onClick={() => setMatchChosen(entry.method)}
                     >
                       <span class="method-copy">
-                        <span class="method-name">{METHOD_NAMES[entry.method]}</span>
+                        <span class="method-name">{methodName(entry.method)}</span>
                         <span class="method-times">
-                          <span class="method-time">Fajr {clock.format(entry.fajr)}</span>
+                          <span class="method-time">
+                            <bdi>
+                              {t('slot.fajr')} {clock.format(entry.fajr)}
+                            </bdi>
+                          </span>
                           <span class="method-time">{matchLabel(entry.diffMinutes)}</span>
                         </span>
                       </span>
@@ -895,9 +911,7 @@ export function FirstRun({ onSaved }: { onSaved: (settings: Settings) => void })
 
               {farAway ? (
                 <p class="field-hint" role="note">
-                  None of the methods is close to your mosque. Your mosque could be following
-                  its own timetable. Pick the closest, then use Match your mosque in Settings to
-                  adjust each prayer by minutes.
+                  {t('firstRun.farAway')}
                 </p>
               ) : null}
 
@@ -907,7 +921,7 @@ export function FirstRun({ onSaved }: { onSaved: (settings: Settings) => void })
                   type="button"
                   onClick={() => useMatchedMethod(selectedMatch)}
                 >
-                  Use {METHOD_NAMES[selectedMatch]}
+                  Use {methodName(selectedMatch)}
                 </button>
               ) : null}
             </>
@@ -921,14 +935,14 @@ export function FirstRun({ onSaved }: { onSaved: (settings: Settings) => void })
     return (
       <div class="first-run-sheet">
         <header class="first-run-sheet-head">
-          <BackArrow label="Back" onClick={closeSub} />
+          <BackArrow label={t('common.back')} onClick={closeSub} />
           <h1 class="first-run-sheet-title" data-autofocus tabIndex={-1}>
-            Disclaimer
+            {t('settings.disclaimer')}
           </h1>
         </header>
         <div class="first-run-sheet-body">
           <div class="disclaimer-full">
-            {FULL_DISCLAIMER.map((paragraph, index) => (
+            {fullDisclaimer().map((paragraph, index) => (
               <p class="disclaimer-text" key={index}>
                 {paragraph}
               </p>
@@ -939,29 +953,35 @@ export function FirstRun({ onSaved }: { onSaved: (settings: Settings) => void })
     );
   }
 
+  /**
+   * Picking a language at once, because the sheet behind it is showing this screen's
+   * words. The choice is kept in the draft and saved with the rest at the end.
+   */
+  function chooseLanguage(choice: LanguageChoice) {
+    setDraft((value) => ({ ...value, language: choice }));
+    applyLanguage(choice);
+  }
+
   function renderLanguage() {
     return (
       <div class="first-run-sheet">
         <header class="first-run-sheet-head">
-          <BackArrow label="Back" onClick={closeSub} />
+          <BackArrow label={t('common.back')} onClick={closeSub} />
           <h1 class="first-run-sheet-title" data-autofocus tabIndex={-1}>
-            Language
+            {t('common.language')}
           </h1>
         </header>
         <div class="first-run-sheet-body">
-          <div class="choices" role="radiogroup" aria-label="Language">
-            <ChoiceRow
-              selected={language === 'system'}
-              title="Computer language"
-              disabled={false}
-              onSelect={() => setLanguage('system')}
-            />
-            <ChoiceRow
-              selected={language === 'english'}
-              title="English"
-              disabled={false}
-              onSelect={() => setLanguage('english')}
-            />
+          <div class="choices" role="radiogroup" aria-label={t('common.language')}>
+            {LANGUAGE_CHOICES.map((choice) => (
+              <ChoiceRow
+                key={choice}
+                selected={draft.language === choice}
+                title={choice === 'auto' ? t('common.computerLanguage') : LANGUAGE_NAMES[choice]}
+                disabled={false}
+                onSelect={() => chooseLanguage(choice)}
+              />
+            ))}
           </div>
         </div>
       </div>
