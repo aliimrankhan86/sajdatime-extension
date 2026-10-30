@@ -1157,6 +1157,14 @@ button {
   font-size: 14px;
 }
 
+/* Language picker: the English name sits beside the language's own name, so six rows and
+   Done still fit the popup without scrolling. */
+.choices.is-inline .choice-copy {
+  flex-direction: row;
+  align-items: baseline;
+  gap: 8px;
+}
+
 .blocked-notice {
   padding: 12px 14px;
   color: var(--accent);

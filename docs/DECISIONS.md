@@ -627,3 +627,13 @@ needs rewriting in the same commit).
 **Verified.** `npm run check`: 353 unit tests, typecheck, bundle clean. Playwright: 110 passed, 1 skipped, with Bengali added to the per language checks (lang and dir, no sideways scroll, both footer buttons on one line, nothing clipped at 200 per cent zoom). Screenshots of Times, Settings and the language picker in Bengali showed no clipping. The one cut value is Credits, the same intentional ellipsis English has.
 
 **Not tested.** Windows and ChromeOS fonts (only macOS was rendered). The printable page in Bengali was not screenshotted. No Bengali speaker has read the words.
+
+## 30 October 2026: the language picker shows English names beside each language
+
+**Decision.** Ali asked for each language's English name in the picker, so anyone can read what is on offer, and for it to sit beside the language's own name rather than under it, to save space.
+
+**Built.** `LANGUAGE_NAMES_EN` in `src/i18n/index.ts` (always English, whatever the screen language), shown as the muted hint in each picker row. English and Computer language have no second name. `.choices.is-inline` puts the hint on the same line.
+
+**Why beside, not under.** Under it, each row grew to two lines and Done fell below the 600 pixel popup in Urdu and Bengali. Beside it, all seven rows and Done fit without scrolling.
+
+**Verified.** New Playwright test in English, Urdu and Bengali: the five English names show, no row is clipped, the page is at most 380 wide, and Done ends inside 600 pixels. Full suite 111 passed, 353 unit tests pass. Screenshots in `docs/images/i18n/picker-*.png`.

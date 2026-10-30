@@ -44,6 +44,19 @@ export const LANGUAGE_NAMES: Record<Language, string> = {
   bn: 'বাংলা',
 };
 
+/**
+ * Each language's English name, shown under its own name in the picker so anyone can
+ * read what is on offer (Ali, 30 Oct 2026). Always English, whatever the screen language.
+ */
+export const LANGUAGE_NAMES_EN: Record<Language, string> = {
+  en: 'English',
+  ur: 'Urdu',
+  ar: 'Arabic',
+  tr: 'Turkish',
+  id: 'Indonesian',
+  bn: 'Bengali',
+};
+
 /** The picker's rows, "Computer language" first (PLAN.md section 10). */
 export const LANGUAGE_CHOICES: readonly LanguageChoice[] = ['auto', ...LANGUAGES];
 
