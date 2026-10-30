@@ -1,34 +1,38 @@
 import ar from './ar.json' with { type: 'json' };
+import bn from './bn.json' with { type: 'json' };
 import en from './en.json' with { type: 'json' };
 import id from './id.json' with { type: 'json' };
 import tr from './tr.json' with { type: 'json' };
 import ur from './ur.json' with { type: 'json' };
 
 /**
- * The five languages the extension speaks, and the only place a language is named.
+ * The six languages the extension speaks, and the only place a language is named.
  *
- * PLAN.md section 10: English, Urdu, Arabic, Turkish and Indonesian, each named in its own
- * script in the picker, with the computer's own language first when it is one of the five.
- * The phone app carries the same five, so the words here are copied from its `values-ur`,
+ * PLAN.md section 10: English, Urdu, Arabic, Turkish, Indonesian and Bengali, each named in
+ * its own script in the picker, with the computer's own language first when it is one of them.
+ * The phone app carries the first five, so the words here are copied from its `values-ur`,
  * `values-ar`, `values-tr` and `values-in` wherever the sentence exists there, and
  * `docs/TRANSLATIONS-NEW.md` lists every sentence that is new to the extension.
  *
+ * Bengali (30 Oct 2026, Ali's request) is the one language the phone app does not have yet,
+ * so every Bengali sentence, the disclaimer included, is the extension's own translation.
+ *
  * There is no i18n library. A flat JSON file per language and a `{name}` substitution is
- * all five languages need, and the brief forbids new dependencies. The key list is checked
+ * all six languages need, and the brief forbids new dependencies. The key list is checked
  * by `tests/unit/i18n.test.ts`, which fails if a language is missing a key, if a value is
  * empty, or if a placeholder differs between languages.
  */
 
-export type Language = 'en' | 'ar' | 'id' | 'tr' | 'ur';
+export type Language = 'en' | 'ar' | 'bn' | 'id' | 'tr' | 'ur';
 
 /**
- * What the settings store: one of the five, or `auto` for "Computer language", which is
+ * What the settings store: one of the six, or `auto` for "Computer language", which is
  * the default and follows the browser until the user picks a language by name.
  */
 export type LanguageChoice = 'auto' | Language;
 
 /** The picker's order, and the order the brief lists them in. */
-export const LANGUAGES: readonly Language[] = ['en', 'ur', 'ar', 'tr', 'id'];
+export const LANGUAGES: readonly Language[] = ['en', 'ur', 'ar', 'tr', 'id', 'bn'];
 
 /** Each language in its own script, which is how the picker shows it. */
 export const LANGUAGE_NAMES: Record<Language, string> = {
@@ -37,6 +41,7 @@ export const LANGUAGE_NAMES: Record<Language, string> = {
   ar: 'العربية',
   tr: 'Türkçe',
   id: 'Bahasa Indonesia',
+  bn: 'বাংলা',
 };
 
 /** The picker's rows, "Computer language" first (PLAN.md section 10). */
@@ -45,11 +50,11 @@ export const LANGUAGE_CHOICES: readonly LanguageChoice[] = ['auto', ...LANGUAGES
 /** Right to left is a property of the writing system, not of the language choice. */
 export const RTL_LANGUAGES: readonly Language[] = ['ur', 'ar'];
 
-const BUNDLES: Record<Language, Record<string, string>> = { en, ur, ar, tr, id };
+const BUNDLES: Record<Language, Record<string, string>> = { en, ur, ar, tr, id, bn };
 
 let current: Language = 'en';
 
-/** A browser tag like `ur-PK` or `ar-EG` as one of the five, or English. */
+/** A browser tag like `ur-PK` or `bn-BD` as one of the six, or English. */
 export function resolveLanguage(tag: string | null | undefined): Language {
   const base = (tag ?? '').toLowerCase().split('-')[0] ?? '';
   return (LANGUAGES as readonly string[]).includes(base) ? (base as Language) : 'en';
@@ -87,9 +92,11 @@ export function isRtl(language: Language = current): boolean {
  */
 export function localeTag(language: Language = current): string {
   if (language === 'ar') return 'ar-u-nu-latn';
+  // Bengali would otherwise write dates in Bengali digits beside times in Western ones.
+  if (language === 'bn') return 'bn-u-nu-latn';
   // English keeps whatever the browser is set to, so an en-GB computer still sees the
   // 24 hour clock and "Tuesday 27 October" it saw before the languages shipped. The other
-  // four name their own tag, because that is where the month and day names come from.
+  // languages name their own tag, because that is where the month and day names come from.
   if (language === 'en') return navigator.language || 'en-GB';
   return language;
 }

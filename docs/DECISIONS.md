@@ -611,3 +611,19 @@ needs rewriting in the same commit).
 **Verified:** `npm run check` (353 unit tests, bundle clean) and `npx playwright test` (110 passed), including the new `tests/e2e/fit.test.ts`: a long label shrinks and stops at 14, a 200 letter word stays at 14 and the page stays 380 wide, and a short word returns to the normal size.
 
 **Not tested:** shrinking inside a real Urdu or Arabic long word, the print page (not covered, it scrolls sideways by design at popup width), and a native speaker's eye on any language.
+
+## 30 October 2026: Bengali is the sixth language
+
+**Decision.** Ali asked for Bengali. The extension now speaks six languages: English, Urdu, Arabic, Turkish, Indonesian and Bengali (`bn`, shown as বাংলা in the picker, left to right).
+
+**Built.** `src/i18n/bn.json` with all 255 keys, `bn` in `LANGUAGES`, `LANGUAGE_NAMES` and the bundles, a Bengali font stack in `src/popup/styles.css` (Kohinoor Bangla and Bangla Sangam MN on macOS, Nirmala UI and Vrinda on Windows, Noto Sans Bengali on ChromeOS and Linux, line height 1.6 for vowel signs above and below the line), and `public/_locales/bn` for the store name and description (Chrome lists `bn`, unlike `ur`).
+
+**Why these choices.**
+- The phone app has no Bengali yet, so every Bengali sentence, the disclaimer included, is our own translation, made under the 9 Oct 2026 rule (Claude translates and checks, no native review). The tests pin the opening sentence and the dua for Bengali as they do for the others. A Bengali phone translation should copy these words, not write a second set.
+- Dates use Western digits (`bn-u-nu-latn`), the same choice Arabic makes, so a date never shows Bengali digits beside times in Western ones.
+- "Alert" is অ্যালার্ট, the short loanword Bengali screens use, because the native word is longer and the footer buttons share one line.
+- Words that read like Latin names (SajdaTime, Chrome, Google) are followed by a space, never a hyphen, because copy carries no hyphens.
+
+**Verified.** `npm run check`: 353 unit tests, typecheck, bundle clean. Playwright: 110 passed, 1 skipped, with Bengali added to the per language checks (lang and dir, no sideways scroll, both footer buttons on one line, nothing clipped at 200 per cent zoom). Screenshots of Times, Settings and the language picker in Bengali showed no clipping. The one cut value is Credits, the same intentional ellipsis English has.
+
+**Not tested.** Windows and ChromeOS fonts (only macOS was rendered). The printable page in Bengali was not screenshotted. No Bengali speaker has read the words.

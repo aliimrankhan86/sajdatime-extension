@@ -31,7 +31,7 @@ import { isSettings, migrateSettings } from '../../src/settings/types';
  * to be made on purpose, in both repositories.
  */
 
-const LOCALES = ['en', 'ar', 'tr', 'id'] as const;
+const LOCALES = ['en', 'ar', 'tr', 'id', 'bn'] as const;
 
 /** The phone's own opening sentence, from its translated string files. */
 const PHONE_OPENING: Record<string, string> = {
@@ -40,6 +40,9 @@ const PHONE_OPENING: Record<string, string> = {
   ar: 'SajdaTime مساعد، وليس مرجعًا دينيًا.',
   tr: 'SajdaTime bir yardımcıdır, dinî bir otorite değildir.',
   id: 'SajdaTime adalah alat bantu, bukan otoritas agama.',
+  // The phone has no Bengali yet, so this one is the extension's own, and the first
+  // Bengali phone translation should copy it rather than write a second.
+  bn: 'SajdaTime একটি সহায়ক, কোনো ধর্মীয় কর্তৃপক্ষ নয়।',
 };
 
 /** The phone's closing dua, which stays the last paragraph and asks for nothing else. */
@@ -49,6 +52,7 @@ const PHONE_DUA: Record<string, string> = {
   ar: 'وطلب واحد، إن تكرّمت: أرجو أن تذكرني وعائلتي ووالديّ في دعائك.',
   tr: 'Bir de ricam var, uygun görürseniz: lütfen beni, ailemi ve anne babamı dualarınızda anın.',
   id: 'Dan satu permohonan, bila Anda berkenan: mohon ingat saya, keluarga saya, dan orang tua saya dalam doa-doa Anda.',
+  bn: 'আর একটি অনুরোধ, যদি সম্ভব হয়: অনুগ্রহ করে আমাকে, আমার পরিবারকে এবং আমার মা বাবাকে আপনার দোয়ায় স্মরণ রাখবেন।',
 };
 
 /**
@@ -102,7 +106,7 @@ const PHONE_SWAPS: Record<string, Array<[string, string]>> = {
 };
 
 describe('translation files', () => {
-  it('list the same keys in all five languages', () => {
+  it('list the same keys in all six languages', () => {
     const english = keys();
     expect(english.length).toBeGreaterThan(200);
     for (const language of LANGUAGES) {
@@ -157,7 +161,7 @@ describe('the disclaimer in every language', () => {
       for (let index = 1; index <= 6; index += 1) {
         expect((bundle(language)[`disclaimer.full.${index}`] ?? '').length).toBeGreaterThan(30);
       }
-      expect(bundle(language)['disclaimer.full.4']).toMatch(/Isha|عشاء|العشاء|Yatsı|Isya/);
+      expect(bundle(language)['disclaimer.full.4']).toMatch(/Isha|عشاء|العشاء|Yatsı|Isya|এশা/);
     }
   });
 
@@ -179,7 +183,9 @@ describe('the disclaimer in every language', () => {
 });
 
 describe('choosing a language', () => {
-  it('recognises each of the five and falls back to English', () => {
+  it('recognises each of the six and falls back to English', () => {
+    expect(resolveLanguage('bn-BD')).toBe('bn');
+    expect(resolveLanguage('bn-IN')).toBe('bn');
     expect(resolveLanguage('ur-PK')).toBe('ur');
     expect(resolveLanguage('ar')).toBe('ar');
     expect(resolveLanguage('tr-TR')).toBe('tr');
@@ -189,11 +195,12 @@ describe('choosing a language', () => {
     expect(resolveLanguage(undefined)).toBe('en');
   });
 
-  it('offers Computer language first, then the five in their own names', () => {
+  it('offers Computer language first, then the six in their own names', () => {
     expect(LANGUAGE_CHOICES[0]).toBe('auto');
     expect([...LANGUAGE_CHOICES].slice(1)).toEqual([...LANGUAGES]);
     expect(LANGUAGE_NAMES.ur).toBe('اردو');
     expect(LANGUAGE_NAMES.ar).toBe('العربية');
+    expect(LANGUAGE_NAMES.bn).toBe('বাংলা');
   });
 
   it('treats only Urdu and Arabic as right to left', () => {
@@ -202,11 +209,13 @@ describe('choosing a language', () => {
     expect(isRtl('ar')).toBe(true);
     expect(isRtl('tr')).toBe(false);
     expect(isRtl('id')).toBe(false);
+    expect(isRtl('bn')).toBe(false);
     expect(isRtl('en')).toBe(false);
   });
 
-  it('asks Arabic for Western digits and leaves the others as their tag', () => {
+  it('asks Arabic and Bengali for Western digits and leaves the others as their tag', () => {
     expect(localeTag('ar')).toBe('ar-u-nu-latn');
+    expect(localeTag('bn')).toBe('bn-u-nu-latn');
     expect(localeTag('ur')).toBe('ur');
     expect(localeTag('id')).toBe('id');
   });
