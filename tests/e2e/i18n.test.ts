@@ -362,3 +362,36 @@ test('captures the right to left screens when asked', async () => {
     }
   }
 });
+
+test('the language picker shows each language in English too, and still fits', async () => {
+  for (const language of ['en', 'ur', 'bn'] as const) {
+    const extension = await launchExtension();
+    try {
+      await seedSettings(extension, undefined, withLanguage(language));
+      await extension.page.locator('.footer-actions button').first().click();
+      await extension.page.locator('[data-row="language"]').click();
+      await extension.page.waitForSelector('.choice-row');
+      const hints = await extension.page.locator('.choice-hint').allInnerTexts();
+      expect(hints, language).toEqual(['Urdu', 'Arabic', 'Turkish', 'Indonesian', 'Bengali']);
+      const fits = await extension.page.evaluate(() => {
+        const rows = [...document.querySelectorAll<HTMLElement>('.choice-row')];
+        return {
+          clipped: rows.filter((row) => row.scrollWidth - row.clientWidth > 1).length,
+          width: document.documentElement.scrollWidth,
+          // Done must stay on screen: the English names sit beside, not under, each name.
+          doneBottom: [...document.querySelectorAll<HTMLElement>('button')]
+            .filter((button) => button.closest('.sheet-body') === null && button.className.includes('action'))
+            .map((button) => button.getBoundingClientRect().bottom)
+            .pop() ?? 0,
+        };
+      });
+      expect(fits.clipped, language).toBe(0);
+      expect(fits.width, language).toBeLessThanOrEqual(380);
+      expect(fits.doneBottom, `${language} Done`).toBeGreaterThan(0);
+      expect(fits.doneBottom, `${language} Done`).toBeLessThanOrEqual(600);
+      await screenshot(extension.page, `docs/images/i18n/picker-${language}.png`);
+    } finally {
+      await extension.close();
+    }
+  }
+});

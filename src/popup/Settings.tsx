@@ -32,7 +32,7 @@ import { Sheet } from './components/Sheet';
 import { ChoiceRow } from './components/ChoiceRow';
 import { Segmented } from './components/Segmented';
 import { Notice } from './components/Notice';
-import { applyLanguage, LANGUAGE_CHOICES, LANGUAGE_NAMES, t, type LanguageChoice, localeTag } from '../i18n';
+import { applyLanguage, LANGUAGE_CHOICES, LANGUAGE_NAMES, LANGUAGE_NAMES_EN, t, type LanguageChoice, localeTag } from '../i18n';
 import { CalendarIcon, CheckMark, ClockIcon, ContrastIcon, InfoIcon, LockIcon, NoteIcon, PersonIcon, PhoneIcon, PinIcon, SchoolIcon, TuneIcon, WarningMark, GlobeIcon } from './icons';
 
 /**
@@ -834,12 +834,14 @@ export function Settings({ settings, onClose, onSaved }: Props) {
         return (
           <Sheet title={t('settings.language')} onClose={() => closeSheet('language')}>
             <div class="sheet-body">
-              <div class="choices" role="radiogroup" aria-labelledby="sheet-title">
+              <div class="choices is-inline" role="radiogroup" aria-labelledby="sheet-title">
                 {LANGUAGE_CHOICES.map((choice) => (
                   <ChoiceRow
                     key={choice}
                     selected={settings.language === choice}
                     title={languageLabel(choice)}
+                    // English needs no second English line, and Computer language is not a language.
+                    hint={choice === 'auto' || choice === 'en' ? undefined : LANGUAGE_NAMES_EN[choice]}
                     disabled={busy}
                     onSelect={() => changeLanguage(choice)}
                   />
