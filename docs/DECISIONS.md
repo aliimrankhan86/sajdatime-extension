@@ -637,3 +637,15 @@ needs rewriting in the same commit).
 **Why beside, not under.** Under it, each row grew to two lines and Done fell below the 600 pixel popup in Urdu and Bengali. Beside it, all seven rows and Done fit without scrolling.
 
 **Verified.** New Playwright test in English, Urdu and Bengali: the five English names show, no row is clipped, the page is at most 380 wide, and Done ends inside 600 pixels. Full suite 111 passed, 353 unit tests pass. Screenshots in `docs/images/i18n/picker-*.png`.
+
+## 30 October 2026: "Computer language" becomes "Browser language"
+
+**Decision.** Ali asked why the first row said "Computer language" and asked for better wording after research. It now says "Browser language" in all six languages (براؤزر کی زبان, لغة المتصفح, Tarayıcı dili, Bahasa browser, ব্রাউজারের ভাষা), with the language it gives today shown beside it in that language's own name ("Browser language English").
+
+**Why.** The row follows `navigator.language`, which is Chrome's language setting, not the computer's, so "Computer language" was inaccurate. PatternFly's language selector pattern names this row "Browser Default" and puts it first. Android names the same idea "System language" for an app on a phone. Separating the mode from the language it resolves to is the usual advice, so the row now shows both.
+
+**Rejected.** "User preferred language": every row is the user's preference, so it does not say what this one does. "App language": that is the name of the setting itself, not of one choice in it. "Browser default": "default" is vaguer than "language" in translation.
+
+**Built.** Key renamed `common.computerLanguage` to `common.browserLanguage`. `languageHint()` in `src/i18n/index.ts` gives each row its muted second name, used by both the Settings picker and the first run picker, which now also shows the English names beside each language.
+
+**Verified.** 353 unit tests, full Playwright suite, screenshots in `docs/images/i18n/picker-*.png`.

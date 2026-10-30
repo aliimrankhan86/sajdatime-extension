@@ -14,7 +14,7 @@
   "common.next": "Sonraki",
   "common.now": "Şimdi",
   "common.language": "Dil",
-  "common.computerLanguage": "Bilgisayarın dili",
+  "common.browserLanguage": "Tarayıcı dili",
   "common.readInFull": "Tamamını oku",
   "common.oneMoreLetter": "Bir harf daha yazın.",
   "common.saveError": "Ayarlarınız kaydedilemedi. Tekrar deneyin.",

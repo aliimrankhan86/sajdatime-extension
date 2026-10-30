@@ -14,7 +14,7 @@
   "common.next": "التالي",
   "common.now": "الآن",
   "common.language": "اللغة",
-  "common.computerLanguage": "لغة الحاسوب",
+  "common.browserLanguage": "لغة المتصفح",
   "common.readInFull": "اقرأ النص كاملًا",
   "common.oneMoreLetter": "اكتب حرفًا آخر.",
   "common.saveError": "لم نتمكن من حفظ إعداداتك. حاول مرة أخرى.",

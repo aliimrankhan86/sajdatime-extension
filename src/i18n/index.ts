@@ -26,7 +26,7 @@ import ur from './ur.json' with { type: 'json' };
 export type Language = 'en' | 'ar' | 'bn' | 'id' | 'tr' | 'ur';
 
 /**
- * What the settings store: one of the six, or `auto` for "Computer language", which is
+ * What the settings store: one of the six, or `auto` for "Browser language", which is
  * the default and follows the browser until the user picks a language by name.
  */
 export type LanguageChoice = 'auto' | Language;
@@ -57,7 +57,17 @@ export const LANGUAGE_NAMES_EN: Record<Language, string> = {
   bn: 'Bengali',
 };
 
-/** The picker's rows, "Computer language" first (PLAN.md section 10). */
+/**
+ * The second, muted name on a picker row. "Browser language" shows which language it
+ * gives today, in that language's own name, because the label alone does not say.
+ * English needs no English name beside it.
+ */
+export function languageHint(choice: LanguageChoice): string | undefined {
+  if (choice === 'auto') return LANGUAGE_NAMES[resolveLanguage(navigator.language)];
+  return choice === 'en' ? undefined : LANGUAGE_NAMES_EN[choice];
+}
+
+/** The picker's rows, "Browser language" first (PLAN.md section 10). */
 export const LANGUAGE_CHOICES: readonly LanguageChoice[] = ['auto', ...LANGUAGES];
 
 /** Right to left is a property of the writing system, not of the language choice. */

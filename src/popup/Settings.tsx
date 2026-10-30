@@ -32,7 +32,7 @@ import { Sheet } from './components/Sheet';
 import { ChoiceRow } from './components/ChoiceRow';
 import { Segmented } from './components/Segmented';
 import { Notice } from './components/Notice';
-import { applyLanguage, LANGUAGE_CHOICES, LANGUAGE_NAMES, LANGUAGE_NAMES_EN, t, type LanguageChoice, localeTag } from '../i18n';
+import { applyLanguage, LANGUAGE_CHOICES, LANGUAGE_NAMES, languageHint, t, type LanguageChoice, localeTag } from '../i18n';
 import { CalendarIcon, CheckMark, ClockIcon, ContrastIcon, InfoIcon, LockIcon, NoteIcon, PersonIcon, PhoneIcon, PinIcon, SchoolIcon, TuneIcon, WarningMark, GlobeIcon } from './icons';
 
 /**
@@ -191,7 +191,7 @@ export function Settings({ settings, onClose, onSaved }: Props) {
    * in the language they just picked. The saved value is what the next screen starts with.
    */
   function languageLabel(choice: LanguageChoice): string {
-    return choice === 'auto' ? t('common.computerLanguage') : LANGUAGE_NAMES[choice];
+    return choice === 'auto' ? t('common.browserLanguage') : LANGUAGE_NAMES[choice];
   }
 
   function changeLanguage(choice: LanguageChoice) {
@@ -840,8 +840,7 @@ export function Settings({ settings, onClose, onSaved }: Props) {
                     key={choice}
                     selected={settings.language === choice}
                     title={languageLabel(choice)}
-                    // English needs no second English line, and Computer language is not a language.
-                    hint={choice === 'auto' || choice === 'en' ? undefined : LANGUAGE_NAMES_EN[choice]}
+                    hint={languageHint(choice)}
                     disabled={busy}
                     onSelect={() => changeLanguage(choice)}
                   />

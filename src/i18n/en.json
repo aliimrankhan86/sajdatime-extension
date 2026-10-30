@@ -14,7 +14,7 @@
   "common.next": "Next",
   "common.now": "Now",
   "common.language": "Language",
-  "common.computerLanguage": "Computer language",
+  "common.browserLanguage": "Browser language",
   "common.readInFull": "Read in full",
   "common.oneMoreLetter": "Type one more letter.",
   "common.saveError": "Your settings could not be saved. Try again.",

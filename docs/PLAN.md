@@ -406,7 +406,7 @@ Layout from top: header, hero card, today list, footer.
 
 Show a step line "Step 2 of 6" and a six part progress bar. Back and Continue as two equal 56 px buttons at the bottom. Madhab is skipped for Shia (then "of 5").
 
-**0. Welcome.** Language button at the top end: globe and the current language's own name ("English", "اردو"), opening the language list with "Computer language" first. Logo, "SajdaTime", "Prayer times and a gentle alert, right here on your computer.", "Free, with no ads and no account. Your times are worked out on this computer." Button "Begin".
+**0. Welcome.** Language button at the top end: globe and the current language's own name ("English", "اردو"), opening the language list with "Browser language" first. Logo, "SajdaTime", "Prayer times and a gentle alert, right here on your computer.", "Free, with no ads and no account. Your times are worked out on this computer." Button "Begin".
 
 **1. Disclaimer** (must be answered, no close). Title "Before you begin". The **short disclaimer text copied exactly from the phone app** (read its strings in all five languages, read only). The canvas shows a draft only. It must say: the author is not a Mufti, an Aalim or an expert in fiqh, the app was built with the help of AI and may contain mistakes, check anything doubtful with a local mosque or scholar, and if it differs from the mosque, follow the mosque. The dua request lives only in this disclaimer. Buttons "I understand" (56) and "Read in full" (52) which opens the full text. **Never remove, soften or hide the disclaimer, in any language.** It stays in Settings, About, permanently.
 
@@ -433,7 +433,7 @@ Header: back arrow ("Back to times") and "Settings". Groups of rows in cards. Ea
 - **Prayer times:** School, Madhab for Asr (Sunni only), Calculation method (opens the same picker as setup, including Match my mosque), Match your mosque (minutes, §5.5), Hijri date (shift).
 - **Ramadan** (only from 3 days before until the last day): Ramadan card on or off (on by default), Suhoor reminder.
 - **Alerts:** Prayer alerts (each of the five on or off, all on by default), Sound (Soft beep, Adhan, Silent, with Play), Reminder before prayer (off by default, 5 to 30 minutes, a quiet message with no sound). At the foot of the group a 48 px solid button "Send a test alert" (R9) with the line "If nothing appears, check your computer's notification and Focus settings." It shows a sample notification titled "Test alert" with the message "This is how a prayer alert looks." and plays the chosen sound.
-- **Appearance:** Theme, a three part selector "System, Light, Dark" (System by default). Language ("Computer language" first, then the five in their own names).
+- **Appearance:** Theme, a three part selector "System, Light, Dark" (System by default). Language ("Browser language" first, then the five in their own names).
 - **About:** Disclaimer (full text), Send feedback (opens an email to [[EMAIL_1fb075de]]), Rate SajdaTime (opens the extension's store page in the right store for the browser), Privacy policy (opens the Pages privacy page), Credits (adhan-js licence, GeoNames city data, adhan recordings with their licences, as the phone credits them).
 
 ### 6.5 Save as PDF
@@ -496,7 +496,7 @@ Opens a new tab with the timetable and the print dialog. A4 portrait. Header: lo
 
 ## 10. Languages
 
-- Five: English (source), Urdu, Arabic, Turkish, Indonesian. Default: the browser's language if it is one of the five, else English. The user can pick any of the five in Settings and on the Welcome screen. "Computer language" is first in the list.
+- Five: English (source), Urdu, Arabic, Turkish, Indonesian. Default: the browser's language if it is one of the five, else English. The user can pick any of the five in Settings and on the Welcome screen. "Browser language" is first in the list.
 - `chrome.i18n` cannot switch language inside the extension (it follows the browser's language and needs a restart to change), so use your own small message files (`src/i18n/*.json`, codes `en`, `ur`, `ar`, `tr`, `id`, and `bn` since 30 Oct 2026) for all screen text, and `_locales` only for the extension's name and description in the store and browser. `_locales` has no Urdu, because Chrome does not list `ur` as a supported locale (R13).
 - **Reuse the phone's translations** for every shared term and sentence (prayer names, madhab names, disclaimer, Ramadan and Eid lines, settings labels). Read them from the phone repo's `values-ur`, `values-ar`, `values-tr`, `values-in` strings, read only. Android's folder `values-in` is Indonesian, which the browser calls `id`. Translate only the new extension sentences. Claude translates and checks its own work, no native speaker review (Ali's standing decision). Take particular care with prayer and madhab names.
 - Right to left for Urdu and Arabic: set `dir="rtl"` and `lang` on the root. Layout mirrors. Times, countdowns and numbers stay left to right (isolate them). Mirror chevrons and back arrows, never clocks, ticks or prayer glyphs.

@@ -195,7 +195,7 @@ describe('choosing a language', () => {
     expect(resolveLanguage(undefined)).toBe('en');
   });
 
-  it('offers Computer language first, then the six in their own names', () => {
+  it('offers Browser language first, then the six in their own names', () => {
     expect(LANGUAGE_CHOICES[0]).toBe('auto');
     expect([...LANGUAGE_CHOICES].slice(1)).toEqual([...LANGUAGES]);
     expect(LANGUAGE_NAMES.ur).toBe('اردو');
