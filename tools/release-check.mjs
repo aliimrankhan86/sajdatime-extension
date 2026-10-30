@@ -46,7 +46,7 @@ function report() {
 
 step('check: typecheck, unit tests, build, bundle scan', () => npm(['run', 'check']));
 step('browser suite: npm run test:e2e', () => npm(['run', 'test:e2e']));
-step('language files: five languages, same keys', () =>
+step('language files: six languages, same keys', () =>
   execFileSync('node', ['tools/check-i18n.mjs'], { stdio: 'inherit' }),
 );
 step('listing limits: summary and description fit both stores', () =>

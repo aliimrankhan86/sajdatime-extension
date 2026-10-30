@@ -81,9 +81,9 @@ describe('store listing claims', () => {
     expect(description).toContain('offline');
   });
 
-  it('names the five languages and keeps Urdu honest', () => {
+  it('names the listing languages and keeps Urdu honest', () => {
     const languages = section('Listing languages');
-    for (const language of ['English', 'Arabic', 'Turkish', 'Indonesian']) {
+    for (const language of ['English', 'Arabic', 'Turkish', 'Indonesian', 'Bengali']) {
       expect(languages).toContain(language);
     }
     expect(languages).toContain('Urdu is added only if the store offers Urdu');

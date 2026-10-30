@@ -41,8 +41,8 @@ What you get
 - Prayer alerts with a short reminder before each prayer, a beep or one of two adhan recordings,
   and a suhoor reminder in Ramadan.
 - A toolbar badge with the time to the next prayer.
-- English, Urdu, Arabic, Turkish and Indonesian. Urdu and Arabic read right to left, and times
-  stay left to right inside them.
+- English, Urdu, Arabic, Turkish, Indonesian and Bengali. Urdu and Arabic read right to left, and
+  times stay left to right inside them.
 - Light and dark themes that follow your computer.
 
 Private by design
@@ -80,7 +80,7 @@ The full notices ship inside the extension.
 ## What is new in 1.0.0
 
 First public version. Prayer times, the next prayer and countdown, a printable month with a
-Ramadan timetable, prayer alerts and a reminder before each prayer, the toolbar badge, five
+Ramadan timetable, prayer alerts and a reminder before each prayer, the toolbar badge, six
 languages with right to left for Urdu and Arabic, and light and dark themes.
 
 ## Single purpose
@@ -151,8 +151,8 @@ Five at 1280 by 800, generated from the built extension by `npm run store-images
 
 ## Listing languages
 
-English, Arabic, Turkish and Indonesian in both stores, from
-`public/_locales/{en,ar,tr,id}/messages.json`. **Urdu is added only if the store offers Urdu as
+English, Arabic, Turkish, Indonesian and Bengali in both stores, from
+`public/_locales/{en,ar,tr,id,bn}/messages.json`. **Urdu is added only if the store offers Urdu as
 an interface language.** Chrome does not (R13), and the extension's Urdu is complete inside the
 popup either way. Do not publish a listing language the extension cannot show.
 
