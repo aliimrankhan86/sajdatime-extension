@@ -655,3 +655,26 @@ needs rewriting in the same commit).
 **Decision.** Ali: the description must name everything the extension offers, easy for an end user to understand. Release notes ("What is new") mention only what was added or fixed in that version.
 
 **Built.** The rule sits at the top of `docs/store/listing.md` and in `CLAUDE.md`. Checking the description against `src/i18n/en.json` found three gaps, now closed: the Stop sound button on an alert, the Send a test alert button, and picking a theme yourself. The Hijri line now says one or two days, which is the real range (`hijriOffsetDays` is -2 to 2).
+
+## 30 October 2026: a translation already reviewed is not reviewed again
+
+**Decision.** Ali: "have a mechanism not to retest the translation which you have already done". The
+same rule now holds in the phone app (its HANDOVER §15 lesson 188).
+
+**Built.** `node tools/translation-ledger.mjs` lists only the keys in `src/i18n/<lang>.json` and
+`public/_locales/<lang>/messages.json` that are new or changed since the last review, each hashed with
+its English, so a changed English sentence counts as changed too. Review only that list, then
+`node tools/translation-ledger.mjs stamp` and commit `docs/translation-reviewed.json` in the same commit.
+`stamp` records everything, so run it only when the list holds nothing unreviewed. `npm run check` still
+runs the mechanical checks every time.
+
+**Baseline.** Stamped 30 October 2026: 1283 units. They were checked by the session that wrote them,
+which is the owner's standard since 9 October 2026. The religious terms and the disclaimer were
+copied from the phone app's reviewed translations. The rest were translated here. No separate back translation is recorded for the extension's own sentences,
+Bengali included. That is stated here, not hidden.
+
+**Not covered.** The store description in `docs/store/listing.md` is English only today, so there is
+nothing there to track. If translated store descriptions are added, add them to the ledger.
+
+**Rejected.** A git diff of the language files: it misses a changed English sentence whose translation
+did not change, and it forgets as soon as the work is committed.
