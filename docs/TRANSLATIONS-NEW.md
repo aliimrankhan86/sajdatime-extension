@@ -47,7 +47,7 @@ disclaimer is never shortened, softened or moved.
 | `common.next` | Next | اگلا | التالي | Sonraki | Berikutnya |
 | `common.now` | Now | اب | الآن | Şimdi | Sekarang |
 | `common.language` | Language | زبان | اللغة | Dil | Bahasa |
-| `common.computerLanguage` | Computer language | کمپیوٹر کی زبان | لغة الحاسوب | Bilgisayarın dili | Bahasa komputer |
+| `common.browserLanguage` | Browser language | براؤزر کی زبان | لغة المتصفح | Tarayıcı dili | Bahasa browser |
 | `common.readInFull` | Read in full | پوری پڑھیں | اقرأ النص كاملًا | Tamamını oku | Baca selengkapnya |
 | `common.oneMoreLetter` | Type one more letter. | ایک حرف مزید لکھیں۔ | اكتب حرفًا آخر. | Bir harf daha yazın. | Ketik satu huruf lagi. |
 | `common.saveError` | Your settings could not be saved. Try again. | آپ کی ترتیبات محفوظ نہیں ہو سکیں۔ دوبارہ کوشش کریں۔ | لم نتمكن من حفظ إعداداتك. حاول مرة أخرى. | Ayarlarınız kaydedilemedi. Tekrar deneyin. | Pengaturan Anda tidak dapat disimpan. Coba lagi. |

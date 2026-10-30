@@ -205,15 +205,16 @@ test('choosing a language in Settings changes the screen at once, and is kept', 
   }
 });
 
-test('the first run offers Computer language, then each language in its own name', async () => {
+test('the first run offers Browser language, then each language in its own name', async () => {
   const extension = await launchExtension();
   try {
     await extension.page.evaluate(() => chrome.storage.local.clear());
     await extension.page.reload();
     await extension.page.getByRole('button', { name: 'English' }).click();
-    for (const name of ['Computer language', 'English', 'اردو', 'العربية', 'Türkçe', 'Bahasa Indonesia']) {
-      await expect(extension.page.getByRole('button', { name, exact: true })).toBeVisible();
-    }
+    // Each row reads as its own name, then the muted English name (or, for Browser
+    // language, the language it gives today), so match the start of the row.
+    const rows = await extension.page.locator('.choice-title').allInnerTexts();
+    expect(rows).toEqual(['Browser language', 'English', 'اردو', 'العربية', 'Türkçe', 'Bahasa Indonesia', 'বাংলা']);
   } finally {
     await extension.close();
   }
@@ -372,7 +373,9 @@ test('the language picker shows each language in English too, and still fits', a
       await extension.page.locator('[data-row="language"]').click();
       await extension.page.waitForSelector('.choice-row');
       const hints = await extension.page.locator('.choice-hint').allInnerTexts();
-      expect(hints, language).toEqual(['Urdu', 'Arabic', 'Turkish', 'Indonesian', 'Bengali']);
+      // The first hint is the language "Browser language" gives today, in its own name.
+      expect(['English', 'اردو', 'العربية', 'Türkçe', 'Bahasa Indonesia', 'বাংলা'], language).toContain(hints[0]);
+      expect(hints.slice(1), language).toEqual(['Urdu', 'Arabic', 'Turkish', 'Indonesian', 'Bengali']);
       const fits = await extension.page.evaluate(() => {
         const rows = [...document.querySelectorAll<HTMLElement>('.choice-row')];
         return {

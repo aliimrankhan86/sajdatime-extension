@@ -22,6 +22,7 @@ import {
   applyLanguage,
   LANGUAGE_CHOICES,
   LANGUAGE_NAMES,
+  languageHint,
   localeTag,
   resolveChoice,
   t,
@@ -1005,12 +1006,13 @@ export function FirstRun({ onSaved }: { onSaved: (settings: Settings) => void })
           </h1>
         </header>
         <div class="first-run-sheet-body">
-          <div class="choices" role="radiogroup" aria-label={t('common.language')}>
+          <div class="choices is-inline" role="radiogroup" aria-label={t('common.language')}>
             {LANGUAGE_CHOICES.map((choice) => (
               <ChoiceRow
                 key={choice}
                 selected={draft.language === choice}
-                title={choice === 'auto' ? t('common.computerLanguage') : LANGUAGE_NAMES[choice]}
+                title={choice === 'auto' ? t('common.browserLanguage') : LANGUAGE_NAMES[choice]}
+                hint={languageHint(choice)}
                 disabled={false}
                 onSelect={() => chooseLanguage(choice)}
               />
