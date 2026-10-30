@@ -72,8 +72,8 @@ The order is normally:
 1. **Developer Dashboard.** Press **New item**. Upload the zip.
 2. **Store listing.** Paste the name, summary and description from `docs/store/listing.md`. Choose
    the category (Religious category if offered, otherwise Productivity). Add the five screenshots
-   from `docs/store/images/` and the promo tile. Set English first, then Arabic, Turkish and
-   Indonesian. Do not add Urdu: Chrome does not offer it.
+   from `docs/store/images/` and the promo tile. Set English first, then Arabic, Turkish,
+   Indonesian and Bengali. Do not add Urdu: Chrome does not offer it.
 3. **Privacy practices.** Answer from the same file: tick **Location** and nothing else, tick the
    three certifications, say the data stays on the user's computer and the developer never receives
    it, and paste the privacy policy URL.

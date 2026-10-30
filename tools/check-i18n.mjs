@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Fails the release if any of the five language files has drifted.
+ * Fails the release if any of the six language files has drifted.
  *
  * It is deliberately the same checks as tests/unit/i18n.test.ts, because a release is not a
  * moment to trust one test file: this runs from the command line on the built source, so the
@@ -12,7 +12,7 @@
  */
 import { readFileSync } from 'node:fs';
 
-const LANGS = ['en', 'ur', 'ar', 'tr', 'id'];
+const LANGS = ['en', 'ur', 'ar', 'tr', 'id', 'bn'];
 const bundles = Object.fromEntries(
   LANGS.map((lang) => [lang, JSON.parse(readFileSync(`src/i18n/${lang}.json`, 'utf8'))]),
 );

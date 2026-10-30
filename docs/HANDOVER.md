@@ -1,10 +1,23 @@
 # Handover
 
-**Updated:** 28 October 2026, Europe/London.
+**Updated:** 30 October 2026, Europe/London.
 
 This file says what is true now. It is written for the next person or AI who opens the repository. Read it before the plan. The plan describes the whole build. This file describes the part that exists.
 
-## 📍 State of play, 28 October 2026 evening (read this first)
+## 📍 State of play, 30 October 2026 (read this first)
+
+**Version 1.0.0 is ready to upload to Chrome and Edge. Nothing has been submitted.** Ali said on 30 Oct 2026 that the extension will be uploaded soon and asked for everything to be kept ready.
+
+Added on 30 October, all merged to `main`, all in `docs/DECISIONS.md`:
+- **Bengali** (`bn`), the sixth language, at Ali's request. This replaces the 28 Oct "no more language work" rule below for Bengali only.
+- **Long words shrink to fit** (`src/popup/fit.ts`): one line labels shrink to 14 px, then cut with an ellipsis.
+- **Language picker:** each language's English name beside its own name, and the first row reads **"Browser language"** with the language it gives today.
+
+Ready now: `npm run release-check` passes, `npm run package` makes `artifacts/sajdatime-1.0.0.zip`, the privacy page answers at `https://aliimrankhan86.github.io/sajdatime-extension/privacy.html`, and `docs/store/listing.md` and `docs/store/PUBLISHING.md` name the six languages. Store listing languages: English, Arabic, Turkish, Indonesian and Bengali. Chrome has no Urdu, so Urdu stays inside the extension only.
+
+Left, all Ali's: steps 1 to 5 below (approve screenshots, Chrome upload, Edge Partner Center account and upload, links after both are live). The privacy page is already live, so step 4 only needs the link pasted. Not tested: Bengali fonts on Windows and ChromeOS, Bengali printable page, Edge itself (manual load later).
+
+## History: state of play, 28 October 2026 evening
 
 **The build for version 1.0.0 is finished and reviewed. DeepSeek's work is done: no more DeepSeek sessions are planned.** Next is Ali's store work, guided by Claude one screen at a time.
 
