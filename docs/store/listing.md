@@ -1,6 +1,6 @@
 # Store listing
 
-**Status:** ready for Ali to read, not submitted. Written 28 October 2026 for version 1.0.0.
+**Status:** ready for Ali to read, not submitted. Written 28 October 2026 for version 1.0.0, description rewritten 30 October 2026 to name every feature.
 Every claim in this file is true of the build in this commit, and `tests/unit/listing.test.ts`
 fails if a limit is broken or a required phrase goes missing.
 
@@ -14,9 +14,9 @@ SajdaTime
 
 ## Short summary, Chrome Web Store
 
-Limit: 132 characters. The line below is the one to paste, and it is **101 characters**.
+Limit: 132 characters. The line below is the one to paste, and it is **126 characters**.
 
-> Prayer times in your browser, with the next prayer, a quiet countdown and the Hijri date.
+> Prayer times, adhan alerts and a live countdown in your browser. Private, works offline, no ads. Six languages including Urdu.
 
 ## Detailed description
 
@@ -24,26 +24,47 @@ Limit: 16,000 characters on Chrome, 250 to 10,000 on Edge. The text below is **u
 characters**, so the same paste works in both stores.
 
 ```
-SajdaTime shows the day's prayer times in your browser toolbar. Open it, see the next prayer
-and where you are in the day, close it. No account, no advertising, and no analytics.
+SajdaTime puts today's prayer times one click away in your browser toolbar. See the next prayer
+and a live countdown, hear a gentle alert or the adhan when it is time, and print a month of
+times. Free, with no account, no ads and no analytics.
 
-What you get
+Highlights
 
-- Fajr, Sunrise, Dhuhr, Asr, Maghrib and Isha for your place.
-- The next prayer with a countdown that updates every second.
-- The Hijri date from the Umm al-Qura calendar, with an optional day shift.
-- A place from your location, or an offline search of about 70,000 towns and cities, with a
-  clearly labelled Makkah fallback.
-- 13 calculation methods, the Hanafi or Shafi'i Asr school, and a hint that suggests the
-  method for your country.
-- A printable month of times, opened with Save as PDF from the popup footer. One A4 sheet, one
-  page, and a Ramadan timetable that renames Fajr to Suhoor ends and Maghrib to Iftar.
-- Prayer alerts with a short reminder before each prayer, a beep or one of two adhan recordings,
-  and a suhoor reminder in Ramadan.
-- A toolbar badge with the time to the next prayer.
-- English, Urdu, Arabic, Turkish, Indonesian and Bengali. Urdu and Arabic read right to left, and
-  times stay left to right inside them.
+- The next prayer at a glance, with a countdown that updates every second and the time left
+  shown on the toolbar icon.
+- All six times for your place: Fajr, Sunrise, Dhuhr, Asr, Maghrib and Isha.
+- Prayer alerts with a soft beep, the full adhan or silent, plus an optional reminder a few
+  minutes before each prayer.
+- Match your mosque: move any prayer a few minutes earlier or later so the times agree with
+  your local mosque.
+- Ramadan made easy: Suhoor ends and Iftar on the main screen, a suhoor reminder, a notice in the
+  days before Ramadan begins and an Eid Mubarak greeting.
+- Save as PDF: a printable month of prayer times on one A4 page, or a full Ramadan timetable.
+- Six languages: English, Urdu, Arabic, Turkish, Indonesian and Bengali. Urdu and Arabic read
+  right to left. Each language is shown in its own script with its English name beside it.
+- Works offline: times are worked out on your computer, and a search of about 70,000 towns and
+  cities is built in.
 - Light and dark themes that follow your computer.
+- Keyboard shortcut: Alt+Shift+S opens SajdaTime.
+
+For every Muslim, wherever you are
+
+- Sunni and Shia. 13 calculation methods, including Muslim World League, ISNA, Umm al-Qura,
+  University of Karachi, Egyptian General Authority, Diyanet, Moonsighting Committee, Jafari
+  and Tehran.
+- Hanafi or Shafi'i Asr time.
+- A method suggested for your country when you set up, with today's Fajr and Isha shown beside
+  each method so you can compare with your mosque.
+- The Hijri date from the Umm al-Qura calendar, which you can move a day earlier or later to
+  match your community.
+- Careful handling of high latitudes such as northern Europe, where twilight can last all night
+  in summer.
+
+Set up in a minute
+
+Choose Sunni or Shia, your Asr school and your place, by location or by typing your town.
+Confirm the suggested method and turn alerts on if you want them. There is no sign in, ever.
+If you skip the location, SajdaTime uses Makkah and says so clearly.
 
 Private by design
 
