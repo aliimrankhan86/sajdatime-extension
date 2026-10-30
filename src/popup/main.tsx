@@ -1,5 +1,6 @@
 import { render } from 'preact';
 import { Popup } from './Popup';
+import { startFitting } from './fit';
 import { applyTheme } from './theme';
 import { loadSettings } from '../settings/storage';
 import { applyDocumentLanguage, getLanguage, setLanguage } from '../i18n';
@@ -20,5 +21,7 @@ void loadSettings()
     // The document attributes follow the stored language before the first paint.
     setLanguage(settings?.language);
     applyDocumentLanguage(getLanguage());
-    render(<Popup initial={settings} />, document.getElementById('app') as HTMLElement);
+    const app = document.getElementById('app') as HTMLElement;
+    render(<Popup initial={settings} />, app);
+    startFitting(app);
   });
