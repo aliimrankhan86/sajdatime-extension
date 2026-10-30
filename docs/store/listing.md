@@ -4,6 +4,18 @@
 Every claim in this file is true of the build in this commit, and `tests/unit/listing.test.ts`
 fails if a limit is broken or a required phrase goes missing.
 
+## The rule for every release (Ali, 30 October 2026)
+
+1. **The description always sells the whole extension.** It names every feature the build has,
+   in plain words a first-time user understands at a glance. A feature added in a release gets
+   its line in the description in that same release. Nothing is left out to save space without
+   Ali's word.
+2. **"What is new" names only what changed:** what was added and what was fixed in that
+   version. Never a feature tour, never a description of the whole extension.
+3. Never put an update note in place of the description.
+
+Check both on every release day, before the zip is uploaded.
+
 Both stores take the same zip. Chrome's short summary is 132 characters and its description
 16,000. Edge's description must be between 250 and 10,000, so the text below stays under 10,000
 and works in both.
@@ -34,7 +46,8 @@ Highlights
   shown on the toolbar icon.
 - All six times for your place: Fajr, Sunrise, Dhuhr, Asr, Maghrib and Isha.
 - Prayer alerts with a soft beep, the full adhan or silent, plus an optional reminder a few
-  minutes before each prayer.
+  minutes before each prayer. Stop the sound from the alert itself, and send a test alert to
+  check it works.
 - Match your mosque: move any prayer a few minutes earlier or later so the times agree with
   your local mosque.
 - Ramadan made easy: Suhoor ends and Iftar on the main screen, a suhoor reminder, a notice in the
@@ -44,7 +57,7 @@ Highlights
   right to left. Each language is shown in its own script with its English name beside it.
 - Works offline: times are worked out on your computer, and a search of about 70,000 towns and
   cities is built in.
-- Light and dark themes that follow your computer.
+- Light and dark themes that follow your computer, or pick one yourself.
 - Keyboard shortcut: Alt+Shift+S opens SajdaTime.
 
 For every Muslim, wherever you are
@@ -55,8 +68,8 @@ For every Muslim, wherever you are
 - Hanafi or Shafi'i Asr time.
 - A method suggested for your country when you set up, with today's Fajr and Isha shown beside
   each method so you can compare with your mosque.
-- The Hijri date from the Umm al-Qura calendar, which you can move a day earlier or later to
-  match your community.
+- The Hijri date from the Umm al-Qura calendar, which you can move one or two days earlier or
+  later to match your community.
 - Careful handling of high latitudes such as northern Europe, where twilight can last all night
   in summer.
 

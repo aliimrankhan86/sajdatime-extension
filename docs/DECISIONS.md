@@ -649,3 +649,9 @@ needs rewriting in the same commit).
 **Built.** Key renamed `common.computerLanguage` to `common.browserLanguage`. `languageHint()` in `src/i18n/index.ts` gives each row its muted second name, used by both the Settings picker and the first run picker, which now also shows the English names beside each language.
 
 **Verified.** 353 unit tests, full Playwright suite, screenshots in `docs/images/i18n/picker-*.png`.
+
+## 30 October 2026: the store description always lists every feature
+
+**Decision.** Ali: the description must name everything the extension offers, easy for an end user to understand. Release notes ("What is new") mention only what was added or fixed in that version.
+
+**Built.** The rule sits at the top of `docs/store/listing.md` and in `CLAUDE.md`. Checking the description against `src/i18n/en.json` found three gaps, now closed: the Stop sound button on an alert, the Send a test alert button, and picking a theme yourself. The Hijri line now says one or two days, which is the real range (`hijriOffsetDays` is -2 to 2).
