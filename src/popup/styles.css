@@ -24,6 +24,12 @@ html[lang='ar'] body {
   line-height: 1.6;
 }
 
+/* Bengali: macOS, Windows, then ChromeOS and Linux. Vowel signs sit above and below the line. */
+html[lang='bn'] body {
+  font-family: 'Kohinoor Bangla', 'Bangla Sangam MN', 'Nirmala UI', Vrinda, 'Noto Sans Bengali', sans-serif;
+  line-height: 1.6;
+}
+
 body {
   width: 380px;
   min-height: 600px;

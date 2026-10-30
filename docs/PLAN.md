@@ -252,7 +252,7 @@ sajdatime-extension/
 
 ### 4.4 Manifest
 
-- `name`, `description` from `_locales` with `default_locale: "en"`, in English, Arabic (`ar`), Turkish (`tr`) and Indonesian (`id`). Not Urdu (R13).
+- `name`, `description` from `_locales` with `default_locale: "en"`, in English, Arabic (`ar`), Turkish (`tr`), Indonesian (`id`) and Bengali (`bn`, added 30 Oct 2026). Not Urdu (R13).
 - `action`: default popup `popup.html`, default title "SajdaTime".
 - `background`: service worker, module type.
 - `commands`: `_execute_action` with suggested key `Alt+Shift+S` on every platform (R3).
@@ -497,7 +497,7 @@ Opens a new tab with the timetable and the print dialog. A4 portrait. Header: lo
 ## 10. Languages
 
 - Five: English (source), Urdu, Arabic, Turkish, Indonesian. Default: the browser's language if it is one of the five, else English. The user can pick any of the five in Settings and on the Welcome screen. "Computer language" is first in the list.
-- `chrome.i18n` cannot switch language inside the extension (it follows the browser's language and needs a restart to change), so use your own small message files (`src/i18n/*.json`, codes `en`, `ur`, `ar`, `tr`, `id`) for all screen text, and `_locales` only for the extension's name and description in the store and browser. `_locales` has no Urdu, because Chrome does not list `ur` as a supported locale (R13).
+- `chrome.i18n` cannot switch language inside the extension (it follows the browser's language and needs a restart to change), so use your own small message files (`src/i18n/*.json`, codes `en`, `ur`, `ar`, `tr`, `id`, and `bn` since 30 Oct 2026) for all screen text, and `_locales` only for the extension's name and description in the store and browser. `_locales` has no Urdu, because Chrome does not list `ur` as a supported locale (R13).
 - **Reuse the phone's translations** for every shared term and sentence (prayer names, madhab names, disclaimer, Ramadan and Eid lines, settings labels). Read them from the phone repo's `values-ur`, `values-ar`, `values-tr`, `values-in` strings, read only. Android's folder `values-in` is Indonesian, which the browser calls `id`. Translate only the new extension sentences. Claude translates and checks its own work, no native speaker review (Ali's standing decision). Take particular care with prayer and madhab names.
 - Right to left for Urdu and Arabic: set `dir="rtl"` and `lang` on the root. Layout mirrors. Times, countdowns and numbers stay left to right (isolate them). Mirror chevrons and back arrows, never clocks, ticks or prayer glyphs.
 - Arabic uses Western digits everywhere (`ar-u-nu-latn`).

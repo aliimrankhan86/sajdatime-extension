@@ -12,7 +12,7 @@ import { launchExtension, LONDON, screenshot, seedSettings, setTheme } from './e
  * screenshots in docs/images/i18n are for the human check on top of that.
  */
 
-const LANGS = ['en', 'ur', 'ar', 'tr', 'id'] as const;
+const LANGS = ['en', 'ur', 'ar', 'tr', 'id', 'bn'] as const;
 type Lang = (typeof LANGS)[number];
 
 const RTL: readonly Lang[] = ['ur', 'ar'];
@@ -155,8 +155,8 @@ test('both footer buttons keep one line and cut no word in every language', asyn
   }
 });
 
-test('nothing is clipped at 200 per cent zoom in Indonesian and Turkish', async () => {
-  for (const language of ['id', 'tr'] as const) {
+test('nothing is clipped at 200 per cent zoom in Indonesian, Turkish and Bengali', async () => {
+  for (const language of ['id', 'tr', 'bn'] as const) {
     const extension = await launchExtension();
     try {
       await seedSettings(extension, undefined, withLanguage(language));
@@ -259,7 +259,7 @@ test('every language passes axe in both themes', async () => {
 test('the method sheet fits the popup and cuts no word in any language', async () => {
   // The method names are the longest translated strings on a row and the row is a fixed 380 px
   // wide, so this is where a translation is most likely to clip or to push the page sideways.
-  // Selecting by data-row rather than by label is what lets one test cover all five.
+  // Selecting by data-row rather than by label is what lets one test cover all six.
   for (const language of LANGS) {
     const extension = await launchExtension();
     try {

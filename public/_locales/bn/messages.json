@@ -1,0 +1,10 @@
+{
+  "appName": {
+    "message": "SajdaTime",
+    "description": "The extension's name, the same in every language."
+  },
+  "appDescription": {
+    "message": "নামাজের সময় ও একটি কোমল অ্যালার্ট, আপনার কম্পিউটারেই অফলাইনে হিসাব করা। কোনো অ্যাকাউন্ট, বিজ্ঞাপন বা সার্ভার নেই।",
+    "description": "The extension's description, at most 132 characters for Chrome."
+  }
+}
