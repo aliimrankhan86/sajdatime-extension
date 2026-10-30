@@ -11,6 +11,7 @@ This file says what is true now. It is written for the next person or AI who ope
 Added on 30 October, all merged to `main`, all in `docs/DECISIONS.md`:
 - **Bengali** (`bn`), the sixth language, at Ali's request. This replaces the 28 Oct "no more language work" rule below for Bengali only.
 - **Long words shrink to fit** (`src/popup/fit.ts`): one line labels shrink to 14 px, then cut with an ellipsis.
+- **Translation ledger** (`tools/translation-ledger.mjs`): a translation already reviewed is not reviewed again; only new or changed keys are listed.
 - **Language picker:** each language's English name beside its own name, and the first row reads **"Browser language"** with the language it gives today.
 
 Ready now: `npm run release-check` passes, `npm run package` makes `artifacts/sajdatime-1.0.0.zip`, the privacy page answers at `https://aliimrankhan86.github.io/sajdatime-extension/privacy.html`, and `docs/store/listing.md` and `docs/store/PUBLISHING.md` name the six languages. Store listing languages: English, Arabic, Turkish, Indonesian and Bengali. Chrome has no Urdu, so Urdu stays inside the extension only.
