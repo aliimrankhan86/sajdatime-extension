@@ -597,3 +597,17 @@ the stylesheet.
 **Revisit if:** a store changes a length limit or a data use question, Ali approves different
 screenshots, or the manifest gains a permission (which fails the release check and this decision
 needs rewriting in the same commit).
+
+## 30 October 2026: long words shrink to fit, then are cut
+
+**Decided (Ali, 30 Oct 2026):** if a word in any language is too long for its room, reduce the text size so it fits.
+
+**Built:** `src/popup/fit.ts`, started from `main.tsx`. The one line labels listed in `FIT_SELECTOR` (date, Hijri date, town chip, footer pills, Settings row titles and values, method chooser label) lose a pixel at a time until they fit, and never go below 14 pixels (the project floor). If a word is still too long at 14, the existing ellipsis cuts it, so nothing can push the popup wider than 380. Text that wraps cannot overflow sideways, so it is not listed. Adding a one line label means adding its selector to `FIT_SELECTOR`.
+
+**Why this way:** CSS alone cannot shrink text to its box width without a fixed font size per language. A small observer refits after each screen change, and resets first, so a short word gets its normal size back.
+
+**Found first:** a probe of every Settings row and the Times screen in all five languages found no clipped word. The only overflow was the Credits value (English too), which is already cut with an ellipsis on purpose. So this is a safety net for a sixth language, not a repair of the current five.
+
+**Verified:** `npm run check` (353 unit tests, bundle clean) and `npx playwright test` (110 passed), including the new `tests/e2e/fit.test.ts`: a long label shrinks and stops at 14, a 200 letter word stays at 14 and the page stays 380 wide, and a short word returns to the normal size.
+
+**Not tested:** shrinking inside a real Urdu or Arabic long word, the print page (not covered, it scrolls sideways by design at popup width), and a native speaker's eye on any language.
