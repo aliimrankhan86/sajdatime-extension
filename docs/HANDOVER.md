@@ -15,7 +15,7 @@ Added on 30 October, all merged to `main`, all in `docs/DECISIONS.md`:
 
 Ready now: `npm run release-check` passes, `npm run package` makes `artifacts/sajdatime-1.0.0.zip`, the privacy page answers at `https://aliimrankhan86.github.io/sajdatime-extension/privacy.html`, and `docs/store/listing.md` and `docs/store/PUBLISHING.md` name the six languages. Store listing languages: English, Arabic, Turkish, Indonesian and Bengali. Chrome has no Urdu, so Urdu stays inside the extension only.
 
-Left, all Ali's: steps 1 to 5 below (approve screenshots, Chrome upload, Edge Partner Center account and upload, links after both are live). The privacy page is already live, so step 4 only needs the link pasted. Not tested: Bengali fonts on Windows and ChromeOS, Bengali printable page, Edge itself (manual load later).
+Left, all Ali's: steps 1 to 5 below (approve screenshots, Chrome upload, Edge Partner Center account and upload, links after both are live). The privacy page is already live, so step 4 only needs the link pasted. Edge tested 30 Oct 2026: Microsoft Edge 156 on macOS loaded the extension and passed 52 screen tests (popup, first run, alerts, all six languages, printable timetable), run with `SAJATIME_CHROME="/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge" npx playwright test <files>`. The store description was rewritten the same day to name every feature. Not tested: Bengali fonts on Windows and ChromeOS, Edge on Windows.
 
 ## History: state of play, 28 October 2026 evening
 
