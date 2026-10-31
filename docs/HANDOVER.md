@@ -1,10 +1,23 @@
 # Handover
 
-**Updated:** 30 October 2026, Europe/London.
+**Updated:** 31 October 2026, Europe/London.
 
 This file says what is true now. It is written for the next person or AI who opens the repository. Read it before the plan. The plan describes the whole build. This file describes the part that exists.
 
-## 📍 State of play, 30 October 2026 (read this first)
+## 📍 Submitted to the Chrome Web Store, 31 October 2026 (read this first)
+
+**Version 1.0.0 is submitted to the Chrome Web Store and waiting for Google's review.** Ali pressed Submit for review himself on 31 Oct 2026. Item ID `fjmhhajkeeehfamdlibljdbjdlambepn`, publisher display name SajdaTime, non-trader, "publish automatically after review" left ticked, so it goes live by itself when it passes. Google emails Ali when the review is done (that notification is switched on). Google says review can take up to several weeks.
+
+What was entered: the description from `docs/store/listing.md`, category Wellbeing, icon `public/icons/icon-128.png`, five screenshots as both Global and Localised, the 440x280 promo tile, no marquee, no video, no homepage or support URL. Privacy: the single purpose and five permission reasons from `docs/store/PUBLISHING.md`, remote code No, data usage Location only, the three certifications, the GitHub Pages privacy link. Distribution: free, public, all regions.
+
+Traps that cost time on upload day, for the Edge upload and any update:
+- Chrome blocks every tool on Web Store pages (the Chrome extension, scripted clicks, the app's own browser). Ali clicks; Claude reads his screen and gives one step at a time.
+- The store PNGs were refused with "The image size is incorrect" although they are 1280x800 RGB with no alpha. JPEG copies (`sips`, quality 92, kept in the gitignored `artifacts/store-upload/`) went in when dragged from Finder onto the box one at a time.
+- The single purpose text did not save the first time. "Why can't I submit?" lists what is missing; use it before Submit.
+
+Left: wait for Google's verdict; when live, put the store link into the Rate row and the privacy page. Then the Edge Partner Center account and upload (steps 3 to 5 below), Ali's, guided the same way.
+
+## History: state of play, 30 October 2026
 
 **Version 1.0.0 is ready to upload to Chrome and Edge. Nothing has been submitted.** Ali said on 30 Oct 2026 that the extension will be uploaded soon and asked for everything to be kept ready.
 
