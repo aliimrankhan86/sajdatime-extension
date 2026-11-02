@@ -10,7 +10,7 @@ This file says what is true now. It is written for the next person or AI who ope
 - **Version:** 1.0.1 in `package.json` and `src/manifest.json`. Chrome will not accept a new package with the same number as the one already live, so 1.0.0 cannot be replaced; 1.0.1 is the upload.
 - **Zip:** `artifacts/sajdatime-1.0.1.zip` (made by `npm run package`, not committed). Upload this one to Chrome and to Edge.
 - **Checks:** `npm run release-check` passed every check (typecheck, 353 unit tests, build, bundle scan, 111 browser tests with 1 skipped as before, language files, listing limits, manifest).
-- **Uploaded:** Ali uploaded `sajdatime-1.0.1.zip` to the Chrome Developer Dashboard on 2 Nov 2026 and says it is done. Claude could not view the dashboard (Chrome blocks browser tools on Web Store pages), so the version number on the page is not yet checked. Whether Ali pressed Submit for review is not yet recorded. Pressing Submit is his step. The listing text does not change.
+- **Uploaded:** Ali uploaded `sajdatime-1.0.1.zip` to the Chrome Developer Dashboard on 2 Nov 2026 and says it is done. Claude could not view the dashboard (Chrome blocks browser tools on Web Store pages), so the version number on the page is not yet checked. Ali pressed Submit for review himself on 2 Nov 2026 and says it is submitted. Google's review result is not yet known. Pressing Submit was his step. The listing text does not change.
 - **Not updated:** `docs/images/i18n/all-methods-*.png` still show the removed separate screen. They are regenerated only with `SAJDATIME_SCREENSHOTS=1`; the first-run step screenshots were regenerated.
 
 ## 📍 Submitted to the Chrome Web Store, 31 October 2026 (history)
