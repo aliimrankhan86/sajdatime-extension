@@ -121,3 +121,9 @@ export const PlayIcon = ({ size = 20 }: { size?: number }) => (
     <path d="M8 5v14l11-7z" />
   </Icon>
 );
+
+export const StarIcon = ({ size = 20 }: { size?: number }) => (
+  <Icon size={size}>
+    <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+  </Icon>
+);

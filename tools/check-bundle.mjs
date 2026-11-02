@@ -18,6 +18,8 @@ const ALLOWED_PREFIXES = [
   'https://www.geonames.org/',
   'https://creativecommons.org/licenses/by-sa/4.0/',
   'https://github.com/aliimrankhan86/sajdatime-extension',
+  'https://chromewebstore.google.com/detail/sajdatime/fjmhhajkeeehfamdlibljdbjdlambepn',
+  'https://microsoftedge.microsoft.com/addons/detail/pafdfjlnbmfjfcmjabmdpoelddnfckgp',
   'http://www.w3.org/1999/xhtml',
   'http://www.w3.org/2000/svg',
   'http://www.w3.org/1998/Math/MathML',

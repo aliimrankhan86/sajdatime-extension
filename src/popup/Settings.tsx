@@ -33,7 +33,12 @@ import { ChoiceRow } from './components/ChoiceRow';
 import { Segmented } from './components/Segmented';
 import { Notice } from './components/Notice';
 import { applyLanguage, LANGUAGE_CHOICES, LANGUAGE_NAMES, languageHint, t, type LanguageChoice, localeTag } from '../i18n';
-import { CalendarIcon, CheckMark, ClockIcon, ContrastIcon, InfoIcon, LockIcon, NoteIcon, PersonIcon, PhoneIcon, PinIcon, SchoolIcon, TuneIcon, WarningMark, GlobeIcon } from './icons';
+import { CalendarIcon, CheckMark, ClockIcon, ContrastIcon, InfoIcon, LockIcon, NoteIcon, PersonIcon, PhoneIcon, PinIcon, SchoolIcon, StarIcon, TuneIcon, WarningMark, GlobeIcon } from './icons';
+
+// The store listings. The Rate row opens the one for the browser the extension runs in.
+// Nothing asks for a rating and nothing reminds the user; the row is a door, not a prompt.
+const CHROME_STORE_URL = 'https://chromewebstore.google.com/detail/sajdatime/fjmhhajkeeehfamdlibljdbjdlambepn';
+const EDGE_STORE_URL = 'https://microsoftedge.microsoft.com/addons/detail/pafdfjlnbmfjfcmjabmdpoelddnfckgp';
 
 /**
  * One Settings group. A group of two or more rows carries a heading; a group of one
@@ -529,7 +534,15 @@ export function Settings({ settings, onClose, onSaved }: Props) {
           />
         </Group>
 
-        <Group title={t('settings.about')} id="about-heading" rows={3}>
+        <Group title={t('settings.about')} id="about-heading" rows={4}>
+          <Row
+            icon={<StarIcon />}
+            title={t('settings.rate')}
+            rowId="rate"
+            onClick={() => {
+              window.open(browser === 'Edge' ? EDGE_STORE_URL : CHROME_STORE_URL, '_blank', 'noopener,noreferrer');
+            }}
+          />
           <Row
             icon={<LockIcon />}
             title={t('settings.privacy')}

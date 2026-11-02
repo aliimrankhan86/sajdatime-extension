@@ -81,6 +81,7 @@ What an attacker could try, and the rule that stops it:
   - `https://www.geonames.org/`
   - `https://creativecommons.org/licenses/by-sa/4.0/`
   - `https://github.com/aliimrankhan86/sajdatime-extension`
+  - the extension's own store listings, opened by the Settings "Rate SajdaTime" row (Chrome: `https://chromewebstore.google.com/detail/sajdatime/fjmhhajkeeehfamdlibljdbjdlambepn`; Edge: `https://microsoftedge.microsoft.com/addons/detail/pafdfjlnbmfjfcmjabmdpoelddnfckgp`). Added 2 Nov 2026 at the owner's request. Pressing the row opens a tab and sends nothing; the listing is the store's page, not a request from the extension.
 - Every link opening a new tab has `target="_blank"` **and** `rel="noopener noreferrer"`. (Today's About links have only `noreferrer`; add `noopener` as part of the first step that touches Settings.)
 - **Check:** the existing e2e test that watches requests on the Times screen is extended to listen on the popup, Settings, the Location sheet, the service worker and the offscreen page (`context.on('request')`), through a full alert and a full "Use my location", and asserts every request URL starts with `chrome-extension://`. The bundle test enforces the link allowlist.
 
