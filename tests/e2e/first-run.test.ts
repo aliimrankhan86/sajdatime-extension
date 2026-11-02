@@ -122,12 +122,12 @@ test('the six step journey fits and keeps full size targets at each step', async
     await shot(page, 'first-run-match');
     await page.getByRole('button', { name: 'Back' }).click();
 
-    // All methods sheet (scrolls like the Settings method sheet).
-    await page.locator('.method-chooser').click();
-    await expect(page.getByRole('heading', { name: 'All methods' })).toBeVisible();
-    await checkSheetFits(page, 'all methods');
-    await shot(page, 'first-run-methods');
-    await page.getByRole('button', { name: 'Back' }).click();
+    // Every method is in the dropdown on this step, so a choice needs no second screen.
+    await page.locator('.select').selectOption('karachi');
+    await expect(page.locator('.first-run-method-card .method-name')).toHaveText(
+      'University of Karachi',
+    );
+    await expect(page.getByRole('heading', { name: 'All methods' })).toHaveCount(0);
 
     // 6 Alerts.
     await page.getByRole('button', { name: 'Continue' }).click();
@@ -234,7 +234,7 @@ async function expectHeadingFocus(page: Page, name: string): Promise<void> {
     const style = getComputedStyle(active);
     return { tag: active.tagName, outline: style.outlineStyle, width: style.outlineWidth };
   });
-  expect(['BUTTON', 'INPUT'], `${name}: Tab reaches a control`).toContain(ring.tag);
+  expect(['BUTTON', 'INPUT', 'SELECT'], `${name}: Tab reaches a control`).toContain(ring.tag);
   expect(ring.outline, `${name}: Tab draws the ring`).toBe('solid');
   expect(ring.width, `${name}: the ring is 3 px`).toBe('3px');
 }
@@ -280,11 +280,6 @@ test('every first-run heading takes focus without a ring and Tab draws one', asy
     await page.getByRole('button', { name: 'Back' }).click();
     await expectHeadingFocus(page, 'method after match');
 
-    await page.locator('.method-chooser').click();
-    await expectHeadingFocus(page, 'all methods');
-    await page.getByRole('button', { name: 'Back' }).click();
-    await expectHeadingFocus(page, 'method after choosing another');
-
     await page.getByRole('button', { name: 'Continue' }).click();
     await expectHeadingFocus(page, 'alerts');
   } finally {
@@ -293,13 +288,12 @@ test('every first-run heading takes focus without a ring and Tab draws one', asy
 });
 
 /**
- * The Step 8 review: the suggested method row used "Suggested for United Kingdom" as
- * its title, so no row was named after its method. Every row title is now a method
- * name, and the suggestion moves to the hint line under it. The hint also carries the
- * "the" that English wants inside a sentence (D-039), and the same group title is used
- * by the All methods sheet, which shares meta.methodGroupsFor.
+ * The Step 8 review: every method row was named after its method, with the suggestion
+ * on the hint line. The method step is now one dropdown, so the same rule applies to its
+ * options: each is a method name, and the group heading carries the suggestion, with the
+ * "the" English wants inside a sentence (D-039). The groups come from meta.methodGroupsFor.
  */
-test('every method row is named after its method and the suggestion is the hint line', async () => {
+test('every dropdown option is named after its method and the suggestion is the group heading', async () => {
   const extension = await launchExtension();
   const page = extension.page;
   try {
@@ -313,40 +307,31 @@ test('every method row is named after its method and the suggestion is the hint 
 
     const known = new Set(METHOD_IDS.map((id) => methodName(id)));
 
-    const stepNames = await page.locator('.first-run-method-row .method-name').allTextContents();
-    expect(stepNames.length, 'the UK offers three methods').toBe(3);
-    for (const name of stepNames) expect(known.has(name), `"${name}" is a method name`).toBe(true);
+    const names = await page.locator('.select option').allTextContents();
+    expect(names.length, 'the UK offers every method it can use').toBeGreaterThan(3);
+    for (const name of names) expect(known.has(name), `"${name}" is a method name`).toBe(true);
 
-    const stepHints = page.locator('.first-run-method-row .method-hint');
-    await expect(stepHints).toHaveCount(1);
-    await expect(stepHints).toHaveText('Suggested for the United Kingdom');
-    await expect(page.locator('.first-run-method-row').first()).toContainText(
+    const groups = await page
+      .locator('.select optgroup')
+      .evaluateAll((els) => els.map((el) => el.getAttribute('label')));
+    expect(groups[0]).toBe('Suggested for the United Kingdom');
+
+    const shown = await page.locator('.first-run-method-card .method-name').textContent();
+    expect(names).toContain(shown);
+    await expect(page.locator('.first-run-method-card .method-hint')).toHaveText(
       'Suggested for the United Kingdom',
     );
-
-    await page.locator('.method-chooser').click();
-    await expect(page.getByRole('heading', { name: 'All methods' })).toBeVisible();
-    await expect(page.locator('.method-group-title').first()).toHaveText(
-      'Suggested for the United Kingdom',
-    );
-
-    const sheetNames = await page.locator('.method-row .method-name').allTextContents();
-    expect(sheetNames.length).toBeGreaterThan(stepNames.length);
-    for (const name of sheetNames) expect(known.has(name), `"${name}" is a method name`).toBe(true);
-    for (const name of stepNames) expect(sheetNames).toContain(name);
   } finally {
     await extension.close();
   }
 });
 
 /**
- * The Step 8 review: "Match my mosque" and the method list wrapped onto two lines side
- * by side. They now stack full width, 48 px tall, 8 px apart, and each label is one
- * line in both themes. The second control is a select, not an action, so the selector
- * is every child of the actions row. Measured, because the label width depends on the
- * font.
+ * The method dropdown and "Match my mosque" are the two controls on the step. Both are
+ * full width and 48 px tall, and they start at the same edge. Measured, because the
+ * label width depends on the font.
  */
-test('the Match button and the method select stack full width on one line in both themes', async () => {
+test('the method dropdown and the Match button are full width and 48 px tall in both themes', async () => {
   const extension = await launchExtension();
   const page = extension.page;
   try {
@@ -361,20 +346,13 @@ test('the Match button and the method select stack full width on one line in bot
     for (const theme of ['light', 'dark'] as const) {
       await setTheme(page, theme);
       const metrics = await page.evaluate(() => {
-        const buttons = [...document.querySelectorAll<HTMLElement>('.first-run-method-actions > *')];
-        return buttons.map((button) => {
-          const rect = button.getBoundingClientRect();
-          const range = document.createRange();
-          // The select holds a label and a chevron, so measure its label; an action is
-          // plain text.
-          range.selectNodeContents(button.querySelector('.method-chooser-label') ?? button);
-          return {
-            height: rect.height,
-            width: rect.width,
-            top: rect.top,
-            left: rect.left,
-            lines: range.getClientRects().length,
-          };
+        const controls = [
+          document.querySelector<HTMLElement>('.select'),
+          document.querySelector<HTMLElement>('.first-run-method-actions > *'),
+        ];
+        return controls.map((control) => {
+          const rect = control?.getBoundingClientRect();
+          return { height: rect?.height ?? 0, width: rect?.width ?? 0, left: rect?.left ?? 0 };
         });
       });
       expect(metrics, `${theme}: two controls`).toHaveLength(2);
@@ -382,9 +360,7 @@ test('the Match button and the method select stack full width on one line in bot
       if (!first || !second) throw new Error(`${theme}: both method controls must exist`);
       for (const metric of metrics) {
         expect(metric.height, `${theme}: control height`).toBe(48);
-        expect(metric.lines, `${theme}: label lines`).toBe(1);
       }
-      expect(second.top - (first.top + first.height), `${theme}: gap`).toBe(8);
       expect(first.left, `${theme}: both start at the same edge`).toBe(second.left);
       expect(first.width, `${theme}: both are the same width`).toBe(second.width);
       expect(first.width, `${theme}: full width inside the 20 px padding`).toBeGreaterThan(300);

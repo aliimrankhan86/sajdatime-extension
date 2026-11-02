@@ -350,13 +350,8 @@ test('captures the right to left screens when asked', async () => {
         await expect(page.locator('.first-run-foot .action').last()).toBeEnabled();
         await page.locator('.first-run-foot .action').last().click(); // Continue to method
 
-        await page.waitForSelector('.method-chooser');
+        await page.waitForSelector('.select');
         await screenshot(page, `docs/images/i18n/first-run-method-${language}-${theme}.png`);
-
-        await page.locator('.method-chooser').click();
-        await page.waitForSelector('.method-body');
-        await page.evaluate(() => window.scrollTo(0, 0));
-        await screenshot(page, `docs/images/i18n/all-methods-${language}-${theme}.png`);
       } finally {
         await run.close();
       }

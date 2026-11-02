@@ -4,7 +4,16 @@
 
 This file says what is true now. It is written for the next person or AI who opens the repository. Read it before the plan. The plan describes the whole build. This file describes the part that exists.
 
-## 📍 Submitted to the Chrome Web Store, 31 October 2026 (read this first)
+## 📍 Version 1.0.1 ready to upload, 2 November 2026 (read this first)
+
+- **What changed:** on the first-run Calculation method step, the full list of methods no longer opens as a separate screen. It is one dropdown on the same step, grouped by region, with the chosen method's Fajr and Isha times under it. Choose, then press Continue. Ali found that picking from the separate screen meant scrolling up to Back. Commit on `main` with the merge of `fix/method-dropdown`.
+- **Version:** 1.0.1 in `package.json` and `src/manifest.json`. Chrome will not accept a new package with the same number as the one already live, so 1.0.0 cannot be replaced; 1.0.1 is the upload.
+- **Zip:** `artifacts/sajdatime-1.0.1.zip` (made by `npm run package`, not committed). Upload this one to Chrome and to Edge.
+- **Checks:** `npm run release-check` passed every check (typecheck, 353 unit tests, build, bundle scan, 111 browser tests with 1 skipped as before, language files, listing limits, manifest).
+- **Not done:** nothing uploaded. Ali uploads the zip himself in the Chrome Developer Dashboard (Package, then Upload new package) and presses Submit for review himself. The listing text does not change.
+- **Not updated:** `docs/images/i18n/all-methods-*.png` still show the removed separate screen. They are regenerated only with `SAJDATIME_SCREENSHOTS=1`; the first-run step screenshots were regenerated.
+
+## 📍 Submitted to the Chrome Web Store, 31 October 2026 (history)
 
 **Version 1.0.0 is submitted to the Chrome Web Store and waiting for Google's review.** Ali pressed Submit for review himself on 31 Oct 2026. Item ID `fjmhhajkeeehfamdlibljdbjdlambepn`, publisher display name SajdaTime, non-trader, "publish automatically after review" left ticked, so it goes live by itself when it passes. Google emails Ali when the review is done (that notification is switched on). Google says review can take up to several weeks.
 
