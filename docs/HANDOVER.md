@@ -4,7 +4,13 @@
 
 This file says what is true now. It is written for the next person or AI who opens the repository. Read it before the plan. The plan describes the whole build. This file describes the part that exists.
 
-## 📍 Version 1.0.1 ready to upload, 2 November 2026 (read this first)
+## 📍 Edge draft complete, not published, 2 November 2026 (read this first)
+
+- **Edge draft for version 1.0.1:** packages uploaded (the same zip as Chrome); availability public, all 241 markets; properties Productivity, support email as Chrome; privacy answers as Chrome; store listings complete in English, Arabic, Bangla, Indonesian and Turkish (description, logo, screenshots, promo tile). Urdu is not offered by Edge's listing menu, which only shows languages in the package, so Urdu stays inside the extension only.
+- **Not done, Ali's step:** press Publish in Partner Center, and set the account contact email under My Preferences (Action Center said it is missing). The Edge session expired once during the work; check that the draft still shows Complete before publishing.
+- **Chrome:** version 1.0.1 submitted for review on 2 Nov 2026; Google's result not known yet.
+
+## 📍 Version 1.0.1 ready to upload, 2 November 2026 (history)
 
 - **What changed:** on the first-run Calculation method step, the full list of methods no longer opens as a separate screen. It is one dropdown on the same step, grouped by region, with the chosen method's Fajr and Isha times under it. Choose, then press Continue. Ali found that picking from the separate screen meant scrolling up to Back. Commit on `main` with the merge of `fix/method-dropdown`.
 - **Version:** 1.0.1 in `package.json` and `src/manifest.json`. Chrome will not accept a new package with the same number as the one already live, so 1.0.0 cannot be replaced; 1.0.1 is the upload.
