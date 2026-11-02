@@ -7,7 +7,7 @@ This file says what is true now. It is written for the next person or AI who ope
 ## 📍 Edge draft complete, not published, 2 November 2026 (read this first)
 
 - **Edge draft for version 1.0.1:** packages uploaded (the same zip as Chrome); availability public, all 241 markets; properties Productivity, support email as Chrome; privacy answers as Chrome; store listings complete in English, Arabic, Bangla, Indonesian and Turkish (description, logo, screenshots, promo tile). Urdu is not offered by Edge's listing menu, which only shows languages in the package, so Urdu stays inside the extension only.
-- **Not done, Ali's step:** press Publish in Partner Center, and set the account contact email under My Preferences (Action Center said it is missing). The Edge session expired once during the work; check that the draft still shows Complete before publishing.
+- **Published on Edge, 2 Nov 2026:** Ali pressed Publish himself and says the Edge draft is published. Claude has not seen the Partner Center status or the Edge Add-ons store page, so check the status in Partner Center's Extension overview. The account contact email under My Preferences was flagged as missing by Action Center; not yet confirmed as fixed.
 - **Chrome:** version 1.0.1 submitted for review on 2 Nov 2026; Google's result not known yet.
 
 ## 📍 Version 1.0.1 ready to upload, 2 November 2026 (history)
